@@ -2,12 +2,12 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { ReactNode, useContext } from 'react';
 
-import { SkylabContext } from '../contexts/skylabContext';
+import { ExperimentContext } from '../contexts/experimentContext';
 import styles from '../styles/Home.module.css';
 
 const Home = (): ReactNode => {
-  const skylab = useContext(SkylabContext);
-  const feature = skylab.getVariant('js-ssr-demo');
+  const experiment = useContext(ExperimentContext);
+  const feature = experiment.getVariant('js-ssr-demo');
   return (
     <div className={styles.container}>
       <Head>
@@ -16,7 +16,7 @@ const Home = (): ReactNode => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>SSR demo for Skylab</h1>
+        <h1 className={styles.title}>SSR demo for Experiment</h1>
 
         <Link href="/client-link">Client side navigation demo</Link>
         <p className={styles.description}>

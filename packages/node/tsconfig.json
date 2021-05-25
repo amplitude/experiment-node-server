@@ -14,7 +14,7 @@
   "include": ["src/**/*.ts", "test/**/*.ts", "gen/**/*.js"],
   "exclude": ["dist"],
   "typedocOptions": {
-    "name": "Skylab JS Server Documentation",
+    "name": "Experiment JS Server Documentation",
     "entryPoints": ["./src/index.ts"],
     "categoryOrder": ["Core Usage", "Configuration", "Types"],
     "categorizeByGroup": false,

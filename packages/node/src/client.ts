@@ -1,9 +1,9 @@
 import { version as PACKAGE_VERSION } from '../gen/version';
 
-import { SkylabConfig, Defaults } from './config';
+import { ExperimentConfig, Defaults } from './config';
 import { FetchHttpClient } from './transport/http';
 import { HttpClient } from './types/transport';
-import { SkylabUser } from './types/user';
+import { ExperimentUser } from './types/user';
 import { Variant, Variants } from './types/variant';
 import { urlSafeBase64Encode } from './util/encode';
 import { performance } from './util/performance';
@@ -13,40 +13,40 @@ import { sleep } from './util/time';
  * Main client for fetching variant data.
  * @category Core Usage
  */
-export class SkylabClient {
+export class ExperimentClient {
   protected readonly apiKey: string;
   protected readonly httpClient: HttpClient;
 
   protected serverUrl: string;
-  protected config: SkylabConfig;
-  protected user: SkylabUser;
+  protected config: ExperimentConfig;
+  protected user: ExperimentUser;
   protected debug: boolean;
 
   /**
-   * Creates a new SkylabClient instance.
-   * In most cases, a SkylabClient should be initialized and accessed using
-   * the factory functions {@link skylabInit} and {@link skylabInstance}
+   * Creates a new ExperimentClient instance.
+   * In most cases, a ExperimentClient should be initialized and accessed using
+   * the factory functions {@link experimentInit} and {@link experimentInstance}
    * @param apiKey The environment API Key
-   * @param config See {@link SkylabConfig} for config options
+   * @param config See {@link ExperimentConfig} for config options
    */
-  public constructor(apiKey: string, config: SkylabConfig) {
+  public constructor(apiKey: string, config: ExperimentConfig) {
     this.apiKey = apiKey;
     this.config = { ...Defaults, ...config };
     this.httpClient = FetchHttpClient;
     this.debug = this.config?.debug;
   }
 
-  protected async fetchAll(user: SkylabUser): Promise<Variants> {
+  protected async fetchAll(user: ExperimentUser): Promise<Variants> {
     if (!this.apiKey) {
-      throw Error('Skylab API key is empty');
+      throw Error('Experiment API key is empty');
     }
     if (this.debug) {
-      console.debug('[Skylab] Fetching variants for user: ', user);
+      console.debug('[Experiment] Fetching variants for user: ', user);
     }
     try {
       return await this.doFetch(user, this.config.fetchTimeoutMillis);
     } catch (e) {
-      console.error('[Skylab] Fetch failed: ', e);
+      console.error('[Experiment] Fetch failed: ', e);
       try {
         return await this.retryFetch(user);
       } catch (e) {
@@ -57,7 +57,7 @@ export class SkylabClient {
   }
 
   protected async doFetch(
-    user: SkylabUser,
+    user: ExperimentUser,
     timeoutMillis: number,
   ): Promise<Variants> {
     const start = performance.now();
@@ -81,22 +81,22 @@ export class SkylabClient {
     }
     const elapsed = (performance.now() - start).toFixed(3);
     if (this.debug) {
-      console.debug(`[Skylab] Fetch complete in ${elapsed} ms`);
+      console.debug(`[Experiment] Fetch complete in ${elapsed} ms`);
     }
     const json = JSON.parse(response.body);
     const variants = this.parseJsonVariants(json);
     if (this.debug) {
-      console.debug(`[Skylab] Fetched variants: ${variants}`);
+      console.debug(`[Experiment] Fetched variants: ${variants}`);
     }
     return variants;
   }
 
-  protected async retryFetch(user: SkylabUser): Promise<Variants> {
+  protected async retryFetch(user: ExperimentUser): Promise<Variants> {
     if (this.config.fetchRetries == 0) {
       return {};
     }
     if (this.debug) {
-      console.debug('[Skylab] Retrying fetch');
+      console.debug('[Experiment] Retrying fetch');
     }
     let err: Error = null;
     let delayMillis = this.config.fetchRetryBackoffMinMillis;
@@ -105,7 +105,7 @@ export class SkylabClient {
       try {
         return await this.doFetch(user, this.config.fetchRetryTimeoutMillis);
       } catch (e) {
-        console.error('[Skylab] Retry falied: ', e);
+        console.error('[Experiment] Retry falied: ', e);
         err = e;
       }
       delayMillis = Math.min(
@@ -135,25 +135,25 @@ export class SkylabClient {
     return variants;
   }
 
-  private addContext(user: SkylabUser): SkylabUser {
+  private addContext(user: ExperimentUser): ExperimentUser {
     return {
-      library: `skylab-js-server/${PACKAGE_VERSION}`,
+      library: `experiment-js-server/${PACKAGE_VERSION}`,
       ...user,
     };
   }
 
   /**
    * Returns all variants for the user
-   * @param user The {@link SkylabUser} context
+   * @param user The {@link ExperimentUser} context
    */
-  public async getVariants(user: SkylabUser): Promise<Variants> {
+  public async getVariants(user: ExperimentUser): Promise<Variants> {
     if (!this.apiKey) {
-      throw Error('Skylab API key is empty');
+      throw Error('Experiment API key is empty');
     }
     try {
       return await this.fetchAll(user);
     } catch (e) {
-      console.error('[Skylab] Failed to fetch variants: ', e);
+      console.error('[Experiment] Failed to fetch variants: ', e);
       return {};
     }
   }

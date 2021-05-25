@@ -1,4 +1,4 @@
-import { SkylabUser } from './types/user';
+import { ExperimentUser } from './types/user';
 import { base64Decode } from './util/encode';
 
 /**
@@ -20,10 +20,10 @@ export class AmplitudeCookie {
 
   /**
    * @param amplitudeCookie A string from the amplitude cookie
-   * @returns a SkylabUser context containing a device_id and user_id
+   * @returns a ExperimentUser context containing a device_id and user_id
    * (if available)
    */
-  public static parse(amplitudeCookie: string): SkylabUser {
+  public static parse(amplitudeCookie: string): ExperimentUser {
     const values = amplitudeCookie.split('.');
     let user_id = undefined;
     if (values[1]) {

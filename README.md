@@ -1,5 +1,5 @@
-# skylab-js-server
-JS Server SDK for Skylab
+# experiment-js-server
+JS Server SDK for Experiment
 
 ## Getting Started
 

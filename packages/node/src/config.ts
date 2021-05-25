@@ -1,14 +1,14 @@
 /**
  * @category Configuration
  */
-export type SkylabConfig = {
+export type ExperimentConfig = {
   /**
    * Set to true to log some extra information to the console.
    */
   debug?: boolean;
 
   /**
-   * The instance name for the SkylabClient. Instance names are case _sensitive_.
+   * The instance name for the ExperimentClient. Instance names are case _sensitive_.
    */
   instanceName?: string;
 
@@ -51,7 +51,7 @@ export type SkylabConfig = {
 };
 
 /**
- Defaults for Skylab Config options
+ Defaults for Experiment Config options
 
  | **Option**       | **Default**                       |
  |----------------|---------------------------------|
@@ -69,7 +69,7 @@ export type SkylabConfig = {
  *
  * @category Configuration
  */
-export const Defaults: SkylabConfig = {
+export const Defaults: ExperimentConfig = {
   debug: false,
   instanceName: '$default_instance',
   serverUrl: 'https://api.lab.amplitude.com',
