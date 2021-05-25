@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": ["es5", "es6"],
+    "module": "commonjs",
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "target": "es6",
+    "noEmit": true,
+    "rootDir": ".",
+    "baseUrl": "."
+  }
+}

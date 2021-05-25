@@ -1,0 +1,22 @@
+{
+  "name": "ssr-demo",
+  "version": "1.5.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "yarn --cwd ../node build && yarn next dev"
+  },
+  "dependencies": {
+    "@amplitude/skylab-js-client": "^1.0.0",
+    "@amplitude/skylab-js-server": "^1.5.0",
+    "next": "9.5.5",
+    "next-transpile-modules": "^4.1.0",
+    "react": "16.13.1",
+    "react-dom": "16.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.11.8",
+    "@types/react": "^16.9.52",
+    "typescript": "^4.0.3"
+  }
+}

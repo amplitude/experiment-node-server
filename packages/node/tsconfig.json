@@ -1,0 +1,31 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["./src/*"],
+      "test/*": ["./test/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "gen/**/*.js"],
+  "exclude": ["dist"],
+  "typedocOptions": {
+    "name": "Skylab JS Server Documentation",
+    "entryPoints": ["./src/index.ts"],
+    "categoryOrder": ["Core Usage", "Configuration", "Types"],
+    "categorizeByGroup": false,
+    "disableSources": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeInternal": true,
+    "hideGenerator": true,
+    "includeVersion": true,
+    "out": "../../docs",
+    "readme": "none",
+    "theme": "minimal"
+  }
+}
