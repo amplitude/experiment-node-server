@@ -8,11 +8,6 @@ export type ExperimentConfig = {
   debug?: boolean;
 
   /**
-   * The instance name for the ExperimentClient. Instance names are case _sensitive_.
-   */
-  instanceName?: string;
-
-  /**
    * The server endpoint from which to request variants.
    */
   serverUrl?: string;
@@ -56,7 +51,6 @@ export type ExperimentConfig = {
  | **Option**       | **Default**                       |
  |----------------|---------------------------------|
  | **debug**        | false                           |
- | **instanceName** | `"$default_instance"`             |
  | **serverUrl**    | `"https://api.lab.amplitude.com"` |
  | **fetchTimeoutMillis**    | `10000` |
  | **fetchRetries**    | `8` |
@@ -71,7 +65,6 @@ export type ExperimentConfig = {
  */
 export const Defaults: ExperimentConfig = {
   debug: false,
-  instanceName: '$default_instance',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
   fetchRetries: 8,

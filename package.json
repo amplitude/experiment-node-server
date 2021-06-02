@@ -1,6 +1,6 @@
 {
-  "name": "experiment-js-server-root",
-  "version": "0.1.0",
+  "name": "experiment-node-server-root",
+  "version": "0.0.0",
   "license": "MIT",
   "scripts": {
     "lint": "lerna run lint",

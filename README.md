@@ -1,5 +1,5 @@
-# experiment-js-server
-JS Server SDK for Experiment
+# experiment-node-server
+Node Server SDK for Experiment
 
 ## Getting Started
 

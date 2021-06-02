@@ -1,4 +1,4 @@
-import { ExperimentClient } from '@amplitude/experiment-js-client';
+import { Experiment, ExperimentClient } from '@amplitude/experiment-js-client';
 import { AppProps } from 'next/app';
 import { ReactNode } from 'react';
 
@@ -6,7 +6,7 @@ import { ExperimentProvider } from '../contexts/experimentContext';
 import { ExperimentServer } from '../lib/experiment';
 import '../styles/globals.css';
 
-let experiment;
+let experiment: ExperimentClient;
 
 function MyApp(appProps: AppProps): ReactNode {
   const { Component, pageProps } = appProps;
@@ -15,18 +15,20 @@ function MyApp(appProps: AppProps): ReactNode {
   if (isServerSide) {
     console.debug('Initializing Client Experiment');
     // on the server, we want to create a new ExperimentClient every time
-    experiment = new ExperimentClient('client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR', {
-      initialFlags: appProps['features'],
-      isServerSide,
-    });
-  } else {
-    if (!experiment) {
-      // in the client, we only want to create the ExperimentClient once
-      experiment = new ExperimentClient('client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR', {
-        initialFlags: appProps['features'],
-        isServerSide,
-      });
-    }
+    experiment = new ExperimentClient(
+      'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+      {
+        initialVariants: appProps['features'],
+      },
+    );
+  } else if (!experiment) {
+    // in the client, we only want to create the ExperimentClient once
+    experiment = Experiment.initialize(
+      'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+      {
+        initialVariants: appProps['features'],
+      },
+    );
   }
   // add Experiment to the global object for debugging
   globalThis.Experiment = experiment;
@@ -42,7 +44,7 @@ MyApp.getInitialProps = async ({ ctx }) => {
   if (ctx.req) {
     // called on server
     console.debug('Fetching Experiment variants');
-    const allFeatures = await ExperimentServer.instance().getVariants({
+    const allFeatures = await ExperimentServer.fetch({
       id: 'userId',
     });
     return { features: allFeatures };

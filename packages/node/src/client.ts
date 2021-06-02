@@ -14,18 +14,13 @@ import { sleep } from './util/time';
  * @category Core Usage
  */
 export class ExperimentClient {
-  protected readonly apiKey: string;
-  protected readonly httpClient: HttpClient;
-
-  protected serverUrl: string;
-  protected config: ExperimentConfig;
-  protected user: ExperimentUser;
-  protected debug: boolean;
+  private readonly apiKey: string;
+  private readonly httpClient: HttpClient;
+  private readonly config: ExperimentConfig;
 
   /**
    * Creates a new ExperimentClient instance.
-   * In most cases, a ExperimentClient should be initialized and accessed using
-   * the factory functions {@link experimentInit} and {@link experimentInstance}
+   *
    * @param apiKey The environment API Key
    * @param config See {@link ExperimentConfig} for config options
    */
@@ -33,16 +28,29 @@ export class ExperimentClient {
     this.apiKey = apiKey;
     this.config = { ...Defaults, ...config };
     this.httpClient = FetchHttpClient;
-    this.debug = this.config?.debug;
   }
 
-  protected async fetchAll(user: ExperimentUser): Promise<Variants> {
+  /**
+   * Returns all variants for the user
+   * @param user The {@link ExperimentUser} context
+   */
+  public async fetch(user: ExperimentUser): Promise<Variants> {
     if (!this.apiKey) {
       throw Error('Experiment API key is empty');
     }
-    if (this.debug) {
-      console.debug('[Experiment] Fetching variants for user: ', user);
+    try {
+      return await this.fetchInternal(user);
+    } catch (e) {
+      console.error('[Experiment] Failed to fetch variants: ', e);
+      return {};
     }
+  }
+
+  private async fetchInternal(user: ExperimentUser): Promise<Variants> {
+    if (!this.apiKey) {
+      throw Error('Experiment API key is empty');
+    }
+    this.debug('[Experiment] Fetching variants for user: ', user);
     try {
       return await this.doFetch(user, this.config.fetchTimeoutMillis);
     } catch (e) {
@@ -56,7 +64,7 @@ export class ExperimentClient {
     }
   }
 
-  protected async doFetch(
+  private async doFetch(
     user: ExperimentUser,
     timeoutMillis: number,
   ): Promise<Variants> {
@@ -80,24 +88,18 @@ export class ExperimentClient {
       );
     }
     const elapsed = (performance.now() - start).toFixed(3);
-    if (this.debug) {
-      console.debug(`[Experiment] Fetch complete in ${elapsed} ms`);
-    }
+    this.debug(`[Experiment] Fetch complete in ${elapsed} ms`);
     const json = JSON.parse(response.body);
     const variants = this.parseJsonVariants(json);
-    if (this.debug) {
-      console.debug(`[Experiment] Fetched variants: ${variants}`);
-    }
+    this.debug('[Experiment] Fetched variants: ', variants);
     return variants;
   }
 
-  protected async retryFetch(user: ExperimentUser): Promise<Variants> {
+  private async retryFetch(user: ExperimentUser): Promise<Variants> {
     if (this.config.fetchRetries == 0) {
       return {};
     }
-    if (this.debug) {
-      console.debug('[Experiment] Retrying fetch');
-    }
+    this.debug('[Experiment] Retrying fetch');
     let err: Error = null;
     let delayMillis = this.config.fetchRetryBackoffMinMillis;
     for (let i = 0; i < this.config.fetchRetries; i++) {
@@ -116,10 +118,10 @@ export class ExperimentClient {
     throw err;
   }
 
-  protected async parseJsonVariants(json: string): Promise<Variants> {
+  private async parseJsonVariants(json: string): Promise<Variants> {
     const variants: Variants = {};
     for (const key of Object.keys(json)) {
-      let value;
+      let value: string;
       if ('value' in json[key]) {
         value = json[key].value;
       } else if ('key' in json[key]) {
@@ -137,24 +139,15 @@ export class ExperimentClient {
 
   private addContext(user: ExperimentUser): ExperimentUser {
     return {
-      library: `experiment-js-server/${PACKAGE_VERSION}`,
+      library: `experiment-node-server/${PACKAGE_VERSION}`,
       ...user,
     };
   }
 
-  /**
-   * Returns all variants for the user
-   * @param user The {@link ExperimentUser} context
-   */
-  public async getVariants(user: ExperimentUser): Promise<Variants> {
-    if (!this.apiKey) {
-      throw Error('Experiment API key is empty');
-    }
-    try {
-      return await this.fetchAll(user);
-    } catch (e) {
-      console.error('[Experiment] Failed to fetch variants: ', e);
-      return {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private debug(message?: any, ...optionalParams: any[]): void {
+    if (this.config.debug) {
+      console.debug(message, ...optionalParams);
     }
   }
 }

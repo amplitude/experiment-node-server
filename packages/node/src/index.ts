@@ -2,7 +2,7 @@
  * This is the API Reference for the Experiment JS Server SDK.
  * For more details on implementing this SDK, view the documentation
  * [here](https://amplitude-lab.readme.io/docs/javascript-server-sdk).
- * @module experiment-js-server
+ * @module experiment-node-server
  */
 
 export { AmplitudeCookie } from './amplitude';

@@ -7,7 +7,7 @@ import styles from '../styles/Home.module.css';
 
 const Home = (): ReactNode => {
   const experiment = useContext(ExperimentContext);
-  const feature = experiment.getVariant('js-ssr-demo');
+  const feature = experiment.variant('js-ssr-demo');
   return (
     <div className={styles.container}>
       <Head>

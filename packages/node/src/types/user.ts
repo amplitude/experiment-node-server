@@ -49,22 +49,27 @@ export type ExperimentUser = {
   /**
    * Predefined field, must be manually provided
    */
-  os?: string;
-
-  /**
-   * Predefined field, must be manually provided
-   */
   version?: string;
 
   /**
    * Predefined field, must be manually provided
    */
-  device_family?: string;
+  os?: string;
 
   /**
    * Predefined field, must be manually provided
    */
-  device_type?: string;
+  device_manufacturer?: string;
+
+  /**
+   * Predefined field, must be manually provided
+   */
+  device_brand?: string;
+
+  /**
+   * Predefined field, must be manually provided
+   */
+  device_model?: string;
 
   /**
    * Predefined field, must be manually provided
