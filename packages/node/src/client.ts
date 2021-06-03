@@ -31,8 +31,13 @@ export class ExperimentClient {
   }
 
   /**
-   * Returns all variants for the user
+   * Fetch all variants for a user.
+   *
+   * This method will automatically retry if configured (default).
+   *
    * @param user The {@link ExperimentUser} context
+   * @return The {@link Variants} for the user on success, empty
+   * {@link Variants} on error.
    */
   public async fetch(user: ExperimentUser): Promise<Variants> {
     if (!this.apiKey) {
