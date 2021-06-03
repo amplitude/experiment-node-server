@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/experiment-node-server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Javascript Server SDK for Amplitude Experiment",
   "main": "dist/src/index.js",
   "files": [
