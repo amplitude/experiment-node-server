@@ -1,5 +1,4 @@
 import { ExperimentUser } from './types/user';
-import { base64Decode } from './util/encode';
 
 /**
  * This class provides utility functions for parsing and handling identity
@@ -28,7 +27,7 @@ export class AmplitudeCookie {
     let user_id = undefined;
     if (values[1]) {
       try {
-        user_id = base64Decode(values[1]);
+        user_id = Buffer.from(values[1], 'base64').toString('utf-8');
       } catch (e) {
         user_id = undefined;
       }

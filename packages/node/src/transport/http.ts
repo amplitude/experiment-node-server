@@ -1,6 +1,5 @@
 import http from 'http';
 import https from 'https';
-import querystring, { ParsedUrlQueryInput } from 'querystring';
 import url from 'url';
 
 import { SimpleResponse, HttpClient } from '../types/transport';
@@ -16,19 +15,15 @@ const request: HttpClient['request'] = (
   requestUrl: string,
   method: string,
   headers: Record<string, string>,
-  data?: Record<string, string>,
+  data: string,
   timeoutMillis?: number,
 ): Promise<SimpleResponse> => {
   const urlParams = url.parse(requestUrl);
-  if (method === 'GET' && data) {
-    urlParams.path = `${urlParams.path}?${querystring.encode(
-      data as ParsedUrlQueryInput,
-    )}`;
-  }
   const options = {
     ...urlParams,
-    method,
-    headers,
+    method: method,
+    headers: headers,
+    body: data,
     // Adds timeout to the socket connection, not the response.
     timeout: timeoutMillis,
   };
