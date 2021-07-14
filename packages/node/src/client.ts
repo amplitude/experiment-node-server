@@ -82,7 +82,7 @@ export class ExperimentClient {
     };
     const response = await this.httpClient.request(
       endpoint,
-      'GET',
+      'POST',
       headers,
       null,
       timeoutMillis,
