@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@amplitude/evaluation-interop@0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-interop/-/evaluation-interop-0.0.21.tgz#6113c09568858bb1e99f1c9f6992e8a97ecd6c1c"
+  integrity sha512-rQvbVMGRImtZ/GtflYJtPiBvMAoOWo3J3ArpSkA642s9MU9EMndnDBT+2qeqiHz5Z3lso1nol14LbiNK5hLpbg==
+
 "@amplitude/experiment-js-client@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@amplitude/experiment-js-client/-/experiment-js-client-0.2.0.tgz#7de8631efe6de3821d56bb69fb11643d7398dea0"

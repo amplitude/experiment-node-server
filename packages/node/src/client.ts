@@ -1,7 +1,10 @@
+import evaluation from '@amplitude/evaluation-interop';
+
 import { version as PACKAGE_VERSION } from '../gen/version';
 
 import { ExperimentConfig, Defaults } from './config';
 import { FetchHttpClient } from './transport/http';
+import { EvaluationResult } from './types/evaluation';
 import { HttpClient } from './types/transport';
 import { ExperimentUser } from './types/user';
 import { Variant, Variants } from './types/variant';
@@ -17,6 +20,9 @@ export class ExperimentClient {
   private readonly httpClient: HttpClient;
   private readonly config: ExperimentConfig;
 
+  private rules: string;
+  private rulesPoller: NodeJS.Timeout;
+
   /**
    * Creates a new ExperimentClient instance.
    *
@@ -27,6 +33,9 @@ export class ExperimentClient {
     this.apiKey = apiKey;
     this.config = { ...Defaults, ...config };
     this.httpClient = FetchHttpClient;
+    if (this.config.enableLocalEvaluation) {
+      this.startRulesPoller();
+    }
   }
 
   /**
@@ -49,6 +58,36 @@ export class ExperimentClient {
       return {};
     }
   }
+
+  /**
+   * Evaluate variants for a user locally.
+   *
+   * The enableLocalEvaluation config option must be set to true when
+   * initializing the ExperimentClient.
+   *
+   * @param user The user to evaluate
+   * @returns The evaluated variants
+   */
+  public async evaluate(user: ExperimentUser): Promise<Variants> {
+    if (!this.config.enableLocalEvaluation) {
+      throw Error('enableLocalEvaluation config option must be set to true');
+    }
+    const rules = await this.getRules();
+    const resultsString = evaluation.evaluate(rules, JSON.stringify(user));
+    const results: EvaluationResult = JSON.parse(resultsString);
+    const variants: Variants = {};
+    Object.keys(results).forEach((key) => {
+      variants[key] = {
+        value: results[key].variant.key,
+        payload: results[key].variant.payload,
+      };
+    });
+    return variants;
+  }
+
+  ////////////////////
+  // Fetch Internal //
+  ////////////////////
 
   private async fetchInternal(user: ExperimentUser): Promise<Variants> {
     if (!this.apiKey) {
@@ -95,7 +134,7 @@ export class ExperimentClient {
     );
     if (response.status !== 200) {
       throw Error(
-        `Received error response: ${response.status}: ${response.body}`,
+        `fetch - received error response: ${response.status}: ${response.body}`,
       );
     }
     const elapsed = (performance.now() - start).toFixed(3);
@@ -154,6 +193,59 @@ export class ExperimentClient {
       ...user,
     };
   }
+
+  ///////////////////////
+  // Evaluate Internal //
+  ///////////////////////
+
+  private async getRules(): Promise<string> {
+    if (!this.rules) {
+      this.rules = await this.doRules();
+    }
+    return this.rules;
+  }
+
+  private async doRules(): Promise<string> {
+    const endpoint = `${this.config.serverUrl}/sdk/rules?d=fdsa`;
+    const headers = {
+      Authorization: `Api-Key ${this.apiKey}`,
+    };
+    this.debug('[Experiment] Get rules');
+    const response = await this.httpClient.request(
+      endpoint,
+      'GET',
+      headers,
+      null,
+      10000,
+    );
+    if (response.status !== 200) {
+      throw Error(
+        `rules - received error response: ${response.status}: ${response.body}`,
+      );
+    }
+    this.debug(`[Experiment] Got rules: ${response.body}`);
+    return response.body;
+  }
+
+  private startRulesPoller() {
+    this.doRules().then((rules) => {
+      this.rules = rules;
+    });
+    this.rulesPoller = setInterval(async () => {
+      this.rules = await this.doRules();
+    }, this.config.rulesPollingInterval);
+  }
+
+  private stopRulesPoller() {
+    if (this.rulesPoller) {
+      clearTimeout(this.rulesPoller);
+      this.rulesPoller = undefined;
+    }
+  }
+
+  ///////////////
+  // Utilities //
+  ///////////////
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private debug(message?: any, ...optionalParams: any[]): void {
