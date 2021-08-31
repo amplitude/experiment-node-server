@@ -85,6 +85,13 @@ export class ExperimentClient {
     return variants;
   }
 
+  /**
+   * Close the client.
+   */
+  public close(): void {
+    this.stopRulesPoller();
+  }
+
   ////////////////////
   // Fetch Internal //
   ////////////////////
