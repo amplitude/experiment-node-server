@@ -20,7 +20,7 @@ export class ExperimentClient {
   private readonly httpClient: HttpClient;
   private readonly config: ExperimentConfig;
 
-  private rules: string;
+  private rules: Record<string, string>;
   private rulesPoller: NodeJS.Timeout;
 
   /**
@@ -68,12 +68,32 @@ export class ExperimentClient {
    * @param user The user to evaluate
    * @returns The evaluated variants
    */
-  public async evaluate(user: ExperimentUser): Promise<Variants> {
+  public async evaluate(
+    user: ExperimentUser,
+    flags?: string[],
+  ): Promise<Variants> {
     if (!this.config.enableLocalEvaluation) {
       throw Error('enableLocalEvaluation config option must be set to true');
     }
-    const rules = await this.getRules();
-    const resultsString = evaluation.evaluate(rules, JSON.stringify(user));
+    // Get the required rules.
+    const rulesRecord = await this.getRules();
+    let rulesArray: string[] = [];
+    if (flags) {
+      for (const flagKey of flags) {
+        const flagConfig = rulesRecord[flagKey];
+        if (flagConfig) {
+          rulesArray.push(flagConfig);
+        }
+      }
+    } else {
+      rulesArray = Object.values(rulesRecord);
+    }
+    // Evaluate the rules and user.
+    const resultsString = evaluation.evaluate(
+      JSON.stringify(rulesArray),
+      JSON.stringify(user),
+    );
+    // Parse variant results
     const results: EvaluationResult = JSON.parse(resultsString);
     const variants: Variants = {};
     Object.keys(results).forEach((key) => {
@@ -205,9 +225,10 @@ export class ExperimentClient {
   // Evaluate Internal //
   ///////////////////////
 
-  private async getRules(): Promise<string> {
+  private async getRules(): Promise<Record<string, string>> {
     if (!this.rules) {
-      this.rules = await this.doRules();
+      const rulesResult = await this.doRules();
+      this.rules = this.parseRules(rulesResult);
     }
     return this.rules;
   }
@@ -234,12 +255,24 @@ export class ExperimentClient {
     return response.body;
   }
 
+  private parseRules(rules: string): Record<string, string> {
+    const rulesRecord: Record<string, string> = {};
+    const rulesArray = JSON.parse(rules);
+    this.debug(rulesArray);
+    for (let i = 0; i < rulesArray.length; i++) {
+      const rule = rulesArray[i];
+      rulesRecord[rule.flagKey] = rule;
+    }
+    return rulesRecord;
+  }
+
   private startRulesPoller() {
     this.doRules().then((rules) => {
-      this.rules = rules;
+      this.rules = this.parseRules(rules);
     });
     this.rulesPoller = setInterval(async () => {
-      this.rules = await this.doRules();
+      const rules = await this.doRules();
+      this.rules = this.parseRules(rules);
     }, this.config.rulesPollingInterval);
   }
 

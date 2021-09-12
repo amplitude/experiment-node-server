@@ -15,4 +15,11 @@ if (!performance) {
   };
 }
 
-export { performance };
+const measure = async (block: () => void): Promise<number> => {
+  const start = performance.now();
+  await block();
+  const end = performance.now();
+  return end - start;
+};
+
+export { performance, measure };
