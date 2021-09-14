@@ -1,7 +1,7 @@
+import { DefaultFlagCache } from './cache/flags';
 import { ExperimentClient } from './client';
 import { ExperimentConfig, LocalEvaluationConfig } from './config';
 import { LocalEvaluationClient } from './localEvaluation';
-import { DefaultFlagCache } from './types/cache';
 
 const instances = {};
 const defaultInstance = '$default_instance';

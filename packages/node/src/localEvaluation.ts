@@ -95,6 +95,20 @@ export class LocalEvaluationClient {
     }
   }
 
+  /**
+   * Fetch flag configurations from Amplitude which belong to the environment
+   * for the api key used to initialize this client.
+   *
+   * This function is for ad hoc implementations which required managing the
+   * flag config cache separately.
+   *
+   * @returns A map of flag key to flag configs.
+   */
+  public async fetchFlagConfigs(): Promise<Record<string, string>> {
+    const rawFlagConfigs = await this.doFlagConfigs();
+    return this.parseFlagConfigs(rawFlagConfigs);
+  }
+
   private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
     await this.flagConfigPromise;
     return Object.values(this.flagCache.get(flagKeys));
