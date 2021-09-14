@@ -32,12 +32,6 @@ export class LocalEvaluationClient {
     this.httpClient = FetchHttpClient;
 
     this.flagCache = flagCache;
-    this.flagConfigPromise = this.updateFlagConfigs({
-      attempts: 5,
-      min: 1,
-      max: 1,
-      scalar: 1,
-    });
   }
 
   /**
@@ -76,13 +70,20 @@ export class LocalEvaluationClient {
    * You must call this function to begin polling for flag config updates.
    * The promise returned by this function is resolved when the initial call
    * to fetch the flag configuration completes.
+   * @throws if fetching flag configs fails.
    */
   public async start(): Promise<void> {
     this.stop();
-    await this.flagConfigPromise;
     this.flagConfigPoller = setInterval(async () => {
       await this.updateFlagConfigs();
     }, this.config.flagConfigPollingInterval);
+    this.flagConfigPromise = this.updateFlagConfigs({
+      attempts: 5,
+      min: 1,
+      max: 1,
+      scalar: 1,
+    });
+    await this.flagConfigPromise;
   }
 
   /**
@@ -95,22 +96,10 @@ export class LocalEvaluationClient {
     }
   }
 
-  /**
-   * Fetch flag configurations from Amplitude which belong to the environment
-   * for the api key used to initialize this client.
-   *
-   * This function is for ad hoc implementations which required managing the
-   * flag config cache separately.
-   *
-   * @returns A map of flag key to flag configs.
-   */
-  public async fetchFlagConfigs(): Promise<Record<string, string>> {
-    const rawFlagConfigs = await this.doFlagConfigs();
-    return this.parseFlagConfigs(rawFlagConfigs);
-  }
-
   private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
-    await this.flagConfigPromise;
+    if (this.flagConfigPromise) {
+      await this.flagConfigPromise;
+    }
     return Object.values(this.flagCache.get(flagKeys));
   }
 
@@ -118,11 +107,15 @@ export class LocalEvaluationClient {
     backoffPolicy?: BackoffPolicy,
   ): Promise<void> {
     return await doWithBackoff<void>(async () => {
-      const rawFlagConfigs = await this.doFlagConfigs();
-      const flagConfigs = this.parseFlagConfigs(rawFlagConfigs);
+      const flagConfigs = await this.fetchFlagConfigs();
       this.flagCache.clear();
       this.flagCache.put(flagConfigs);
     }, backoffPolicy);
+  }
+
+  private async fetchFlagConfigs(): Promise<Record<string, string>> {
+    const flagConfigs = await this.doFlagConfigs();
+    return this.parseFlagConfigs(flagConfigs);
   }
 
   private async doFlagConfigs(): Promise<string> {
