@@ -22,4 +22,4 @@ async function doWithBackoff<Result>(
   }
 }
 
-export { doWithBackoff as backoff, BackoffPolicy as Backoff };
+export { doWithBackoff, BackoffPolicy };

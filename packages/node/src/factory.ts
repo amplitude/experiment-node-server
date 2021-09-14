@@ -1,5 +1,6 @@
-import { ExperimentClient, LocalEvaluationClient } from './client';
+import { ExperimentClient } from './client';
 import { ExperimentConfig, LocalEvaluationConfig } from './config';
+import { LocalEvaluationClient } from './localEvaluation';
 import { DefaultFlagCache } from './types/cache';
 
 const instances = {};
