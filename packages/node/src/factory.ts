@@ -54,9 +54,9 @@ const initializeLocal = (
 };
 
 /**
- *
  * Provides factory methods for storing singleton instances of
- * {@link ExperimentClient}
+ * {@link ExperimentClient}.
+ *
  * @category Core Usage
  */
 export const Experiment = {
