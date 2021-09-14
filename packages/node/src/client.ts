@@ -15,6 +15,7 @@ import { EvaluationResult } from './types/evaluation';
 import { HttpClient } from './types/transport';
 import { ExperimentUser } from './types/user';
 import { Variant, Variants } from './types/variant';
+import { Backoff, backoff } from './util/backoff';
 import { performance } from './util/performance';
 import { sleep } from './util/time';
 
@@ -196,8 +197,12 @@ export class LocalEvaluationClient {
     this.httpClient = FetchHttpClient;
 
     this.flagCache = flagCache ?? new DefaultFlagCache();
-    this.flagConfigPromise = this.updateFlagConfigs();
-    this.startFlagConfigPoller();
+    this.flagConfigPromise = this.updateFlagConfigs({
+      attempts: 5,
+      min: 1,
+      max: 1,
+      scalar: 1,
+    });
   }
 
   /**
@@ -212,12 +217,12 @@ export class LocalEvaluationClient {
   ): Promise<Variants> {
     // Evaluate the flag configs and user.
     const flagConfigs = await this.getFlagConfigs(flags);
-    this.debug('evaluate - user=', user, 'flagConfigs=', flagConfigs);
+    this.debug('[Experiment] evaluate - user:', user, 'flags:', flags);
     const resultsString = evaluation.evaluate(
       JSON.stringify(flagConfigs),
       JSON.stringify(user),
     );
-    this.debug('evaluate - result:', resultsString);
+    this.debug('[Experiment] evaluate - result:', resultsString);
     // Parse variant results
     const results: EvaluationResult = JSON.parse(resultsString);
     const variants: Variants = {};
@@ -233,11 +238,13 @@ export class LocalEvaluationClient {
   /**
    * Start polling for flag configurations.
    *
-   * Calling this function is not required as the {@link LocalEvaluationClient}
-   * automatically begins polling on initialization.
+   * You must call this function to begin polling for flag config updates.
+   * The promise returned by this function is resolved when the initial call
+   * to fetch the flag configuration completes.
    */
-  public startFlagConfigPoller(): void {
-    this.stopFlagConfigPoller();
+  public async start(): Promise<void> {
+    this.stop();
+    await this.flagConfigPromise;
     this.flagConfigPoller = setInterval(async () => {
       await this.updateFlagConfigs();
     }, this.config.flagConfigPollingInterval);
@@ -246,7 +253,7 @@ export class LocalEvaluationClient {
   /**
    * Stop polling for flag configurations.
    */
-  public stopFlagConfigPoller(): void {
+  public stop(): void {
     if (this.flagConfigPoller) {
       clearTimeout(this.flagConfigPoller);
       this.flagConfigPoller = undefined;
@@ -258,15 +265,13 @@ export class LocalEvaluationClient {
     return Object.values(this.flagCache.get(flagKeys));
   }
 
-  private async updateFlagConfigs(): Promise<void> {
-    try {
-      const rawFlagConfigs = await this.doFlagConfigs(); // TODO catch error?
+  private async updateFlagConfigs(backoffConfig?: Backoff): Promise<void> {
+    return await backoff<void>(async () => {
+      const rawFlagConfigs = await this.doFlagConfigs();
       const flagConfigs = this.parseFlagConfigs(rawFlagConfigs);
       this.flagCache.clear();
       this.flagCache.put(flagConfigs);
-    } catch (e) {
-      console.error('failed to update flag configs: ', e);
-    }
+    }, backoffConfig);
   }
 
   private async doFlagConfigs(): Promise<string> {
@@ -280,7 +285,7 @@ export class LocalEvaluationClient {
       'GET',
       headers,
       null,
-      10000,
+      5000,
     );
     if (response.status !== 200) {
       throw Error(
