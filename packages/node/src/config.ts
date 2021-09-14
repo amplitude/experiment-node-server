@@ -58,8 +58,6 @@ export type ExperimentConfig = {
  | **fetchRetryBackoffMaxMillis**    | `10000` |
  | **fetchRetryBackoffScalar**    | `1.5` |
  | **fetchRetryTimeoutMillis**    | `10000` |
- | **enableLocalEvaluation**    | `false` |
- | **rulesPollingInterval**    | `30000` |
 
  *
  * @category Configuration
