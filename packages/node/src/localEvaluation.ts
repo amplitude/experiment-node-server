@@ -2,7 +2,7 @@ import evaluation from '@amplitude/evaluation-interop';
 
 import { LocalEvaluationConfig, LocalEvaluationDefaults } from './config';
 import { FetchHttpClient } from './transport/http';
-import { FlagCache } from './types/cache';
+import { FlagConfigCache } from './types/cache';
 import { EvaluationResult } from './types/evaluation';
 import { HttpClient } from './types/transport';
 import { doWithBackoff, BackoffPolicy } from './util/backoff';
@@ -17,7 +17,7 @@ export class LocalEvaluationClient {
   private readonly apiKey: string;
   private readonly httpClient: HttpClient;
   private readonly config: LocalEvaluationConfig;
-  private readonly flagCache: FlagCache;
+  private readonly flagConfigCache: FlagConfigCache;
 
   private flagConfigPoller: NodeJS.Timeout;
   private flagConfigPromise: Promise<void>;
@@ -30,17 +30,17 @@ export class LocalEvaluationClient {
    *
    * @param apiKey The environment's api key.
    * @param config The {@link LocalEvaluationConfig}.
-   * @param flagCache The cache used to access flag configs to evaluate.
+   * @param flagConfigCache The cache used to access flag configs to evaluate.
    */
   public constructor(
     apiKey: string,
     config: LocalEvaluationConfig,
-    flagCache: FlagCache,
+    flagConfigCache: FlagConfigCache,
   ) {
     this.apiKey = apiKey;
     this.config = { ...LocalEvaluationDefaults, ...config };
     this.httpClient = FetchHttpClient;
-    this.flagCache = flagCache;
+    this.flagConfigCache = flagConfigCache;
   }
 
   /**
@@ -48,7 +48,7 @@ export class LocalEvaluationClient {
    *
    * This function will only evaluated flags for the keys specified in the
    * {@link flags} argument. If the {@link flags} argument is missing, all flags
-   * in the {@link FlagCache} will be evaluated.
+   * in the {@link FlagConfigCache} will be evaluated.
    *
    * @param user The user to evaluate
    * @param flags The flags to evaluate with the user. If empty, all flags from
@@ -129,7 +129,7 @@ export class LocalEvaluationClient {
       this.debug('[Experiment] waiting for flag configs');
       await this.flagConfigPromise;
     }
-    return Object.values(this.flagCache.get(flagKeys));
+    return Object.values(this.flagConfigCache.get(flagKeys));
   }
 
   private async updateFlagConfigs(
@@ -138,8 +138,8 @@ export class LocalEvaluationClient {
     this.debug('[Experiment] updating flag configs');
     return await doWithBackoff<void>(async () => {
       const flagConfigs = await this.fetchFlagConfigs();
-      this.flagCache.clear();
-      this.flagCache.put(flagConfigs);
+      this.flagConfigCache.clear();
+      this.flagConfigCache.put(flagConfigs);
     }, backoffPolicy);
   }
 

@@ -1,6 +1,6 @@
-import { FlagCache } from 'src/types/cache';
+import { FlagConfigCache } from 'src/types/cache';
 
-export class DefaultFlagCache implements FlagCache {
+export class DefaultFlagConfigCache implements FlagConfigCache {
   private cache: Record<string, string> = {};
 
   get(flagKeys?: string[]): Record<string, string> {

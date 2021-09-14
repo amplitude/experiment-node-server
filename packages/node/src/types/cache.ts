@@ -2,7 +2,7 @@
  * Used to store flag configs in-memory and share the configs between multiple
  * clients which use the same environment key.
  */
-export interface FlagCache {
+export interface FlagConfigCache {
   /**
    * Access flag configs from the cache. If the {@link flagKeys} argument is
    * empty, this function will return the entire cache.
