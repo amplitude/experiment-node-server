@@ -14,7 +14,7 @@ const client = Experiment.initializeLocal(apiKey);
  * first evaluation generally takes 20-30ms.
  */
 beforeAll(async () => {
-  client.stopFlagConfigPoller();
+  client.stop();
   await client.evaluate(randomExperimentUser());
 });
 

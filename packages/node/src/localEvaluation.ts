@@ -30,14 +30,22 @@ export class LocalEvaluationClient {
     this.apiKey = apiKey;
     this.config = { ...LocalEvaluationDefaults, ...config };
     this.httpClient = FetchHttpClient;
-
     this.flagCache = flagCache;
   }
 
   /**
-   * Evaluate variants for a user locally.
+   * Locally evaluates flag variants for a user. This function will only
+   * evaluated flags for the keys specified in the {@link flags} argument. If
+   * the {@link flags} argument is missing, all flags in the cache will be
+   * evaluated.
+   *
+   * Flag configs are accessed via the {@link FlagCache} passed in the
+   * constructor. If the {@link start()} function was used, this function will
+   * wait for the initial flags to be loaded before evaluating the user.
    *
    * @param user The user to evaluate
+   * @param flags The flags to evaluate with the user. If empty, all flags from
+   * the flag cache are evaluated.
    * @returns The evaluated variants
    */
   public async evaluate(
@@ -70,6 +78,10 @@ export class LocalEvaluationClient {
    * You must call this function to begin polling for flag config updates.
    * The promise returned by this function is resolved when the initial call
    * to fetch the flag configuration completes.
+   *
+   * Calling this function while the poller is already running will stop and
+   * restart the poller.
+   *
    * @throws if fetching flag configs fails.
    */
   public async start(): Promise<void> {
@@ -77,17 +89,21 @@ export class LocalEvaluationClient {
     this.flagConfigPoller = setInterval(async () => {
       await this.updateFlagConfigs();
     }, this.config.flagConfigPollingInterval);
-    this.flagConfigPromise = this.updateFlagConfigs({
-      attempts: 5,
-      min: 1,
-      max: 1,
-      scalar: 1,
-    });
-    await this.flagConfigPromise;
+    if (this.flagConfigPromise) {
+      this.flagConfigPromise = this.updateFlagConfigs({
+        attempts: 5,
+        min: 1,
+        max: 1,
+        scalar: 1,
+      });
+      await this.flagConfigPromise;
+    }
   }
 
   /**
    * Stop polling for flag configurations.
+   *
+   * calling this function while the poller is not running will do nothing.
    */
   public stop(): void {
     if (this.flagConfigPoller) {
