@@ -91,8 +91,6 @@ export class LocalEvaluationClient {
    *
    * Calling this function while the poller is already running will stop and
    * restart the poller.
-   *
-   * @throws if fetching flag configs fails.
    */
   public async start(): Promise<void> {
     this.stop();
