@@ -8,7 +8,7 @@ const testUser: ExperimentUser = { user_id: 'test_user' };
 const client = Experiment.initializeLocal(apiKey);
 
 beforeAll(() => {
-  client.stopFlagConfigPoller();
+  client.stop();
 });
 
 test('ExperimentClient.evaluate, success', async () => {
