@@ -22,6 +22,16 @@ export class LocalEvaluationClient {
   private flagConfigPoller: NodeJS.Timeout;
   private flagConfigPromise: Promise<void>;
 
+  /**
+   * Construct a local evaluation client.
+   *
+   * Call {@link start} to fetch the flag configs and begin polling for updates,
+   * and {@link evaluate} to evaluate a user for a set of flags.
+   *
+   * @param apiKey The environment's api key.
+   * @param config The {@link LocalEvaluationConfig}.
+   * @param flagCache The cache used to access flag configs to evaluate.
+   */
   public constructor(
     apiKey: string,
     config: LocalEvaluationConfig,
@@ -40,7 +50,7 @@ export class LocalEvaluationClient {
    * evaluated.
    *
    * Flag configs are accessed via the {@link FlagCache} passed in the
-   * constructor. If the {@link start()} function was used, this function will
+   * constructor. If the {@link start} function was used, this function will
    * wait for the initial flags to be loaded before evaluating the user.
    *
    * @param user The user to evaluate
@@ -86,10 +96,11 @@ export class LocalEvaluationClient {
    */
   public async start(): Promise<void> {
     this.stop();
+    this.debug('[Experiment] poller - start');
     this.flagConfigPoller = setInterval(async () => {
       await this.updateFlagConfigs();
     }, this.config.flagConfigPollingInterval);
-    if (this.flagConfigPromise) {
+    if (!this.flagConfigPromise) {
       this.flagConfigPromise = this.updateFlagConfigs({
         attempts: 5,
         min: 1,
@@ -103,10 +114,11 @@ export class LocalEvaluationClient {
   /**
    * Stop polling for flag configurations.
    *
-   * calling this function while the poller is not running will do nothing.
+   * Calling this function while the poller is not running will do nothing.
    */
   public stop(): void {
     if (this.flagConfigPoller) {
+      this.debug('[Experiment] poller - stop');
       clearTimeout(this.flagConfigPoller);
       this.flagConfigPoller = undefined;
     }
@@ -114,6 +126,7 @@ export class LocalEvaluationClient {
 
   private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
     if (this.flagConfigPromise) {
+      this.debug('[Experiment] waiting for flag configs');
       await this.flagConfigPromise;
     }
     return Object.values(this.flagCache.get(flagKeys));
@@ -122,6 +135,7 @@ export class LocalEvaluationClient {
   private async updateFlagConfigs(
     backoffPolicy?: BackoffPolicy,
   ): Promise<void> {
+    this.debug('[Experiment] updating flag configs');
     return await doWithBackoff<void>(async () => {
       const flagConfigs = await this.fetchFlagConfigs();
       this.flagCache.clear();

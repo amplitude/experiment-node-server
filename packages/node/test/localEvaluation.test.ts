@@ -5,9 +5,13 @@ const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
 const testUser: ExperimentUser = { user_id: 'test_user' };
 
-const client = Experiment.initializeLocal(apiKey);
+const client = Experiment.initializeLocal(apiKey, { debug: true });
 
 beforeAll(() => {
+  client.start();
+});
+
+afterAll(() => {
   client.stop();
 });
 
