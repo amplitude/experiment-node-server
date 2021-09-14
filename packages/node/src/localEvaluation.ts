@@ -44,14 +44,11 @@ export class LocalEvaluationClient {
   }
 
   /**
-   * Locally evaluates flag variants for a user. This function will only
-   * evaluated flags for the keys specified in the {@link flags} argument. If
-   * the {@link flags} argument is missing, all flags in the cache will be
-   * evaluated.
+   * Locally evaluates flag variants for a user.
    *
-   * Flag configs are accessed via the {@link FlagCache} passed in the
-   * constructor. If the {@link start} function was used, this function will
-   * wait for the initial flags to be loaded before evaluating the user.
+   * This function will only evaluated flags for the keys specified in the
+   * {@link flags} argument. If the {@link flags} argument is missing, all flags
+   * in the {@link FlagCache} will be evaluated.
    *
    * @param user The user to evaluate
    * @param flags The flags to evaluate with the user. If empty, all flags from
@@ -122,6 +119,11 @@ export class LocalEvaluationClient {
     }
   }
 
+  private async fetchFlagConfigs(): Promise<Record<string, string>> {
+    const flagConfigs = await this.doFlagConfigs();
+    return this.parseFlagConfigs(flagConfigs);
+  }
+
   private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
     if (this.flagConfigPromise) {
       this.debug('[Experiment] waiting for flag configs');
@@ -139,11 +141,6 @@ export class LocalEvaluationClient {
       this.flagCache.clear();
       this.flagCache.put(flagConfigs);
     }, backoffPolicy);
-  }
-
-  private async fetchFlagConfigs(): Promise<Record<string, string>> {
-    const flagConfigs = await this.doFlagConfigs();
-    return this.parseFlagConfigs(flagConfigs);
   }
 
   private async doFlagConfigs(): Promise<string> {
