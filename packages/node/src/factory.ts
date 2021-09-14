@@ -1,8 +1,11 @@
-import { ExperimentClient } from './client';
-import { ExperimentConfig } from './config';
+import { ExperimentClient, LocalEvaluationClient } from './client';
+import { ExperimentConfig, LocalEvaluationConfig } from './config';
+import { DefaultFlagCache } from './types/cache';
 
 const instances = {};
 const defaultInstance = '$default_instance';
+
+const localEvaluationInstances = {};
 
 /**
  * Initializes a singleton {@link ExperimentClient}.
@@ -21,10 +24,41 @@ const initialize = (
 };
 
 /**
+ * (ALPHA, EXPERIMENTAL)
  *
- * Provides factory methods for storing singleton instances of {@link ExperimentClient}
+ * Initialize a local evaluation client.
+ *
+ * A local evaluation client can evaluate local flags or experiments for a user
+ * without requiring a remote call to the amplitude evaluation server. In order
+ * to best leverage local evaluation, all flags and experiments being evaluated
+ * server side should be configured as local.
+ *
+ * @param apiKey The environment API Key
+ * @param config See {@link ExperimentConfig} for config options
+ * @returns The local evaluation client.
+ * @deprecated This feature is experimental and may change in the future.
+ */
+const initializeLocal = (
+  apiKey: string,
+  config?: LocalEvaluationConfig,
+): LocalEvaluationClient => {
+  if (!localEvaluationInstances[apiKey]) {
+    localEvaluationInstances[apiKey] = new LocalEvaluationClient(
+      apiKey,
+      config,
+      new DefaultFlagCache(),
+    );
+  }
+  return localEvaluationInstances[apiKey];
+};
+
+/**
+ *
+ * Provides factory methods for storing singleton instances of
+ * {@link ExperimentClient}
  * @category Core Usage
  */
 export const Experiment = {
   initialize,
+  initializeLocal,
 };

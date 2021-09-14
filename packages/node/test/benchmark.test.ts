@@ -1,30 +1,21 @@
 // import fs from 'fs';
 
-import { ExperimentClient } from 'src/client';
+import { Experiment } from 'src/factory';
 import { ExperimentUser } from 'src/types/user';
 import { measure } from 'src/util/performance';
 
 const apiKey = 'server-5G5HQL3jUIPXWaJBTgAvDFHy277srxSg';
 
-let client: ExperimentClient;
+const client = Experiment.initializeLocal(apiKey);
 
 /**
  * We need to perform evaluation prior to each benchmarking test to ensure that
  * the JIT compiler has already compiled the evaluation code. Otherwise the
  * first evaluation generally takes 20-30ms.
  */
-beforeEach(async () => {
-  client = new ExperimentClient(apiKey, {
-    enableLocalEvaluation: true,
-  });
+beforeAll(async () => {
+  client.stopFlagConfigPoller();
   await client.evaluate(randomExperimentUser());
-});
-
-/**
- * Close the client to stop the poller.
- */
-afterEach(() => {
-  client.close();
 });
 
 test('ExperimentClient.evaluate benchmark, 1 flag < 50ms', async () => {
@@ -53,7 +44,7 @@ test('ExperimentClient.evaluate benchmark, 10 flags < 50ms', async () => {
 
 // test('data - evaluation duration by iteration', async () => {
 //   let data = '';
-//   const iterations = 1000;
+//   const iterations = 10000;
 //   for (let i = 0; i < iterations; i++) {
 //     const user = randomExperimentUser();
 //     const flag = randomBenchmarkFlag();

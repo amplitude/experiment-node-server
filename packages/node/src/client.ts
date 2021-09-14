@@ -2,8 +2,15 @@ import evaluation from '@amplitude/evaluation-interop';
 
 import { version as PACKAGE_VERSION } from '../gen/version';
 
-import { ExperimentConfig, Defaults } from './config';
+import {
+  ExperimentConfig,
+  Defaults,
+  LocalEvaluationConfig,
+  LocalEvaluationDefaults,
+} from './config';
 import { FetchHttpClient } from './transport/http';
+import { DefaultFlagCache } from './types/cache';
+import { FlagCache } from './types/cache';
 import { EvaluationResult } from './types/evaluation';
 import { HttpClient } from './types/transport';
 import { ExperimentUser } from './types/user';
@@ -12,16 +19,13 @@ import { performance } from './util/performance';
 import { sleep } from './util/time';
 
 /**
- * Main client for fetching variant data.
+ * Experiment client for fetching variants for a user remotely.
  * @category Core Usage
  */
 export class ExperimentClient {
   private readonly apiKey: string;
   private readonly httpClient: HttpClient;
   private readonly config: ExperimentConfig;
-
-  private rules: Record<string, string>;
-  private rulesPoller: NodeJS.Timeout;
 
   /**
    * Creates a new ExperimentClient instance.
@@ -33,9 +37,6 @@ export class ExperimentClient {
     this.apiKey = apiKey;
     this.config = { ...Defaults, ...config };
     this.httpClient = FetchHttpClient;
-    if (this.config.enableLocalEvaluation) {
-      this.startRulesPoller();
-    }
   }
 
   /**
@@ -57,59 +58,6 @@ export class ExperimentClient {
       console.error('[Experiment] Failed to fetch variants: ', e);
       return {};
     }
-  }
-
-  /**
-   * Evaluate variants for a user locally.
-   *
-   * The enableLocalEvaluation config option must be set to true when
-   * initializing the ExperimentClient.
-   *
-   * @param user The user to evaluate
-   * @returns The evaluated variants
-   */
-  public async evaluate(
-    user: ExperimentUser,
-    flags?: string[],
-  ): Promise<Variants> {
-    if (!this.config.enableLocalEvaluation) {
-      throw Error('enableLocalEvaluation config option must be set to true');
-    }
-    // Get the required rules.
-    const rulesRecord = await this.getRules();
-    let rulesArray: string[] = [];
-    if (flags) {
-      for (const flagKey of flags) {
-        const flagConfig = rulesRecord[flagKey];
-        if (flagConfig) {
-          rulesArray.push(flagConfig);
-        }
-      }
-    } else {
-      rulesArray = Object.values(rulesRecord);
-    }
-    // Evaluate the rules and user.
-    const resultsString = evaluation.evaluate(
-      JSON.stringify(rulesArray),
-      JSON.stringify(user),
-    );
-    // Parse variant results
-    const results: EvaluationResult = JSON.parse(resultsString);
-    const variants: Variants = {};
-    Object.keys(results).forEach((key) => {
-      variants[key] = {
-        value: results[key].variant.key,
-        payload: results[key].variant.payload,
-      };
-    });
-    return variants;
-  }
-
-  /**
-   * Close the client.
-   */
-  public close(): void {
-    this.stopRulesPoller();
   }
 
   ////////////////////
@@ -221,24 +169,120 @@ export class ExperimentClient {
     };
   }
 
-  ///////////////////////
-  // Evaluate Internal //
-  ///////////////////////
+  // Utilities
 
-  private async getRules(): Promise<Record<string, string>> {
-    if (!this.rules) {
-      const rulesResult = await this.doRules();
-      this.rules = this.parseRules(rulesResult);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private debug(message?: any, ...optionalParams: any[]): void {
+    if (this.config.debug) {
+      console.debug(message, ...optionalParams);
     }
-    return this.rules;
+  }
+}
+
+/**
+ * Experiment client for evaluating variants for a user locally.
+ * @category Core Usage
+ */
+export class LocalEvaluationClient {
+  private readonly apiKey: string;
+  private readonly httpClient: HttpClient;
+  private readonly config: LocalEvaluationConfig;
+  private readonly flagCache: FlagCache;
+
+  private flagConfigPoller: NodeJS.Timeout;
+  private flagConfigPromise: Promise<void>;
+
+  public constructor(
+    apiKey: string,
+    config: LocalEvaluationConfig,
+    flagCache: FlagCache,
+  ) {
+    this.apiKey = apiKey;
+    this.config = { ...LocalEvaluationDefaults, ...config };
+    this.httpClient = FetchHttpClient;
+
+    this.flagCache = flagCache ?? new DefaultFlagCache();
+    this.flagConfigPromise = this.updateFlagConfigs();
+    this.startFlagConfigPoller();
   }
 
-  private async doRules(): Promise<string> {
+  /**
+   * Evaluate variants for a user locally.
+   *
+   * @param user The user to evaluate
+   * @returns The evaluated variants
+   */
+  public async evaluate(
+    user: ExperimentUser,
+    flags?: string[],
+  ): Promise<Variants> {
+    // Evaluate the flag configs and user.
+    const flagConfigs = await this.getFlagConfigs(flags);
+    this.debug('evaluate - user=', user, 'flagConfigs=', flagConfigs);
+    const resultsString = evaluation.evaluate(
+      JSON.stringify(flagConfigs),
+      JSON.stringify(user),
+    );
+    this.debug('evaluate - result:', resultsString);
+    // Parse variant results
+    const results: EvaluationResult = JSON.parse(resultsString);
+    const variants: Variants = {};
+    Object.keys(results).forEach((key) => {
+      variants[key] = {
+        value: results[key].variant.key,
+        payload: results[key].variant.payload,
+      };
+    });
+    return variants;
+  }
+
+  /**
+   * Start polling for flag configurations.
+   *
+   * Calling this function is not required as the {@link LocalEvaluationClient}
+   * automatically begins polling on initialization.
+   */
+  public startFlagConfigPoller(): void {
+    this.stopFlagConfigPoller();
+    this.flagConfigPoller = setInterval(async () => {
+      await this.updateFlagConfigs();
+    }, this.config.flagConfigPollingInterval);
+  }
+
+  /**
+   * Stop polling for flag configurations.
+   */
+  public stopFlagConfigPoller(): void {
+    if (this.flagConfigPoller) {
+      clearTimeout(this.flagConfigPoller);
+      this.flagConfigPoller = undefined;
+    }
+  }
+
+  // Private
+
+  private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
+    await this.flagConfigPromise;
+    return Object.values(this.flagCache.get(flagKeys));
+  }
+
+  private async updateFlagConfigs(): Promise<void> {
+    try {
+      const rawFlagConfigs = await this.doFlagConfigs(); // TODO catch error?
+      const flagConfigs = this.parseFlagConfigs(rawFlagConfigs);
+      this.flagCache.clear();
+      this.flagCache.put(flagConfigs);
+    } catch (e) {
+      console.error('failed to update flag configs: ', e);
+    }
+  }
+
+  private async doFlagConfigs(): Promise<string> {
     const endpoint = `${this.config.serverUrl}/sdk/rules?d=fdsa`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
     };
-    this.debug('[Experiment] Get rules');
+    this.debug('[Experiment] Get flag configs');
     const response = await this.httpClient.request(
       endpoint,
       'GET',
@@ -248,44 +292,24 @@ export class ExperimentClient {
     );
     if (response.status !== 200) {
       throw Error(
-        `rules - received error response: ${response.status}: ${response.body}`,
+        `flagConfigs - received error response: ${response.status}: ${response.body}`,
       );
     }
-    this.debug(`[Experiment] Got rules: ${response.body}`);
+    this.debug(`[Experiment] Got flag configs: ${response.body}`);
     return response.body;
   }
 
-  private parseRules(rules: string): Record<string, string> {
-    const rulesRecord: Record<string, string> = {};
-    const rulesArray = JSON.parse(rules);
-    this.debug(rulesArray);
-    for (let i = 0; i < rulesArray.length; i++) {
-      const rule = rulesArray[i];
-      rulesRecord[rule.flagKey] = rule;
+  private parseFlagConfigs(flagConfigs: string): Record<string, string> {
+    const flagConfigsArray = JSON.parse(flagConfigs);
+    const flagConfigsRecord: Record<string, string> = {};
+    for (let i = 0; i < flagConfigsArray.length; i++) {
+      const rule = flagConfigsArray[i];
+      flagConfigsRecord[rule.flagKey] = rule;
     }
-    return rulesRecord;
+    return flagConfigsRecord;
   }
 
-  private startRulesPoller() {
-    this.doRules().then((rules) => {
-      this.rules = this.parseRules(rules);
-    });
-    this.rulesPoller = setInterval(async () => {
-      const rules = await this.doRules();
-      this.rules = this.parseRules(rules);
-    }, this.config.rulesPollingInterval);
-  }
-
-  private stopRulesPoller() {
-    if (this.rulesPoller) {
-      clearTimeout(this.rulesPoller);
-      this.rulesPoller = undefined;
-    }
-  }
-
-  ///////////////
-  // Utilities //
-  ///////////////
+  // Utilities
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private debug(message?: any, ...optionalParams: any[]): void {

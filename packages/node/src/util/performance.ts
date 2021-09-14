@@ -15,7 +15,7 @@ if (!performance) {
   };
 }
 
-const measure = async (block: () => void): Promise<number> => {
+const measure = async (block: () => Promise<void>): Promise<number> => {
   const start = performance.now();
   await block();
   const end = performance.now();

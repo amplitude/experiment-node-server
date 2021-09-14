@@ -7,10 +7,6 @@ const testUser: ExperimentUser = { user_id: 'test_user' };
 
 let client: ExperimentClient;
 
-afterEach(() => {
-  client.close();
-});
-
 test('ExperimentClient.fetch, success', async () => {
   client = new ExperimentClient(API_KEY, {});
   const variants = await client.fetch(testUser);
@@ -32,16 +28,6 @@ test('ExperimentClient.fetch, no retries, timeout failure', async () => {
     fetchTimeoutMillis: 1,
   });
   const variants = await client.fetch(testUser);
-  const variant = variants['sdk-ci-test'];
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
-});
-
-test('ExperimentClient.evaluate, success', async () => {
-  client = new ExperimentClient(API_KEY, {
-    debug: true,
-    enableLocalEvaluation: true,
-  });
-  const variants = await client.evaluate(testUser);
   const variant = variants['sdk-ci-test'];
   expect(variant).toEqual({ value: 'on', payload: 'payload' });
 });

@@ -43,25 +43,6 @@ export type ExperimentConfig = {
    * The request timeout for retrying fetch requests.
    */
   fetchRetryTimeoutMillis?: number;
-
-  /**
-   * Enable local evaluation in the experiment client. Set this to true to
-   * poll for rules and use evaluate() to evaluate variants for a user locally.
-   *
-   * Default: false
-   */
-  enableLocalEvaluation?: boolean;
-
-  /**
-   * The interval in milliseconds to poll the amplitude server for flag config
-   * rules updates. These rules stored in memory and used when calling
-   * evaluate() to perform local evaluation.
-   *
-   * This value does nothing unless enableLocalEvaluation is set to true.
-   *
-   * Default: 30000 (30 seconds)
-   */
-  rulesPollingInterval?: number;
 };
 
 /**
@@ -92,6 +73,47 @@ export const Defaults: ExperimentConfig = {
   fetchRetryBackoffMaxMillis: 10000,
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
-  enableLocalEvaluation: false,
-  rulesPollingInterval: 30000,
+};
+
+/**
+ * Configuration for the {@link LocalEvaluationClient}
+ *
+ * @category Configuration
+ */
+export type LocalEvaluationConfig = {
+  /**
+   * Set to true to log some extra information to the console.
+   */
+  debug?: boolean;
+
+  /**
+   * The server endpoint from which to request variants.
+   */
+  serverUrl?: string;
+
+  /**
+   * The interval in milliseconds to poll the amplitude server for flag config
+   * updates. These rules stored in memory and used when calling evaluate() to
+   * perform local evaluation.
+   *
+   * Default: 30000 (30 seconds)
+   */
+  flagConfigPollingInterval?: number;
+};
+
+/**
+ Defaults for {@link LocalEvaluationConfig} options.
+
+ | **Option**       | **Default**                       |
+ |----------------|---------------------------------|
+ | **debug**        | false                           |
+ | **serverUrl**    | `"https://api.lab.amplitude.com"` |
+ | **rulesPollingInterval**    | `30000` |
+
+ * @category Configuration
+ */
+export const LocalEvaluationDefaults: LocalEvaluationConfig = {
+  debug: false,
+  serverUrl: 'https://api.lab.amplitude.com',
+  flagConfigPollingInterval: 30000,
 };
