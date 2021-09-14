@@ -60,10 +60,6 @@ export class ExperimentClient {
     }
   }
 
-  ////////////////////
-  // Fetch Internal //
-  ////////////////////
-
   private async fetchInternal(user: ExperimentUser): Promise<Variants> {
     if (!this.apiKey) {
       throw Error('Experiment API key is empty');
@@ -169,8 +165,6 @@ export class ExperimentClient {
     };
   }
 
-  // Utilities
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private debug(message?: any, ...optionalParams: any[]): void {
     if (this.config.debug) {
@@ -259,8 +253,6 @@ export class LocalEvaluationClient {
     }
   }
 
-  // Private
-
   private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
     await this.flagConfigPromise;
     return Object.values(this.flagCache.get(flagKeys));
@@ -308,8 +300,6 @@ export class LocalEvaluationClient {
     }
     return flagConfigsRecord;
   }
-
-  // Utilities
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private debug(message?: any, ...optionalParams: any[]): void {
