@@ -1,13 +1,13 @@
-import { FlagConfigCache } from 'src/types/cache';
+import { FlagConfigCache, FlagConfig } from 'src/types/cache';
 
 export class DefaultFlagConfigCache implements FlagConfigCache {
-  private cache: Record<string, string> = {};
+  private cache: Record<string, FlagConfig> = {};
 
-  get(flagKeys?: string[]): Record<string, string> {
+  get(flagKeys?: string[]): Record<string, FlagConfig> {
     if (!flagKeys) {
       return { ...this.cache };
     }
-    const result: Record<string, string> = {};
+    const result: Record<string, FlagConfig> = {};
     for (const key in flagKeys) {
       const flag = this.cache[key];
       if (flag) {
@@ -17,7 +17,7 @@ export class DefaultFlagConfigCache implements FlagConfigCache {
     return result;
   }
 
-  put(flags: Record<string, string>): void {
+  put(flags: Record<string, FlagConfig>): void {
     for (const key in flags) {
       const flag = flags[key];
       if (flag) {

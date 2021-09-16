@@ -2,12 +2,14 @@ import evaluation from '@amplitude/evaluation-interop';
 
 import { LocalEvaluationConfig, LocalEvaluationDefaults } from './config';
 import { FetchHttpClient } from './transport/http';
-import { FlagConfigCache } from './types/cache';
+import { FlagConfig, FlagConfigCache } from './types/cache';
 import { EvaluationResult } from './types/evaluation';
 import { HttpClient } from './types/transport';
 import { doWithBackoff, BackoffPolicy } from './util/backoff';
 
 import { ExperimentUser, Variants } from '.';
+
+const FLAG_CONFIG_TIMEOUT = 5000;
 
 /**
  * Experiment client for evaluating variants for a user locally.
@@ -46,7 +48,7 @@ export class LocalEvaluationClient {
   /**
    * Locally evaluates flag variants for a user.
    *
-   * This function will only evaluated flags for the keys specified in the
+   * This function will only evaluate flags for the keys specified in the
    * {@link flags} argument. If the {@link flags} argument is missing, all flags
    * in the {@link FlagConfigCache} will be evaluated.
    *
@@ -80,7 +82,7 @@ export class LocalEvaluationClient {
   }
 
   /**
-   * Start polling for flag configurations.
+   * Fetch initial flag configurations and start polling for updates.
    *
    * You must call this function to begin polling for flag config updates.
    * The promise returned by this function is resolved when the initial call
@@ -94,8 +96,9 @@ export class LocalEvaluationClient {
     this.debug('[Experiment] poller - start');
     this.flagConfigPoller = setInterval(async () => {
       await this.updateFlagConfigs();
-    }, this.config.flagConfigPollingInterval);
+    }, this.config.flagConfigPollingIntervalMillis);
     if (!this.flagConfigPromise) {
+      this.debug('[Experiment] fetch initial flag configs');
       this.flagConfigPromise = this.updateFlagConfigs({
         attempts: 5,
         min: 1,
@@ -119,12 +122,12 @@ export class LocalEvaluationClient {
     }
   }
 
-  private async fetchFlagConfigs(): Promise<Record<string, string>> {
+  private async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
     const flagConfigs = await this.doFlagConfigs();
     return this.parseFlagConfigs(flagConfigs);
   }
 
-  private async getFlagConfigs(flagKeys?: string[]): Promise<string[]> {
+  private async getFlagConfigs(flagKeys?: string[]): Promise<FlagConfig[]> {
     if (this.flagConfigPromise) {
       this.debug('[Experiment] waiting for flag configs');
       await this.flagConfigPromise;
@@ -148,13 +151,14 @@ export class LocalEvaluationClient {
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
     };
+    const body = null;
     this.debug('[Experiment] Get flag configs');
     const response = await this.httpClient.request(
       endpoint,
       'GET',
       headers,
-      null,
-      5000,
+      body,
+      FLAG_CONFIG_TIMEOUT,
     );
     if (response.status !== 200) {
       throw Error(
@@ -165,12 +169,12 @@ export class LocalEvaluationClient {
     return response.body;
   }
 
-  private parseFlagConfigs(flagConfigs: string): Record<string, string> {
+  private parseFlagConfigs(flagConfigs: string): Record<string, FlagConfig> {
     const flagConfigsArray = JSON.parse(flagConfigs);
-    const flagConfigsRecord: Record<string, string> = {};
+    const flagConfigsRecord: Record<string, FlagConfig> = {};
     for (let i = 0; i < flagConfigsArray.length; i++) {
-      const rule = flagConfigsArray[i];
-      flagConfigsRecord[rule.flagKey] = rule;
+      const flagConfig = flagConfigsArray[i];
+      flagConfigsRecord[flagConfig.flagKey] = flagConfig;
     }
     return flagConfigsRecord;
   }

@@ -96,7 +96,7 @@ export type LocalEvaluationConfig = {
    *
    * Default: 30000 (30 seconds)
    */
-  flagConfigPollingInterval?: number;
+  flagConfigPollingIntervalMillis?: number;
 };
 
 /**
@@ -106,12 +106,12 @@ export type LocalEvaluationConfig = {
  |----------------|---------------------------------|
  | **debug**        | false                           |
  | **serverUrl**    | `"https://api.lab.amplitude.com"` |
- | **rulesPollingInterval**    | `30000` |
+ | **flagConfigPollingIntervalMillis**    | `30000` |
 
  * @category Configuration
  */
 export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   debug: false,
   serverUrl: 'https://api.lab.amplitude.com',
-  flagConfigPollingInterval: 30000,
+  flagConfigPollingIntervalMillis: 30000,
 };
