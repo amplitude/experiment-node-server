@@ -10,6 +10,12 @@ import { doWithBackoff, BackoffPolicy } from './util/backoff';
 import { ExperimentUser, Variants } from '.';
 
 const FLAG_CONFIG_TIMEOUT = 5000;
+const BACKOFF_POLICY: BackoffPolicy = {
+  attempts: 5,
+  min: 1,
+  max: 1,
+  scalar: 1,
+};
 
 /**
  * Experiment client for evaluating variants for a user locally.
@@ -99,12 +105,9 @@ export class LocalEvaluationClient {
     }, this.config.flagConfigPollingIntervalMillis);
     if (!this.flagConfigPromise) {
       this.debug('[Experiment] fetch initial flag configs');
-      this.flagConfigPromise = this.updateFlagConfigs({
-        attempts: 5,
-        min: 1,
-        max: 1,
-        scalar: 1,
-      });
+      this.flagConfigPromise = doWithBackoff<void>(async () => {
+        await this.updateFlagConfigs();
+      }, BACKOFF_POLICY);
       await this.flagConfigPromise;
     }
   }
@@ -122,11 +125,6 @@ export class LocalEvaluationClient {
     }
   }
 
-  private async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
-    const flagConfigs = await this.doFlagConfigs();
-    return this.parseFlagConfigs(flagConfigs);
-  }
-
   private async getFlagConfigs(flagKeys?: string[]): Promise<FlagConfig[]> {
     if (this.flagConfigPromise) {
       this.debug('[Experiment] waiting for flag configs');
@@ -135,18 +133,14 @@ export class LocalEvaluationClient {
     return Object.values(this.flagConfigCache.get(flagKeys));
   }
 
-  private async updateFlagConfigs(
-    backoffPolicy?: BackoffPolicy,
-  ): Promise<void> {
+  private async updateFlagConfigs(): Promise<void> {
+    const flagConfigs = await this.fetchFlagConfigs();
+    this.flagConfigCache.clear();
+    this.flagConfigCache.put(flagConfigs);
     this.debug('[Experiment] updating flag configs');
-    return await doWithBackoff<void>(async () => {
-      const flagConfigs = await this.fetchFlagConfigs();
-      this.flagConfigCache.clear();
-      this.flagConfigCache.put(flagConfigs);
-    }, backoffPolicy);
   }
 
-  private async doFlagConfigs(): Promise<string> {
+  private async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
     const endpoint = `${this.config.serverUrl}/sdk/rules?d=fdsa`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
@@ -166,7 +160,7 @@ export class LocalEvaluationClient {
       );
     }
     this.debug(`[Experiment] Got flag configs: ${response.body}`);
-    return response.body;
+    return this.parseFlagConfigs(response.body);
   }
 
   private parseFlagConfigs(flagConfigs: string): Record<string, FlagConfig> {
