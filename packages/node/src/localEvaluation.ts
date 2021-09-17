@@ -125,22 +125,12 @@ export class LocalEvaluationClient {
     }
   }
 
-  private async getFlagConfigs(flagKeys?: string[]): Promise<FlagConfig[]> {
-    if (this.flagConfigPromise) {
-      this.debug('[Experiment] waiting for flag configs');
-      await this.flagConfigPromise;
-    }
-    return Object.values(this.flagConfigCache.get(flagKeys));
-  }
-
-  private async updateFlagConfigs(): Promise<void> {
-    const flagConfigs = await this.fetchFlagConfigs();
-    this.flagConfigCache.clear();
-    this.flagConfigCache.put(flagConfigs);
-    this.debug('[Experiment] updating flag configs');
-  }
-
-  private async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
+  /**
+   * Fetch all flag configs from amplitude to use for local evaluation.
+   *
+   * @returns Flag configs fetched from amplitude.
+   */
+  public async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
     const endpoint = `${this.config.serverUrl}/sdk/rules?d=fdsa`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
@@ -161,6 +151,21 @@ export class LocalEvaluationClient {
     }
     this.debug(`[Experiment] Got flag configs: ${response.body}`);
     return this.parseFlagConfigs(response.body);
+  }
+
+  private async getFlagConfigs(flagKeys?: string[]): Promise<FlagConfig[]> {
+    if (this.flagConfigPromise) {
+      this.debug('[Experiment] waiting for flag configs');
+      await this.flagConfigPromise;
+    }
+    return Object.values(this.flagConfigCache.get(flagKeys));
+  }
+
+  private async updateFlagConfigs(): Promise<void> {
+    const flagConfigs = await this.fetchFlagConfigs();
+    this.flagConfigCache.clear();
+    this.flagConfigCache.put(flagConfigs);
+    this.debug('[Experiment] updating flag configs');
   }
 
   private parseFlagConfigs(flagConfigs: string): Record<string, FlagConfig> {
