@@ -158,7 +158,7 @@ export class LocalEvaluationClient {
       this.debug('[Experiment] waiting for flag configs');
       await this.flagConfigPromise;
     }
-    return Object.values(this.flagConfigCache.get(flagKeys));
+    return Object.values(await this.flagConfigCache.get(flagKeys));
   }
 
   private async updateFlagConfigs(): Promise<void> {

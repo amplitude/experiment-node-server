@@ -3,9 +3,9 @@ import { FlagConfigCache, FlagConfig } from 'src/types/cache';
 export class DefaultFlagConfigCache implements FlagConfigCache {
   private cache: Record<string, FlagConfig> = {};
 
-  get(flagKeys?: string[]): Record<string, FlagConfig> {
+  get(flagKeys?: string[]): Promise<Record<string, FlagConfig>> {
     if (!flagKeys) {
-      return { ...this.cache };
+      return Promise.resolve({ ...this.cache });
     }
     const result: Record<string, FlagConfig> = {};
     for (const key in flagKeys) {
@@ -14,7 +14,7 @@ export class DefaultFlagConfigCache implements FlagConfigCache {
         result[key] = flag;
       }
     }
-    return result;
+    return Promise.resolve(result);
   }
 
   put(flags: Record<string, FlagConfig>): void {

@@ -11,7 +11,6 @@ export { ExperimentConfig, Defaults } from './config';
 export { Experiment } from './factory';
 export { ExperimentUser } from './types/user';
 export { Variant, Variants } from './types/variant';
-
 export { LocalEvaluationClient } from './localEvaluation';
 export { FlagConfigCache } from './types/cache';
 export { LocalEvaluationConfig, LocalEvaluationDefaults } from './config';

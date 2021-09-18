@@ -17,7 +17,7 @@ export interface FlagConfigCache {
    * @param flagKeys the keys for the flags to access from the cache. If empty,
    * the entire cache will be returned.
    */
-  get(flagKeys?: string[]): Record<string, FlagConfig>;
+  get(flagKeys?: string[]): Promise<Record<string, FlagConfig>>;
 
   /**
    * Put flag configs into the cache. Existing configs for a flag key will be
