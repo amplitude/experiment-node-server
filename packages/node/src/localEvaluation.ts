@@ -125,12 +125,7 @@ export class LocalEvaluationClient {
     }
   }
 
-  /**
-   * Fetch all flag configs from amplitude to use for local evaluation.
-   *
-   * @returns Flag configs fetched from amplitude.
-   */
-  public async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
+  private async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
     const endpoint = `${this.config.serverUrl}/sdk/rules?d=fdsa`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
