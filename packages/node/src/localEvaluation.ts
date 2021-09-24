@@ -126,7 +126,7 @@ export class LocalEvaluationClient {
   }
 
   private async fetchFlagConfigs(): Promise<Record<string, FlagConfig>> {
-    const endpoint = `${this.config.serverUrl}/sdk/rules?d=fdsa`;
+    const endpoint = `${this.config.serverUrl}/sdk/rules?eval_mode=local`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
     };

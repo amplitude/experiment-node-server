@@ -6,8 +6,9 @@ import { ExperimentContext } from '../contexts/experimentContext';
 import styles from '../styles/Home.module.css';
 
 const Home = (): ReactNode => {
+  const flagKey = 'edge-local-evaluation';
   const experiment = useContext(ExperimentContext);
-  const feature = experiment.variant('js-ssr-demo');
+  const feature = experiment.variant(flagKey);
   return (
     <div className={styles.container}>
       <Head>
@@ -22,7 +23,7 @@ const Home = (): ReactNode => {
         <p className={styles.description}>
           If you see an image below, the feature flag is enabled
         </p>
-        <p>{`js-ssr-demo: ${feature?.value}`}</p>
+        <p>{`${flagKey}: ${feature?.value}`}</p>
         <p>{`payload: ${JSON.stringify(feature?.payload)}`}</p>
       </main>
 

@@ -43,9 +43,9 @@ MyApp.getInitialProps = async ({ ctx }) => {
   // Fetch data from external APIs
   if (ctx.req) {
     // called on server
-    console.debug('Fetching Experiment variants');
-    const allFeatures = await ExperimentServer.fetch({
-      id: 'userId',
+    console.debug('Evaluating Experiment variants');
+    const allFeatures = await ExperimentServer.evaluate({
+      user_id: 'brian.giori',
     });
     return { features: allFeatures };
   } else {
