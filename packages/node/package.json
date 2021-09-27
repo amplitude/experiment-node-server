@@ -30,6 +30,6 @@
   "homepage": "https://github.com/amplitude/experiment-node-server#readme",
   "gitHead": "e8ceef5275b6daf4f7f26c6ac2e1683eeba7aca6",
   "dependencies": {
-    "@amplitude/evaluation-interop": "0.0.22"
+    "@amplitude/evaluation-interop": "0.0.24"
   }
 }
