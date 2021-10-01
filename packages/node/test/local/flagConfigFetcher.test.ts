@@ -1,6 +1,6 @@
 import { FlagConfigFetcher } from 'src/local/fetcher';
 
-import { MockHttpClient } from './local/util/MockHttpClient';
+import { MockHttpClient } from './util/MockHttpClient';
 
 const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
