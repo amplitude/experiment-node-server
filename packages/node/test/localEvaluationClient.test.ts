@@ -7,11 +7,11 @@ const testUser: ExperimentUser = { user_id: 'test_user' };
 
 const client = Experiment.initializeLocal(apiKey, { debug: true });
 
-beforeAll(() => {
-  client.start();
+beforeAll(async () => {
+  await client.start();
 });
 
-afterAll(() => {
+afterAll(async () => {
   client.stop();
 });
 

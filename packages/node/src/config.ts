@@ -1,3 +1,5 @@
+import { FlagConfig } from 'src/types/flag';
+
 /**
  * @category Configuration
  */
@@ -90,6 +92,13 @@ export type LocalEvaluationConfig = {
   serverUrl?: string;
 
   /**
+   * Bootstrap the client with a pre-fetched flag configurations.
+   *
+   * Useful if you are managing the flag configurations separately.
+   */
+  bootstrap?: Record<string, FlagConfig>;
+
+  /**
    * The interval in milliseconds to poll the amplitude server for flag config
    * updates. These rules stored in memory and used when calling evaluate() to
    * perform local evaluation.
@@ -113,5 +122,6 @@ export type LocalEvaluationConfig = {
 export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   debug: false,
   serverUrl: 'https://api.lab.amplitude.com',
+  bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
 };

@@ -1,7 +1,7 @@
-import { DefaultFlagConfigCache } from './cache/flags';
-import { ExperimentClient } from './client';
-import { ExperimentConfig, LocalEvaluationConfig } from './config';
-import { LocalEvaluationClient } from './localEvaluation';
+import { ExperimentClient } from 'src/client';
+import { ExperimentConfig, LocalEvaluationConfig } from 'src/config';
+import { InMemoryFlagConfigCache } from 'src/local/cache';
+import { LocalEvaluationClient } from 'src/local/client';
 
 const instances = {};
 const defaultInstance = '$default_instance';
@@ -47,7 +47,7 @@ const initializeLocal = (
     localEvaluationInstances[apiKey] = new LocalEvaluationClient(
       apiKey,
       config,
-      new DefaultFlagConfigCache(),
+      new InMemoryFlagConfigCache(),
     );
   }
   return localEvaluationInstances[apiKey];
