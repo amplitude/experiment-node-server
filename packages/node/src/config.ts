@@ -1,4 +1,4 @@
-import { FlagConfig } from 'src/types/flag';
+import { FlagConfig } from './types/flag';
 
 /**
  * @category Configuration

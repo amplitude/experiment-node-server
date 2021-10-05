@@ -1,9 +1,10 @@
 import evaluation from '@amplitude/evaluation-interop';
-import { ConsoleLogger } from 'src/logger/console';
-import { FlagConfig } from 'src/types/flag';
-import { ExperimentUser } from 'src/types/user';
-import { Variants } from 'src/types/variant';
-import { Logger } from 'src/util/logger';
+
+import { ConsoleLogger } from '../logger/console';
+import { FlagConfig } from '../types/flag';
+import { ExperimentUser } from '../types/user';
+import { Variants } from '../types/variant';
+import { Logger } from '../util/logger';
 
 type EvaluationVariant = {
   key: string;

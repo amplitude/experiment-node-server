@@ -1,8 +1,8 @@
-import { LocalEvaluationDefaults } from 'src/config';
-import { ConsoleLogger } from 'src/logger/console';
-import { FlagConfigCache } from 'src/types/flag';
-import { doWithBackoff, BackoffPolicy } from 'src/util/backoff';
-import { Logger } from 'src/util/logger';
+import { LocalEvaluationDefaults } from '../config';
+import { ConsoleLogger } from '../logger/console';
+import { FlagConfigCache } from '../types/flag';
+import { doWithBackoff, BackoffPolicy } from '../util/backoff';
+import { Logger } from '../util/logger';
 
 import { FlagConfigFetcher } from './fetcher';
 

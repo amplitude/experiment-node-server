@@ -1,7 +1,7 @@
-import { ExperimentClient } from 'src/client';
-import { ExperimentConfig, LocalEvaluationConfig } from 'src/config';
-import { InMemoryFlagConfigCache } from 'src/local/cache';
-import { LocalEvaluationClient } from 'src/local/client';
+import { ExperimentClient } from './client';
+import { ExperimentConfig, LocalEvaluationConfig } from './config';
+import { InMemoryFlagConfigCache } from './local/cache';
+import { LocalEvaluationClient } from './local/client';
 
 const instances = {};
 const defaultInstance = '$default_instance';

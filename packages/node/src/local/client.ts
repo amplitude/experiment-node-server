@@ -1,15 +1,16 @@
-import { LocalEvaluationConfig, LocalEvaluationDefaults } from 'src/config';
-import { InMemoryFlagConfigCache } from 'src/local/cache';
-import { FlagConfigEvaluator } from 'src/local/evaluator';
-import { FlagConfigFetcher } from 'src/local/fetcher';
-import { FlagConfigPoller } from 'src/local/poller';
-import { ConsoleLogger } from 'src/logger/console';
-import { FetchHttpClient } from 'src/transport/http';
-import { FlagConfig, FlagConfigCache } from 'src/types/flag';
-import { HttpClient } from 'src/types/transport';
-import { ExperimentUser } from 'src/types/user';
-import { Variants } from 'src/types/variant';
-import { Logger } from 'src/util/logger';
+import { LocalEvaluationConfig, LocalEvaluationDefaults } from '../config';
+import { ConsoleLogger } from '../logger/console';
+import { FetchHttpClient } from '../transport/http';
+import { FlagConfig, FlagConfigCache } from '../types/flag';
+import { HttpClient } from '../types/transport';
+import { ExperimentUser } from '../types/user';
+import { Variants } from '../types/variant';
+import { Logger } from '../util/logger';
+
+import { InMemoryFlagConfigCache } from './cache';
+import { FlagConfigEvaluator } from './evaluator';
+import { FlagConfigFetcher } from './fetcher';
+import { FlagConfigPoller } from './poller';
 
 /**
  * Experiment client for evaluating variants for a user locally.

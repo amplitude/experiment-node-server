@@ -1,4 +1,4 @@
-import { FlagConfigCache, FlagConfig } from 'src/types/flag';
+import { FlagConfigCache, FlagConfig } from '../types/flag';
 
 export class InMemoryFlagConfigCache implements FlagConfigCache {
   private cache: Record<string, FlagConfig> = {};

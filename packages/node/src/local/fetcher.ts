@@ -1,9 +1,9 @@
-import { LocalEvaluationDefaults } from 'src/config';
-import { ConsoleLogger } from 'src/logger/console';
-import { FetchHttpClient } from 'src/transport/http';
-import { FlagConfig } from 'src/types/flag';
-import { HttpClient } from 'src/types/transport';
-import { Logger } from 'src/util/logger';
+import { LocalEvaluationDefaults } from '../config';
+import { ConsoleLogger } from '../logger/console';
+import { FetchHttpClient } from '../transport/http';
+import { FlagConfig } from '../types/flag';
+import { HttpClient } from '../types/transport';
+import { Logger } from '../util/logger';
 
 const FLAG_CONFIG_TIMEOUT = 5000;
 
