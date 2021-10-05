@@ -1,0 +1,16 @@
+ title Server Local Evaluation (SSR)
+
+participant Application
+participant Server
+
+autoactivation on
+
+Application->Server:GET https://example.com
+activate Application
+space -2.3
+box over Server:Local Evaluation
+space -2.5
+box over Server:Render Variants 
+space -2.6
+Application<--Server:Content
+deactivate Application
