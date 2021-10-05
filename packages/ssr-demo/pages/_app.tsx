@@ -18,14 +18,17 @@ function MyApp(appProps: AppProps): ReactNode {
     experiment = new ExperimentClient(
       'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
       {
+        debug: true,
         initialVariants: appProps['features'],
       },
     );
+    experiment.setUser(appProps['user']);
   } else if (!experiment) {
     // in the client, we only want to create the ExperimentClient once
     experiment = Experiment.initialize(
       'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
       {
+        debug: true,
         initialVariants: appProps['features'],
       },
     );
@@ -40,14 +43,12 @@ function MyApp(appProps: AppProps): ReactNode {
 }
 
 MyApp.getInitialProps = async ({ ctx }) => {
-  // Fetch data from external APIs
   if (ctx.req) {
     // called on server
     console.debug('Evaluating Experiment variants');
-    const allFeatures = await ExperimentServer.evaluate({
-      user_id: 'brian.giori',
-    });
-    return { features: allFeatures };
+    const user = { user_id: 'brian.giori' };
+    const allFeatures = await ExperimentServer.evaluate(user);
+    return { user: user, features: allFeatures };
   } else {
     console.debug('Client side re-render');
     return {};

@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { ReactNode, useContext } from 'react';
+import { ReactNode, useContext, useEffect } from 'react';
 
 import { ExperimentContext } from '../contexts/experimentContext';
 import styles from '../styles/Home.module.css';
@@ -9,10 +9,13 @@ const Home = (): ReactNode => {
   const flagKey = 'edge-local-evaluation';
   const experiment = useContext(ExperimentContext);
   const feature = experiment.variant(flagKey);
+  useEffect(() => {
+    experiment.fetch();
+  });
   return (
     <div className={styles.container}>
       <Head>
-        <title>SSR Demo</title>
+        <title>SSR Local Evaluation Demo</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

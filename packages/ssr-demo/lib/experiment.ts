@@ -6,7 +6,6 @@ if (typeof window === 'undefined') {
     'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
     {
       debug: true,
-      flagConfigPollingIntervalMillis: 5000,
     },
   );
   ExperimentLocal.start();
