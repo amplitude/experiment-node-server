@@ -8,7 +8,6 @@ if (typeof window === 'undefined') {
       debug: true,
     },
   );
-  ExperimentLocal.start();
 }
 
 export { ExperimentLocal as ExperimentServer };

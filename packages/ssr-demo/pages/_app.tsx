@@ -44,6 +44,7 @@ function MyApp(appProps: AppProps): ReactNode {
 
 MyApp.getInitialProps = async ({ ctx }) => {
   if (ctx.req) {
+    await ExperimentServer.start();
     // called on server
     console.debug('Evaluating Experiment variants');
     const user = { user_id: 'brian.giori' };
