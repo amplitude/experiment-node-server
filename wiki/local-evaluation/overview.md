@@ -17,7 +17,7 @@ This document serves as an overview of local evaluation: terms, tradeoffs, best 
 
 Put simply, local evaluation means evaluating variant assignments for a user without needing to- make a network request to Amplitude Experiment's evaluation servers. By removing the network request requirement, local evaluation greatly reduces latency and network overhead, but gives up the ability to utilize the advanced targeting provided by Amplitude.
 
-![](/Users/brian.giori/dev/markdown/local-evaluation/images/server-eval-ssr.png)
+![](./images/server-eval-ssr.png)
 
 #### Use Cases
 
@@ -91,10 +91,8 @@ The main goal of local evaluation is increased performance (reduced latency) whe
 
 These results were collected over 10000 iterations of evaluation with randomized user inputs and 3 experiment config's (selected at random). 
 
-![](/Users/brian.giori/dev/markdown/local-evaluation/images/eval-dur-10000-10.png)
+![](./images/eval-dur-10000-10.png)
 
 ### JIT Compilation Consideration
 
 JavaScript is more difficult to benchmark outside of a real-world situation due to it’s just-in-time (JIT) compilation and other optimizations made by the engine. JIT compilation means that the first execution of a function or code path will be slower as the compiler takes some time to warm-up. Once the compiler has compiled and and optimized the byte code, the performance will improve significantly. To take this into account, we call evaluate before each test run in order to get the compiler warmed up for consistent measurements. 
-
-### 
