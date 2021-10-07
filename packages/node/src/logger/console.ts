@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Logger } from 'src/util/logger';
+import { Logger } from '../util/logger';
 
 export class ConsoleLogger implements Logger {
   private readonly isDebug: boolean;
