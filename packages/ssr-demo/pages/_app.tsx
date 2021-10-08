@@ -16,7 +16,7 @@ function MyApp(appProps: AppProps): ReactNode {
     console.debug('Initializing Client Experiment');
     // on the server, we want to create a new ExperimentClient every time
     experiment = new ExperimentClient(
-      'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+      'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
       {
         debug: true,
         initialVariants: appProps['features'],
@@ -26,7 +26,7 @@ function MyApp(appProps: AppProps): ReactNode {
   } else if (!experiment) {
     // in the client, we only want to create the ExperimentClient once
     experiment = Experiment.initialize(
-      'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+      'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
       {
         debug: true,
         initialVariants: appProps['features'],

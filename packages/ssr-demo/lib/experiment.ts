@@ -2,7 +2,8 @@ let ExperimentLocal;
 if (typeof window === 'undefined') {
   console.debug('Initializing Server Experiment');
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  ExperimentLocal = require('@amplitude/experiment-node-server').Experiment.initializeLocal(
+  const experiment = require('@amplitude/experiment-node-server');
+  ExperimentLocal = experiment.Experiment.initializeLocal(
     'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
     {
       debug: true,
