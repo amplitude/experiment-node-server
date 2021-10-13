@@ -11,3 +11,11 @@ export { ExperimentConfig, Defaults } from './config';
 export { Experiment } from './factory';
 export { ExperimentUser } from './types/user';
 export { Variant, Variants } from './types/variant';
+
+export { LocalEvaluationClient } from './local/client';
+export { LocalEvaluationConfig } from './config';
+export { FlagConfigFetcher } from './local/fetcher';
+export { FlagConfigPoller } from './local/poller';
+export { FlagConfigEvaluator } from './local/evaluator';
+export { InMemoryFlagConfigCache } from './local/cache';
+export { FlagConfig, FlagConfigCache } from './types/flag';

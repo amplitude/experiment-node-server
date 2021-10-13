@@ -16,16 +16,19 @@ function MyApp(appProps: AppProps): ReactNode {
     console.debug('Initializing Client Experiment');
     // on the server, we want to create a new ExperimentClient every time
     experiment = new ExperimentClient(
-      'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+      'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
       {
+        debug: true,
         initialVariants: appProps['features'],
       },
     );
+    experiment.setUser(appProps['user']);
   } else if (!experiment) {
     // in the client, we only want to create the ExperimentClient once
     experiment = Experiment.initialize(
-      'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
+      'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
       {
+        debug: true,
         initialVariants: appProps['features'],
       },
     );
@@ -40,14 +43,13 @@ function MyApp(appProps: AppProps): ReactNode {
 }
 
 MyApp.getInitialProps = async ({ ctx }) => {
-  // Fetch data from external APIs
   if (ctx.req) {
+    await ExperimentServer.start();
     // called on server
-    console.debug('Fetching Experiment variants');
-    const allFeatures = await ExperimentServer.fetch({
-      id: 'userId',
-    });
-    return { features: allFeatures };
+    console.debug('Evaluating Experiment variants');
+    const user = { user_id: 'brian.giori' };
+    const allFeatures = await ExperimentServer.evaluate(user);
+    return { user: user, features: allFeatures };
   } else {
     console.debug('Client side re-render');
     return {};

@@ -1,3 +1,5 @@
+import { FlagConfig } from './types/flag';
+
 /**
  * @category Configuration
  */
@@ -59,7 +61,6 @@ export type ExperimentConfig = {
  | **fetchRetryBackoffScalar**    | `1.5` |
  | **fetchRetryTimeoutMillis**    | `10000` |
 
-
  *
  * @category Configuration
  */
@@ -72,4 +73,55 @@ export const Defaults: ExperimentConfig = {
   fetchRetryBackoffMaxMillis: 10000,
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
+};
+
+/**
+ * Configuration for the {@link LocalEvaluationClient}
+ *
+ * @category Configuration
+ */
+export type LocalEvaluationConfig = {
+  /**
+   * Set to true to log some extra information to the console.
+   */
+  debug?: boolean;
+
+  /**
+   * The server endpoint from which to request variants.
+   */
+  serverUrl?: string;
+
+  /**
+   * Bootstrap the client with a pre-fetched flag configurations.
+   *
+   * Useful if you are managing the flag configurations separately.
+   */
+  bootstrap?: Record<string, FlagConfig>;
+
+  /**
+   * The interval in milliseconds to poll the amplitude server for flag config
+   * updates. These rules stored in memory and used when calling evaluate() to
+   * perform local evaluation.
+   *
+   * Default: 30000 (30 seconds)
+   */
+  flagConfigPollingIntervalMillis?: number;
+};
+
+/**
+ Defaults for {@link LocalEvaluationConfig} options.
+
+ | **Option**       | **Default**                       |
+ |----------------|---------------------------------|
+ | **debug**        | false                           |
+ | **serverUrl**    | `"https://api.lab.amplitude.com"` |
+ | **flagConfigPollingIntervalMillis**    | `30000` |
+
+ * @category Configuration
+ */
+export const LocalEvaluationDefaults: LocalEvaluationConfig = {
+  debug: false,
+  serverUrl: 'https://api.lab.amplitude.com',
+  bootstrap: {},
+  flagConfigPollingIntervalMillis: 30000,
 };

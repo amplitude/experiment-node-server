@@ -1,17 +1,21 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { ReactNode, useContext } from 'react';
+import { ReactNode, useContext, useEffect } from 'react';
 
 import { ExperimentContext } from '../contexts/experimentContext';
 import styles from '../styles/Home.module.css';
 
 const Home = (): ReactNode => {
+  const flagKey = 'edge-local-evaluation';
   const experiment = useContext(ExperimentContext);
-  const feature = experiment.variant('js-ssr-demo');
+  const feature = experiment.variant(flagKey);
+  useEffect(() => {
+    experiment.fetch();
+  });
   return (
     <div className={styles.container}>
       <Head>
-        <title>SSR Demo</title>
+        <title>SSR Local Evaluation Demo</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -22,7 +26,7 @@ const Home = (): ReactNode => {
         <p className={styles.description}>
           If you see an image below, the feature flag is enabled
         </p>
-        <p>{`js-ssr-demo: ${feature?.value}`}</p>
+        <p>{`${flagKey}: ${feature?.value}`}</p>
         <p>{`payload: ${JSON.stringify(feature?.payload)}`}</p>
       </main>
 

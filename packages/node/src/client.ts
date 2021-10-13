@@ -9,7 +9,7 @@ import { performance } from './util/performance';
 import { sleep } from './util/time';
 
 /**
- * Main client for fetching variant data.
+ * Experiment client for fetching variants for a user remotely.
  * @category Core Usage
  */
 export class ExperimentClient {
@@ -95,7 +95,7 @@ export class ExperimentClient {
     );
     if (response.status !== 200) {
       throw Error(
-        `Received error response: ${response.status}: ${response.body}`,
+        `fetch - received error response: ${response.status}: ${response.body}`,
       );
     }
     const elapsed = (performance.now() - start).toFixed(3);

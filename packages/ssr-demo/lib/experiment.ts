@@ -1,11 +1,14 @@
-let ExperimentServer;
+let ExperimentLocal;
 if (typeof window === 'undefined') {
   console.debug('Initializing Server Experiment');
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  ExperimentServer = require('@amplitude/experiment-node-server').Experiment.initialize(
-    'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
-    { debug: true },
+  const experiment = require('@amplitude/experiment-node-server');
+  ExperimentLocal = experiment.Experiment.initializeLocal(
+    'server-cIhZGyYxKwre1fCbvHbk7kBAcBUXs85w',
+    {
+      debug: true,
+    },
   );
 }
 
-export { ExperimentServer };
+export { ExperimentLocal as ExperimentServer };
