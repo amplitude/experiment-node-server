@@ -16,3 +16,6 @@ dist/
 # caches
 .cache
 .DS_Store
+
+# WebStorm IDE
+.idea

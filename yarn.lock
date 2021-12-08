@@ -15,6 +15,13 @@
     base64-js "1.5.1"
     unfetch "4.1.0"
 
+"@amplitude/experiment-node-server@1.1.0-alpha.5":
+  version "1.1.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-node-server/-/experiment-node-server-1.1.0-alpha.5.tgz#79b6f9d04e05a85718dd602d92c8c7a7717e8b66"
+  integrity sha512-t2zZviGNMNQ1rtUMoJZ8tUOm5sxYTnNyNNHI1oPWqY88qdm6NHdVlHHq2RhKS7hIYyhvZcB2tK676p+MmWVKKw==
+  dependencies:
+    "@amplitude/evaluation-interop" "0.0.24"
+
 "@ampproject/toolbox-core@^2.6.0", "@ampproject/toolbox-core@^2.8.0":
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/@ampproject/toolbox-core/-/toolbox-core-2.8.0.tgz#4c291c470fa30c0c2f3c7952dbcd6df2a4ec0df9"
