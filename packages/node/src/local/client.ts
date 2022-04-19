@@ -19,7 +19,6 @@ import { FlagConfigPoller } from './poller';
 export class LocalEvaluationClient {
   private readonly logger: Logger;
   private readonly config: LocalEvaluationConfig;
-  private readonly client: FlagConfigFetcher;
   private readonly evaluator: FlagConfigEvaluator;
   private readonly poller: FlagConfigPoller;
 
@@ -39,7 +38,7 @@ export class LocalEvaluationClient {
     httpClient: HttpClient = FetchHttpClient,
   ) {
     this.config = { ...LocalEvaluationDefaults, ...config };
-    this.client = new FlagConfigFetcher(
+    const fetcher = new FlagConfigFetcher(
       apiKey,
       httpClient,
       this.config.serverUrl,
@@ -49,7 +48,7 @@ export class LocalEvaluationClient {
     this.logger = new ConsoleLogger(this.config.debug);
     this.evaluator = new FlagConfigEvaluator(this.config.debug);
     this.poller = new FlagConfigPoller(
-      this.client,
+      fetcher,
       this.cache,
       this.config.flagConfigPollingIntervalMillis,
       this.config.debug,
@@ -103,7 +102,7 @@ export class LocalEvaluationClient {
       return Object.values(await this.cache.getAll());
     }
     const result: FlagConfig[] = [];
-    for (const key in flagKeys) {
+    for (const key of flagKeys) {
       const flagConfig = await this.cache.get(key);
       if (flagConfig) {
         result.push(flagConfig);

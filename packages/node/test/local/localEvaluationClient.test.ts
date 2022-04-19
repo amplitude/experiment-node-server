@@ -15,8 +15,16 @@ afterAll(async () => {
   client.stop();
 });
 
-test('ExperimentClient.evaluate, success', async () => {
+test('ExperimentClient.evaluate all flags, success', async () => {
   const variants = await client.evaluate(testUser);
-  const variant = variants['sdk-ci-test'];
+  const variant = variants['sdk-local-evaluation-ci-test'];
+  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+});
+
+test('ExperimentClient.evaluate one flag, success', async () => {
+  const variants = await client.evaluate(testUser, [
+    'sdk-local-evaluation-ci-test',
+  ]);
+  const variant = variants['sdk-local-evaluation-ci-test'];
   expect(variant).toEqual({ value: 'on', payload: 'payload' });
 });
