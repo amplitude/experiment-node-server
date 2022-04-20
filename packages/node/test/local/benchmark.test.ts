@@ -44,6 +44,34 @@ test('ExperimentClient.evaluate benchmark, 10 flags < 50ms', async () => {
   expect(total).toBeLessThan(50);
 });
 
+test('ExperimentClient.evaluate benchmark, 100 flags < 50ms', async () => {
+  let total = 0;
+  for (let i = 0; i < 100; i++) {
+    const user = randomExperimentUser();
+    const flag = randomBenchmarkFlag();
+    const duration = await measure(async () => {
+      await client.evaluate(user, [flag]);
+    });
+    total += duration;
+  }
+  // eslint-disable-next-line no-console
+  console.log('total: ', total);
+  expect(total).toBeLessThan(50);
+});
+
+test('ExperimentClient.evaluate benchmark, 1000 flags < 100ms', async () => {
+  let total = 0;
+  for (let i = 0; i < 1000; i++) {
+    const user = randomExperimentUser();
+    const flag = randomBenchmarkFlag();
+    const duration = await measure(async () => {
+      await client.evaluate(user, [flag]);
+    });
+    total += duration;
+  }
+  expect(total).toBeLessThan(100);
+});
+
 // Data generation for charts
 
 // test('data - evaluation duration by iteration', async () => {

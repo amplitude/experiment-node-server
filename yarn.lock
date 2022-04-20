@@ -7,6 +7,11 @@
   resolved "https://registry.yarnpkg.com/@amplitude/evaluation-interop/-/evaluation-interop-0.0.24.tgz#725d87335fed59fd5384814beee70ccecbb5d658"
   integrity sha512-xv7rEPGcQqA7sBQZosfoRiLuEtboQnZD0DN4r44OLt0eZ4P2h2EVWluMZBTvZinEil9eZnciIIFBAQdJQOQTeQ==
 
+"@amplitude/evaluation-js@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-js/-/evaluation-js-0.0.4.tgz#d7eef9d4f4a0a3709f98a344ba92187510398239"
+  integrity sha512-dyB+p39RL+nvxqxiVtHIeRwxESqwBuXjK962YBiVmBv5xDM/WpUkm3CVpsvOK/l/P2525RCxMoyddwOqDVRZ3g==
+
 "@amplitude/experiment-js-client@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@amplitude/experiment-js-client/-/experiment-js-client-1.2.0.tgz#c623671ac8247ffa43bf328175d174f85574c628"

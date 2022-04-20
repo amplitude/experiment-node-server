@@ -1,4 +1,4 @@
-import evaluation from '@amplitude/evaluation-interop';
+import evaluation from '@amplitude/evaluation-js';
 
 import { ConsoleLogger } from '../logger/console';
 import { FlagConfig } from '../types/flag';
@@ -41,20 +41,8 @@ export class FlagConfigEvaluator {
       'flagConfigs:',
       flagConfigs,
     );
-    const resultsString = evaluation.evaluate(
-      JSON.stringify(flagConfigs),
-      JSON.stringify(user),
-    );
-    this.logger.debug('[Experiment] evaluate - result:', resultsString);
-    // Parse variant results
-    const results: EvaluationResult = JSON.parse(resultsString);
-    const variants: Variants = {};
-    Object.keys(results).forEach((key) => {
-      variants[key] = {
-        value: results[key].variant.key,
-        payload: results[key].variant.payload,
-      };
-    });
-    return variants;
+    const results: Variants = evaluation.evaluate(flagConfigs, user);
+    this.logger.debug('[Experiment] evaluate - result: ', results);
+    return results;
   }
 }
