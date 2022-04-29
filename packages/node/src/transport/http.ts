@@ -4,6 +4,13 @@ import url from 'url';
 
 import { SimpleResponse, HttpClient } from '../types/transport';
 
+const httpAgent = new https.Agent({
+  keepAlive: true,
+  // Timeout on the socket, not the request. When the socket times out, close
+  // the connection.
+  timeout: 10000,
+});
+
 /**
  * Wraps the http and https libraries in a fetch()-like interface
  * @param requestUrl
@@ -18,22 +25,21 @@ const request: HttpClient['request'] = (
   data: string,
   timeoutMillis?: number,
 ): Promise<SimpleResponse> => {
-  const urlParams = url.parse(requestUrl);
-  const options = {
-    ...urlParams,
-    method: method,
-    headers: headers,
-    body: data,
-    // Adds timeout to the socket connection, not the response.
-    timeout: timeoutMillis,
-  };
-
   return new Promise((resolve, reject) => {
+    const urlParams = url.parse(requestUrl);
+    const options = {
+      ...urlParams,
+      method: method,
+      headers: headers,
+      body: data,
+      agent: httpAgent,
+    };
     const protocol = urlParams.protocol === 'http:' ? http : https;
     const req = protocol.request(options);
 
     const responseTimeout = setTimeout(() => {
-      req.destroy(Error('Response timed out'));
+      clearTimeout(responseTimeout);
+      reject(Error('Response timed out'));
     }, timeoutMillis);
 
     req.on('response', (res) => {
@@ -61,7 +67,6 @@ const request: HttpClient['request'] = (
       req.write(data);
     }
 
-    req.on('close', () => clearTimeout(responseTimeout));
     req.end();
   });
 };

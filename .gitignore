@@ -16,3 +16,5 @@ dist/
 # caches
 .cache
 .DS_Store
+
+.idea
