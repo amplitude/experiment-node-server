@@ -1,34 +1,29 @@
-// import fs from 'fs';
-
 import { Experiment } from 'src/factory';
 import { ExperimentUser } from 'src/types/user';
 import { measure } from 'src/util/performance';
+// import * as fs from "fs";
 
 const apiKey = 'server-5G5HQL3jUIPXWaJBTgAvDFHy277srxSg';
 
 const client = Experiment.initializeLocal(apiKey);
 
-/**
- * We need to perform evaluation prior to each benchmarking test to ensure that
- * the JIT compiler has already compiled the evaluation code. Otherwise the
- * first evaluation generally takes 20-30ms.
- */
 beforeAll(async () => {
   await client.start();
-  await client.evaluate(randomExperimentUser());
 });
 
 afterAll(() => {
   client.stop();
 });
 
-test('ExperimentClient.evaluate benchmark, 1 flag < 50ms', async () => {
+test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
   const user = randomExperimentUser();
   const flag = randomBenchmarkFlag();
   const duration = await measure(async () => {
     await client.evaluate(user, [flag]);
   });
-  expect(duration).toBeLessThan(50);
+  // eslint-disable-next-line no-console
+  console.log('1 flag: ', duration, 'ms');
+  expect(duration).toBeLessThan(10);
 });
 
 test('ExperimentClient.evaluate benchmark, 10 flags < 50ms', async () => {
@@ -41,6 +36,8 @@ test('ExperimentClient.evaluate benchmark, 10 flags < 50ms', async () => {
     });
     total += duration;
   }
+  // eslint-disable-next-line no-console
+  console.log('10 flag: ', total, 'ms');
   expect(total).toBeLessThan(50);
 });
 
@@ -55,7 +52,7 @@ test('ExperimentClient.evaluate benchmark, 100 flags < 50ms', async () => {
     total += duration;
   }
   // eslint-disable-next-line no-console
-  console.log('total: ', total);
+  console.log('100 flag: ', total, 'ms');
   expect(total).toBeLessThan(50);
 });
 
@@ -69,6 +66,8 @@ test('ExperimentClient.evaluate benchmark, 1000 flags < 100ms', async () => {
     });
     total += duration;
   }
+  // eslint-disable-next-line no-console
+  console.log('1000 flag: ', total, 'ms');
   expect(total).toBeLessThan(100);
 });
 
