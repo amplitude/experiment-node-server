@@ -59,9 +59,14 @@ const request: HttpClient['request'] = (
       });
     });
 
-    req.on('timeout', () => req.destroy(Error('Socket connection timed out')));
+    req.on('timeout', () => {
+      req.destroy(Error('Socket connection timed out'));
+    });
 
-    req.on('error', reject);
+    req.on('error', (e) => {
+      clearTimeout(responseTimeout);
+      reject(e);
+    });
 
     if (method !== 'GET' && data) {
       req.write(data);

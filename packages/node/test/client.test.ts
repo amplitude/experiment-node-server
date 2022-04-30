@@ -1,6 +1,5 @@
 import { ExperimentClient } from 'src/client';
 import { ExperimentUser } from 'src/types/user';
-import { measure } from 'src/util/performance';
 
 const API_KEY = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
@@ -42,22 +41,4 @@ test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 back
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
   expect(variant).toEqual({ value: 'on', payload: 'payload' });
-});
-
-test('test', async () => {
-  const client = new ExperimentClient(API_KEY, {
-    fetchTimeoutMillis: 1000,
-    fetchRetries: 0,
-    fetchRetryBackoffMinMillis: 0,
-  });
-  const firstRequest = await measure(async () => {
-    await client.fetch(testUser);
-  });
-  // eslint-disable-next-line no-console
-  console.info('first request: ', firstRequest, 'ms');
-  const secondRequest = await measure(async () => {
-    await client.fetch(testUser);
-  });
-  // eslint-disable-next-line no-console
-  console.info('second request: ', secondRequest, 'ms');
 });
