@@ -21,8 +21,9 @@ test('ExperimentClient.fetch, no retries, timeout failure', async () => {
   expect(variants).toEqual({});
 });
 
-test('ExperimentClient.fetch, no retries, timeout failure', async () => {
+test('ExperimentClient.fetch, no retries, timeout failure, retry success', async () => {
   const client = new ExperimentClient(API_KEY, {
+    fetchRetries: 1,
     fetchTimeoutMillis: 1,
   });
   const variants = await client.fetch(testUser);
