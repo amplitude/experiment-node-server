@@ -33,7 +33,6 @@ test('ExperimentClient.fetch, no retries, timeout failure, retry success', async
 
 test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 backoff', async () => {
   const client = new ExperimentClient(API_KEY, {
-    debug: true,
     fetchTimeoutMillis: 1,
     fetchRetries: 1,
     fetchRetryBackoffMinMillis: 0,
