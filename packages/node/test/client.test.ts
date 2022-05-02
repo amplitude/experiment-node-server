@@ -15,7 +15,7 @@ test('ExperimentClient.fetch, success', async () => {
 test('ExperimentClient.fetch, no retries, timeout failure', async () => {
   const client = new ExperimentClient(API_KEY, {
     fetchRetries: 0,
-    fetchTimeoutMillis: 1,
+    fetchTimeoutMillis: 0,
   });
   const variants = await client.fetch(testUser);
   expect(variants).toEqual({});
@@ -24,7 +24,7 @@ test('ExperimentClient.fetch, no retries, timeout failure', async () => {
 test('ExperimentClient.fetch, no retries, timeout failure, retry success', async () => {
   const client = new ExperimentClient(API_KEY, {
     fetchRetries: 1,
-    fetchTimeoutMillis: 1,
+    fetchTimeoutMillis: 0,
   });
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
@@ -33,7 +33,7 @@ test('ExperimentClient.fetch, no retries, timeout failure, retry success', async
 
 test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 backoff', async () => {
   const client = new ExperimentClient(API_KEY, {
-    fetchTimeoutMillis: 1,
+    fetchTimeoutMillis: 0,
     fetchRetries: 1,
     fetchRetryBackoffMinMillis: 0,
     fetchRetryTimeoutMillis: 10_000,
