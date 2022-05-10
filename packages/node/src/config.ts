@@ -1,3 +1,5 @@
+import https from 'https';
+
 import { FlagConfig } from './types/flag';
 
 /**
@@ -45,6 +47,11 @@ export type ExperimentConfig = {
    * The request timeout for retrying fetch requests.
    */
   fetchRetryTimeoutMillis?: number;
+
+  /**
+   * The agent used to send http requests.
+   */
+  httpAgent?: https.Agent;
 };
 
 /**
@@ -60,6 +67,7 @@ export type ExperimentConfig = {
  | **fetchRetryBackoffMaxMillis**    | `10000` |
  | **fetchRetryBackoffScalar**    | `1.5` |
  | **fetchRetryTimeoutMillis**    | `10000` |
+ | **httpAgent** | null |
 
  *
  * @category Configuration
@@ -73,6 +81,7 @@ export const Defaults: ExperimentConfig = {
   fetchRetryBackoffMaxMillis: 10000,
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
+  httpAgent: null,
 };
 
 /**
@@ -106,6 +115,11 @@ export type LocalEvaluationConfig = {
    * Default: 30000 (30 seconds)
    */
   flagConfigPollingIntervalMillis?: number;
+
+  /**
+   * The agent used to send http requests.
+   */
+  httpAgent?: https.Agent;
 };
 
 /**
@@ -116,6 +130,7 @@ export type LocalEvaluationConfig = {
  | **debug**        | false                           |
  | **serverUrl**    | `"https://api.lab.amplitude.com"` |
  | **flagConfigPollingIntervalMillis**    | `30000` |
+ | **httpAgent** | null |
 
  * @category Configuration
  */
@@ -124,4 +139,5 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   serverUrl: 'https://api.lab.amplitude.com',
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
+  httpAgent: null,
 };

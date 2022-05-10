@@ -26,7 +26,7 @@ export class ExperimentClient {
   public constructor(apiKey: string, config: ExperimentConfig) {
     this.apiKey = apiKey;
     this.config = { ...Defaults, ...config };
-    this.httpClient = FetchHttpClient;
+    this.httpClient = new FetchHttpClient(config.httpAgent);
   }
 
   /**

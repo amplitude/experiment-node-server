@@ -16,7 +16,7 @@ export class FlagConfigFetcher {
 
   public constructor(
     apiKey: string,
-    httpClient: HttpClient = FetchHttpClient,
+    httpClient: HttpClient,
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
     debug = false,
   ) {

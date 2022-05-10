@@ -33,9 +33,9 @@ export class LocalEvaluationClient {
     apiKey: string,
     config: LocalEvaluationConfig,
     flagConfigCache: FlagConfigCache = new InMemoryFlagConfigCache(
-      config.bootstrap,
+      config?.bootstrap,
     ),
-    httpClient: HttpClient = FetchHttpClient,
+    httpClient: HttpClient = new FetchHttpClient(config?.httpAgent),
   ) {
     this.config = { ...LocalEvaluationDefaults, ...config };
     const fetcher = new FlagConfigFetcher(
