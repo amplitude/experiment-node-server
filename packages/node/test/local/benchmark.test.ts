@@ -15,6 +15,11 @@ afterAll(() => {
   client.stop();
 });
 
+/*
+ * These tests are very conservative since GitHub actions can run very slowly
+ * with respect to CPU
+ */
+
 test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
   const user = randomExperimentUser();
   const flag = randomBenchmarkFlag();
@@ -26,7 +31,7 @@ test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
   expect(duration).toBeLessThan(10);
 });
 
-test('ExperimentClient.evaluate benchmark, 10 flags < 50ms', async () => {
+test('ExperimentClient.evaluate benchmark, 10 flags < 10ms', async () => {
   let total = 0;
   for (let i = 0; i < 10; i++) {
     const user = randomExperimentUser();
@@ -38,10 +43,10 @@ test('ExperimentClient.evaluate benchmark, 10 flags < 50ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('10 flag: ', total, 'ms');
-  expect(total).toBeLessThan(50);
+  expect(total).toBeLessThan(10);
 });
 
-test('ExperimentClient.evaluate benchmark, 100 flags < 50ms', async () => {
+test('ExperimentClient.evaluate benchmark, 100 flags < 100ms', async () => {
   let total = 0;
   for (let i = 0; i < 100; i++) {
     const user = randomExperimentUser();
@@ -53,10 +58,10 @@ test('ExperimentClient.evaluate benchmark, 100 flags < 50ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('100 flag: ', total, 'ms');
-  expect(total).toBeLessThan(50);
+  expect(total).toBeLessThan(100);
 });
 
-test('ExperimentClient.evaluate benchmark, 1000 flags < 100ms', async () => {
+test('ExperimentClient.evaluate benchmark, 1000 flags < 1000ms', async () => {
   let total = 0;
   for (let i = 0; i < 1000; i++) {
     const user = randomExperimentUser();
@@ -68,7 +73,7 @@ test('ExperimentClient.evaluate benchmark, 1000 flags < 100ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('1000 flag: ', total, 'ms');
-  expect(total).toBeLessThan(100);
+  expect(total).toBeLessThan(1000);
 });
 
 // Data generation for charts
