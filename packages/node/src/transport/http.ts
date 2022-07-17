@@ -31,6 +31,11 @@ export class FetchHttpClient implements HttpClient {
     timeoutMillis?: number,
   ): Promise<SimpleResponse> {
     return new Promise((resolve, reject) => {
+      if (timeoutMillis === 0) {
+        reject(Error('Response timed out'));
+        return;
+      }
+
       const urlParams = url.parse(requestUrl);
       const options = {
         ...urlParams,
@@ -42,13 +47,18 @@ export class FetchHttpClient implements HttpClient {
       const protocol = urlParams.protocol === 'http:' ? http : https;
       const req = protocol.request(options);
 
-      const responseTimeout = setTimeout(() => {
-        clearTimeout(responseTimeout);
-        reject(Error('Response timed out'));
-      }, timeoutMillis);
+      let responseTimeout: NodeJS.Timeout;
+      if (timeoutMillis) {
+        responseTimeout = setTimeout(() => {
+          clearTimeout(responseTimeout);
+          reject(Error('Response timed out'));
+        }, timeoutMillis);
+      }
 
       req.on('response', (res) => {
-        clearTimeout(responseTimeout);
+        if (responseTimeout) {
+          clearTimeout(responseTimeout);
+        }
         res.setEncoding('utf-8');
         let responseBody = '';
 
@@ -69,7 +79,9 @@ export class FetchHttpClient implements HttpClient {
       });
 
       req.on('error', (e) => {
-        clearTimeout(responseTimeout);
+        if (responseTimeout) {
+          clearTimeout(responseTimeout);
+        }
         reject(e);
       });
 
