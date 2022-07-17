@@ -1,32 +1,35 @@
-import { version as PACKAGE_VERSION } from '../gen/version';
-
-import { ExperimentConfig, Defaults } from './config';
-import { FetchHttpClient } from './transport/http';
-import { HttpClient } from './types/transport';
-import { ExperimentUser } from './types/user';
-import { Variant, Variants } from './types/variant';
-import { performance } from './util/performance';
-import { sleep } from './util/time';
+import { version as PACKAGE_VERSION } from '../../gen/version';
+import { FetchHttpClient } from '../transport/http';
+import {
+  ExperimentConfig,
+  RemoteEvaluationDefaults,
+  RemoteEvaluationConfig,
+} from '../types/config';
+import { HttpClient } from '../types/transport';
+import { ExperimentUser } from '../types/user';
+import { Variant, Variants } from '../types/variant';
+import { performance } from '../util/performance';
+import { sleep } from '../util/time';
 
 /**
- * Main client for fetching variant data.
+ * Experiment client for fetching variants for a user remotely.
  * @category Core Usage
  */
-export class ExperimentClient {
+export class RemoteEvaluationClient {
   private readonly apiKey: string;
   private readonly httpClient: HttpClient;
-  private readonly config: ExperimentConfig;
+  private readonly config: RemoteEvaluationConfig;
 
   /**
-   * Creates a new ExperimentClient instance.
+   * Creates a new RemoteEvaluationClient instance.
    *
    * @param apiKey The environment API Key
    * @param config See {@link ExperimentConfig} for config options
    */
-  public constructor(apiKey: string, config: ExperimentConfig) {
+  public constructor(apiKey: string, config: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
-    this.config = { ...Defaults, ...config };
-    this.httpClient = FetchHttpClient;
+    this.config = { ...RemoteEvaluationDefaults, ...config };
+    this.httpClient = new FetchHttpClient(config?.httpAgent);
   }
 
   /**
@@ -95,7 +98,7 @@ export class ExperimentClient {
     );
     if (response.status !== 200) {
       throw Error(
-        `Received error response: ${response.status}: ${response.body}`,
+        `fetch - received error response: ${response.status}: ${response.body}`,
       );
     }
     const elapsed = (performance.now() - start).toFixed(3);
@@ -160,5 +163,14 @@ export class ExperimentClient {
     if (this.config.debug) {
       console.debug(message, ...optionalParams);
     }
+  }
+}
+
+/**
+ * @deprecated use {@link RemoteEvaluationClient}.
+ */
+export class ExperimentClient extends RemoteEvaluationClient {
+  constructor(apiKey: string, config: ExperimentConfig) {
+    super(apiKey, config);
   }
 }
