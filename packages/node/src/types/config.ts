@@ -5,7 +5,7 @@ import { FlagConfig } from './flag';
 /**
  * @category Configuration
  */
-export type ExperimentConfig = {
+export type RemoteEvaluationConfig = {
   /**
    * Set to true to log some extra information to the console.
    */
@@ -55,6 +55,11 @@ export type ExperimentConfig = {
 };
 
 /**
+ * @deprecated use {@link RemoteEvaluationConfig}
+ */
+export type ExperimentConfig = RemoteEvaluationConfig;
+
+/**
  Defaults for Experiment Config options
 
  | **Option**       | **Default**                       |
@@ -72,7 +77,7 @@ export type ExperimentConfig = {
  *
  * @category Configuration
  */
-export const Defaults: ExperimentConfig = {
+export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
   debug: false,
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,

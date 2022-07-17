@@ -1,7 +1,11 @@
-import { ExperimentConfig, LocalEvaluationConfig } from './types/config';
 import { InMemoryFlagConfigCache } from './local/cache';
 import { LocalEvaluationClient } from './local/client';
-import { ExperimentClient } from './remote/client';
+import { ExperimentClient, RemoteEvaluationClient } from './remote/client';
+import {
+  ExperimentConfig,
+  RemoteEvaluationConfig,
+  LocalEvaluationConfig,
+} from './types/config';
 
 const remoteEvaluationInstances = {};
 const localEvaluationInstances = {};
@@ -19,7 +23,7 @@ const initialize = (
   apiKey: string,
   config?: ExperimentConfig,
 ): ExperimentClient => {
-  return initializeRemote(apiKey, config);
+  return initializeRemote(apiKey, config) as ExperimentClient;
 };
 
 /**
@@ -30,10 +34,10 @@ const initialize = (
  */
 const initializeRemote = (
   apiKey: string,
-  config?: ExperimentConfig,
-): ExperimentClient => {
+  config?: RemoteEvaluationConfig,
+): RemoteEvaluationClient => {
   if (!remoteEvaluationInstances[defaultInstance]) {
-    remoteEvaluationInstances[defaultInstance] = new ExperimentClient(
+    remoteEvaluationInstances[defaultInstance] = new RemoteEvaluationClient(
       apiKey,
       config,
     );

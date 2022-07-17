@@ -7,7 +7,7 @@
 
 export { AmplitudeCookie } from './cookie';
 export { ExperimentClient } from './remote/client';
-export { ExperimentConfig, Defaults } from './types/config';
+export { ExperimentConfig, RemoteEvaluationDefaults } from './types/config';
 export { Experiment } from './factory';
 export { ExperimentUser } from './types/user';
 export { Variant, Variants } from './types/variant';

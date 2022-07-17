@@ -1,6 +1,10 @@
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient } from '../transport/http';
-import { ExperimentConfig, Defaults } from '../types/config';
+import {
+  ExperimentConfig,
+  RemoteEvaluationDefaults,
+  RemoteEvaluationConfig,
+} from '../types/config';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
@@ -11,20 +15,20 @@ import { sleep } from '../util/time';
  * Experiment client for fetching variants for a user remotely.
  * @category Core Usage
  */
-export class ExperimentClient {
+export class RemoteEvaluationClient {
   private readonly apiKey: string;
   private readonly httpClient: HttpClient;
-  private readonly config: ExperimentConfig;
+  private readonly config: RemoteEvaluationConfig;
 
   /**
-   * Creates a new ExperimentClient instance.
+   * Creates a new RemoteEvaluationClient instance.
    *
    * @param apiKey The environment API Key
    * @param config See {@link ExperimentConfig} for config options
    */
-  public constructor(apiKey: string, config: ExperimentConfig) {
+  public constructor(apiKey: string, config: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
-    this.config = { ...Defaults, ...config };
+    this.config = { ...RemoteEvaluationDefaults, ...config };
     this.httpClient = new FetchHttpClient(config?.httpAgent);
   }
 
@@ -159,5 +163,14 @@ export class ExperimentClient {
     if (this.config.debug) {
       console.debug(message, ...optionalParams);
     }
+  }
+}
+
+/**
+ * @deprecated use {@link RemoteEvaluationClient}.
+ */
+export class ExperimentClient extends RemoteEvaluationClient {
+  constructor(apiKey: string, config: ExperimentConfig) {
+    super(apiKey, config);
   }
 }

@@ -1,4 +1,4 @@
-import { AmplitudeCookie } from 'src/amplitude';
+import { AmplitudeCookie } from 'src/cookie';
 
 test('AmplitudeCookie.cookieName', () => {
   expect(() => {
