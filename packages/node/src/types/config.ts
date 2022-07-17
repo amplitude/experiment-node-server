@@ -1,6 +1,6 @@
 import https from 'https';
 
-import { FlagConfig } from './types/flag';
+import { FlagConfig } from './flag';
 
 /**
  * @category Configuration

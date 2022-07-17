@@ -1,7 +1,7 @@
-import { LocalEvaluationDefaults } from '../config';
-import { ConsoleLogger } from '../logger/console';
+import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { doWithBackoff, BackoffPolicy } from '../util/backoff';
+import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
 import { FlagConfigFetcher } from './fetcher';

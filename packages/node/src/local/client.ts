@@ -1,14 +1,18 @@
-import { LocalEvaluationConfig, LocalEvaluationDefaults } from '../config';
-import { ConsoleLogger } from '../logger/console';
+import evaluation from '@amplitude/evaluation-js';
+
 import { FetchHttpClient } from '../transport/http';
+import {
+  LocalEvaluationConfig,
+  LocalEvaluationDefaults,
+} from '../types/config';
 import { FlagConfig, FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variants } from '../types/variant';
+import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
 import { InMemoryFlagConfigCache } from './cache';
-import { FlagConfigEvaluator } from './evaluator';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 
@@ -19,7 +23,6 @@ import { FlagConfigPoller } from './poller';
 export class LocalEvaluationClient {
   private readonly logger: Logger;
   private readonly config: LocalEvaluationConfig;
-  private readonly evaluator: FlagConfigEvaluator;
   private readonly poller: FlagConfigPoller;
 
   /**
@@ -29,7 +32,7 @@ export class LocalEvaluationClient {
    */
   public readonly cache: FlagConfigCache;
 
-  public constructor(
+  constructor(
     apiKey: string,
     config: LocalEvaluationConfig,
     flagConfigCache: FlagConfigCache = new InMemoryFlagConfigCache(
@@ -46,7 +49,6 @@ export class LocalEvaluationClient {
     );
     this.cache = flagConfigCache;
     this.logger = new ConsoleLogger(this.config.debug);
-    this.evaluator = new FlagConfigEvaluator(this.config.debug);
     this.poller = new FlagConfigPoller(
       fetcher,
       this.cache,
@@ -72,7 +74,15 @@ export class LocalEvaluationClient {
     flagKeys?: string[],
   ): Promise<Variants> {
     const flagConfigs = await this.getFlagConfigs(flagKeys);
-    return this.evaluator.evaluate(user, flagConfigs);
+    this.logger.debug(
+      '[Experiment] evaluate - user:',
+      user,
+      'flagConfigs:',
+      flagConfigs,
+    );
+    const results: Variants = evaluation.evaluate(flagConfigs, user);
+    this.logger.debug('[Experiment] evaluate - result: ', results);
+    return results;
   }
 
   /**

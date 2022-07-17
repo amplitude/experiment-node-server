@@ -1,12 +1,11 @@
-import { version as PACKAGE_VERSION } from '../gen/version';
-
-import { ExperimentConfig, Defaults } from './config';
-import { FetchHttpClient } from './transport/http';
-import { HttpClient } from './types/transport';
-import { ExperimentUser } from './types/user';
-import { Variant, Variants } from './types/variant';
-import { performance } from './util/performance';
-import { sleep } from './util/time';
+import { version as PACKAGE_VERSION } from '../../gen/version';
+import { FetchHttpClient } from '../transport/http';
+import { ExperimentConfig, Defaults } from '../types/config';
+import { HttpClient } from '../types/transport';
+import { ExperimentUser } from '../types/user';
+import { Variant, Variants } from '../types/variant';
+import { performance } from '../util/performance';
+import { sleep } from '../util/time';
 
 /**
  * Experiment client for fetching variants for a user remotely.

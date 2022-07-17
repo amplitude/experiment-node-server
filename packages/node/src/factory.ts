@@ -1,32 +1,47 @@
-import { ExperimentClient } from './client';
-import { ExperimentConfig, LocalEvaluationConfig } from './config';
+import { ExperimentConfig, LocalEvaluationConfig } from './types/config';
 import { InMemoryFlagConfigCache } from './local/cache';
 import { LocalEvaluationClient } from './local/client';
+import { ExperimentClient } from './remote/client';
 
-const instances = {};
-const defaultInstance = '$default_instance';
-
+const remoteEvaluationInstances = {};
 const localEvaluationInstances = {};
 
+const defaultInstance = '$default_instance';
+
 /**
- * Initializes a singleton {@link ExperimentClient}.
+ * Initializes a singleton {@link ExperimentClient} for remote evaluation.
  *
  * @param apiKey The environment API Key
  * @param config See {@link ExperimentConfig} for config options
+ * @deprecated use initializeRemote
  */
 const initialize = (
   apiKey: string,
   config?: ExperimentConfig,
 ): ExperimentClient => {
-  if (!instances[defaultInstance]) {
-    instances[defaultInstance] = new ExperimentClient(apiKey, config);
-  }
-  return instances[defaultInstance];
+  return initializeRemote(apiKey, config);
 };
 
 /**
- * (ALPHA, EXPERIMENTAL)
+ * Initializes a singleton {@link ExperimentClient} for remote evaluation.
  *
+ * @param apiKey The environment API Key
+ * @param config See {@link ExperimentConfig} for config options
+ */
+const initializeRemote = (
+  apiKey: string,
+  config?: ExperimentConfig,
+): ExperimentClient => {
+  if (!remoteEvaluationInstances[defaultInstance]) {
+    remoteEvaluationInstances[defaultInstance] = new ExperimentClient(
+      apiKey,
+      config,
+    );
+  }
+  return remoteEvaluationInstances[defaultInstance];
+};
+
+/**
  * Initialize a local evaluation client.
  *
  * A local evaluation client can evaluate local flags or experiments for a user
@@ -37,7 +52,6 @@ const initialize = (
  * @param apiKey The environment API Key
  * @param config See {@link ExperimentConfig} for config options
  * @returns The local evaluation client.
- * @deprecated This feature is experimental and may change in the future.
  */
 const initializeLocal = (
   apiKey: string,
@@ -61,5 +75,6 @@ const initializeLocal = (
  */
 export const Experiment = {
   initialize,
+  initializeRemote,
   initializeLocal,
 };
