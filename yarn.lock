@@ -2,30 +2,23 @@
 # yarn lockfile v1
 
 
-"@amplitude/evaluation-interop@0.0.24":
-  version "0.0.24"
-  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-interop/-/evaluation-interop-0.0.24.tgz#725d87335fed59fd5384814beee70ccecbb5d658"
-  integrity sha512-xv7rEPGcQqA7sBQZosfoRiLuEtboQnZD0DN4r44OLt0eZ4P2h2EVWluMZBTvZinEil9eZnciIIFBAQdJQOQTeQ==
-
 "@amplitude/evaluation-js@0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@amplitude/evaluation-js/-/evaluation-js-0.0.4.tgz#d7eef9d4f4a0a3709f98a344ba92187510398239"
   integrity sha512-dyB+p39RL+nvxqxiVtHIeRwxESqwBuXjK962YBiVmBv5xDM/WpUkm3CVpsvOK/l/P2525RCxMoyddwOqDVRZ3g==
 
-"@amplitude/experiment-js-client@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-js-client/-/experiment-js-client-1.2.0.tgz#c623671ac8247ffa43bf328175d174f85574c628"
-  integrity sha512-SactyPPYTbgksUxyDbXDft2EOt+gvp/0dx9apLhaAikw7PqoX32/7nH+l1NvyovRzVZczVZJeJAYnXTvxnp4UA==
+"@amplitude/experiment-js-client@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-js-client/-/experiment-js-client-0.2.0.tgz#7de8631efe6de3821d56bb69fb11643d7398dea0"
+  integrity sha512-CbcGzsVJwqD0ryTxL4c5H09bqSmIzkDqC/x7dCdrCkFudjoBrjvgMSBbh+D6R9rCMfvAbOSoBkjB9RXYZfcUmw==
   dependencies:
-    base64-js "1.5.1"
-    unfetch "4.1.0"
+    base64-js "^1.3.1"
+    unfetch "^4.1.0"
 
-"@amplitude/experiment-node-server@1.1.0-alpha.5":
-  version "1.1.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-node-server/-/experiment-node-server-1.1.0-alpha.5.tgz#79b6f9d04e05a85718dd602d92c8c7a7717e8b66"
-  integrity sha512-t2zZviGNMNQ1rtUMoJZ8tUOm5sxYTnNyNNHI1oPWqY88qdm6NHdVlHHq2RhKS7hIYyhvZcB2tK676p+MmWVKKw==
-  dependencies:
-    "@amplitude/evaluation-interop" "0.0.24"
+"@amplitude/experiment-node-server@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-node-server/-/experiment-node-server-1.0.3.tgz#80a42b4f6b7599f7ae36242a5dfda3a4c65dd232"
+  integrity sha512-9mPmQ1zFLiapImOgKNv8kZ+vCwwI1IV/rowszAMOuKyR4+QnfdgX1RpfDN4kjPJzTkIs0tyj+U4RpUQM4SKwBQ==
 
 "@ampproject/toolbox-core@^2.6.0", "@ampproject/toolbox-core@^2.8.0":
   version "2.8.0"
@@ -3373,7 +3366,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-base64-js@1.5.1, base64-js@^1.0.2:
+base64-js@^1.0.2, base64-js@^1.3.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -10840,10 +10833,10 @@ unbox-primitive@^1.0.1:
     has-symbols "^1.0.2"
     which-boxed-primitive "^1.0.2"
 
-unfetch@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.1.0.tgz#6ec2dd0de887e58a4dee83a050ded80ffc4137db"
-  integrity sha512-crP/n3eAPUJxZXM9T80/yv0YhkTEx2K1D3h7D1AJM6fzsWZrxdyRuLN0JH/dkZh1LNH8LxCnBzoPFCPbb2iGpg==
+unfetch@^4.1.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.2.0.tgz#7e21b0ef7d363d8d9af0fb929a5555f6ef97a3be"
+  integrity sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==
 
 unicode-canonical-property-names-ecmascript@^2.0.0:
   version "2.0.0"
