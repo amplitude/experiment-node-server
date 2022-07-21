@@ -6,12 +6,16 @@
  */
 
 export { AmplitudeCookie } from './cookie';
-export { ExperimentClient } from './remote/client';
-export { ExperimentConfig, RemoteEvaluationDefaults } from './types/config';
+export { ExperimentClient, RemoteEvaluationClient } from './remote/client';
+export {
+  ExperimentConfig,
+  Defaults,
+  RemoteEvaluationConfig,
+  RemoteEvaluationDefaults,
+} from './types/config';
 export { Experiment } from './factory';
 export { ExperimentUser } from './types/user';
 export { Variant, Variants } from './types/variant';
-
 export { LocalEvaluationClient } from './local/client';
 export { LocalEvaluationConfig } from './types/config';
 export { FlagConfigFetcher } from './local/fetcher';

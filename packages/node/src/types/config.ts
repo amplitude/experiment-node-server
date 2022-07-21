@@ -90,6 +90,21 @@ export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
 };
 
 /**
+ * @deprecated use {@link RemoteEvaluationDefaults}
+ */
+export const Defaults: ExperimentConfig = {
+  debug: false,
+  serverUrl: 'https://api.lab.amplitude.com',
+  fetchTimeoutMillis: 10000,
+  fetchRetries: 8,
+  fetchRetryBackoffMinMillis: 500,
+  fetchRetryBackoffMaxMillis: 10000,
+  fetchRetryBackoffScalar: 1.5,
+  fetchRetryTimeoutMillis: 10000,
+  httpAgent: null,
+};
+
+/**
  * Configuration for the {@link LocalEvaluationClient}
  *
  * @category Configuration
