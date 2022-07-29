@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@amplitude/evaluation-js@1.0.0-rc1":
-  version "1.0.0-rc1"
-  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-js/-/evaluation-js-1.0.0-rc1.tgz#1d96a1f66d87a41e8959ae78099c56cdbf3cd269"
-  integrity sha512-8FypiR3u6cuKjtI7j36O8WCPYA6i3vONYj8bejv4mBRlQpKMq96Elm1I07XNqUkUDdcYfAt2xCSQZTzdK8mSiQ==
+"@amplitude/evaluation-js@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-js/-/evaluation-js-1.0.0.tgz#1ae828379d3600f433b37a505514b756c94678ef"
+  integrity sha512-U2ibGJ+5XLwfyHPmwDdxkqWhxxmZBs/gnPWalKBnmcY4zGXfBi2XkGbHsghlAD3XD3vZ1eMl7xqhHp3CWtpp/g==
 
 "@amplitude/experiment-js-client@^0.2.0":
   version "0.2.0"
@@ -14,11 +14,6 @@
   dependencies:
     base64-js "^1.3.1"
     unfetch "^4.1.0"
-
-"@amplitude/experiment-node-server@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-node-server/-/experiment-node-server-1.0.3.tgz#80a42b4f6b7599f7ae36242a5dfda3a4c65dd232"
-  integrity sha512-9mPmQ1zFLiapImOgKNv8kZ+vCwwI1IV/rowszAMOuKyR4+QnfdgX1RpfDN4kjPJzTkIs0tyj+U4RpUQM4SKwBQ==
 
 "@ampproject/toolbox-core@^2.6.0", "@ampproject/toolbox-core@^2.8.0":
   version "2.8.0"
