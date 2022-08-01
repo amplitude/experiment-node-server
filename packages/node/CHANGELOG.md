@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/amplitude/experiment-node-server/compare/v1.0.3...v1.1.0) (2022-08-01)
+
+
+### Bug Fixes
+
+* update evaluation dep ([d9efda4](https://github.com/amplitude/experiment-node-server/commit/d9efda4ee2ad4d4b4ef02d72a7fdaac9f43f1c1a))
+
+
+### Features
+
+* evaluation-js v1.0.0 ([b86f94e](https://github.com/amplitude/experiment-node-server/commit/b86f94e17ec9cca83b4189f0102aa11c01cb5cb2))
+* local evaluation ([#6](https://github.com/amplitude/experiment-node-server/issues/6)) ([6be8686](https://github.com/amplitude/experiment-node-server/commit/6be868689ac03c8ee49841e43c21dc51f1b4c1c5))
+
+
+
+
+
 ## [1.0.3](https://github.com/amplitude/experiment-node-server/compare/v1.0.2...v1.0.3) (2022-05-02)
 
 
