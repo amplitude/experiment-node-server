@@ -1,7 +1,7 @@
 import { Experiment } from 'src/factory';
 import { ExperimentUser } from 'src/types/user';
-import { measure } from 'src/util/performance';
-// import * as fs from "fs";
+
+import { measure } from './util/performance';
 
 const apiKey = 'server-5G5HQL3jUIPXWaJBTgAvDFHy277srxSg';
 
@@ -75,28 +75,6 @@ test('ExperimentClient.evaluate benchmark, 1000 flags < 1000ms', async () => {
   console.log('1000 flag: ', total, 'ms');
   expect(total).toBeLessThan(1000);
 });
-
-// Data generation for charts
-
-// test('data - evaluation duration by iteration', async () => {
-//   let data = '';
-//   const iterations = 10000;
-//   for (let i = 0; i < iterations; i++) {
-//     const user = randomExperimentUser();
-//     const flag = randomBenchmarkFlag();
-//     const duration = await measure(async () => {
-//       await client.evaluate(user, [flag]);
-//     });
-//     data += `${duration.toFixed(3)},`;
-//   }
-//   // eslint-disable-next-line no-console
-//   data = data.replace(/.$/, '\n');
-//   fs.writeFileSync(
-//     `/Users/brian.giori/dev/charts/data/eval-dur-iteration-${iterations}.csv`,
-//     data,
-//     { flag: 'a+' },
-//   );
-// });
 
 // Utilities
 
