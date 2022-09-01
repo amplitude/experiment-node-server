@@ -8,7 +8,6 @@ import {
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
-import { performance } from '../util/performance';
 import { sleep } from '../util/time';
 
 /**
@@ -75,7 +74,6 @@ export class RemoteEvaluationClient {
     user: ExperimentUser,
     timeoutMillis: number,
   ): Promise<Variants> {
-    const start = performance.now();
     const userContext = this.addContext(user || {});
     const endpoint = `${this.config.serverUrl}/sdk/vardata`;
     const headers = {
@@ -101,8 +99,6 @@ export class RemoteEvaluationClient {
         `fetch - received error response: ${response.status}: ${response.body}`,
       );
     }
-    const elapsed = (performance.now() - start).toFixed(3);
-    this.debug(`[Experiment] Fetch complete in ${elapsed} ms`);
     const json = JSON.parse(response.body);
     const variants = this.parseJsonVariants(json);
     this.debug('[Experiment] Fetched variants: ', variants);
