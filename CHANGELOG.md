@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/amplitude/experiment-node-server/compare/v1.1.1...v1.2.0) (2022-09-09)
+
+
+### Features
+
+* add local evaluation library header ([#8](https://github.com/amplitude/experiment-node-server/issues/8)) ([098b1b8](https://github.com/amplitude/experiment-node-server/commit/098b1b8dd1037e207bac7d3586a67c7a1bf3e134))
+
+
+
+
+
 ## [1.1.1](https://github.com/amplitude/experiment-node-server/compare/v1.1.0...v1.1.1) (2022-09-01)
 
 
