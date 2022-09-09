@@ -1,3 +1,4 @@
+import { version as PACKAGE_VERSION } from '../../gen/version';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfig } from '../types/flag';
 import { HttpClient } from '../types/transport';
@@ -36,6 +37,7 @@ export class FlagConfigFetcher {
     const endpoint = `${this.serverUrl}/sdk/rules?eval_mode=local`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
+      'X-Amp-Exp-Library': `experiment-node-server/${PACKAGE_VERSION}`,
     };
     const body = null;
     this.logger.debug('[Experiment] Get flag configs');
