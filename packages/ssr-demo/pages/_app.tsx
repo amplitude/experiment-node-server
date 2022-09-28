@@ -3,7 +3,6 @@ import { AppProps } from 'next/app';
 import { ReactNode } from 'react';
 
 import { ExperimentProvider } from '../contexts/experimentContext';
-import { ExperimentServer } from '../lib/experiment';
 import '../styles/globals.css';
 
 let experiment: ExperimentClient;
@@ -18,7 +17,7 @@ function MyApp(appProps: AppProps): ReactNode {
     experiment = new ExperimentClient(
       'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
       {
-        initialVariants: appProps['features'],
+        initialVariants: pageProps['features'],
       },
     );
   } else if (!experiment) {
@@ -26,7 +25,7 @@ function MyApp(appProps: AppProps): ReactNode {
     experiment = Experiment.initialize(
       'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
       {
-        initialVariants: appProps['features'],
+        initialVariants: pageProps['features'],
       },
     );
   }
@@ -39,6 +38,10 @@ function MyApp(appProps: AppProps): ReactNode {
   );
 }
 
+/**
+ * Since the fetch is happening in the middleware we don't need this anymore
+ *
+ *
 MyApp.getInitialProps = async ({ ctx }) => {
   // Fetch data from external APIs
   if (ctx.req) {
@@ -53,5 +56,8 @@ MyApp.getInitialProps = async ({ ctx }) => {
     return {};
   }
 };
+ *
+ *
+ */
 
 export default MyApp;
