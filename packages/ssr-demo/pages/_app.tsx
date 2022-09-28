@@ -39,6 +39,10 @@ function MyApp(appProps: AppProps): ReactNode {
   );
 }
 
+/**
+ * Since the fetch is happening in the middleware we don't need this anymore
+ *
+ *
 MyApp.getInitialProps = async ({ ctx }) => {
   // Fetch data from external APIs
   if (ctx.req) {
@@ -53,5 +57,8 @@ MyApp.getInitialProps = async ({ ctx }) => {
     return {};
   }
 };
+ *
+ *
+ */
 
 export default MyApp;
