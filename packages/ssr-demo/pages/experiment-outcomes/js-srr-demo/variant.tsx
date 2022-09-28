@@ -1,14 +1,16 @@
 import { Variants } from '@amplitude/experiment-js-client';
-import { GetStaticProps, InferGetStaticPropsType, NextPage } from 'next';
+import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useContext } from 'react';
 
+import { ExperimentContext } from '../../../contexts/experimentContext';
 import styles from '../../../styles/Home.module.css';
 
-export const Variant: NextPage<
-  InferGetStaticPropsType<typeof getStaticProps>
-> = ({ features }) => {
-  const feature = features['js-srr-demo'];
+export const Variant = () => {
+  const experiment = useContext(ExperimentContext);
+  const feature = experiment.variant('js-ssr-demo');
+
   return (
     <div className={styles.container}>
       <Head>
@@ -42,9 +44,9 @@ export const getStaticProps: GetStaticProps<{
 }> = async () => ({
   props: {
     features: {
-      'js-srr-demo': {
-        value: 'treatment',
-        payload: { json: 'data' },
+      'js-ssr-demo': {
+        value: 'true',
+        payload: { testKey: 'abc' },
       },
     },
   },

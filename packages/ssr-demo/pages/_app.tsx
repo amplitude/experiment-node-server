@@ -3,7 +3,6 @@ import { AppProps } from 'next/app';
 import { ReactNode } from 'react';
 
 import { ExperimentProvider } from '../contexts/experimentContext';
-import { ExperimentServer } from '../lib/experiment';
 import '../styles/globals.css';
 
 let experiment: ExperimentClient;
@@ -18,7 +17,7 @@ function MyApp(appProps: AppProps): ReactNode {
     experiment = new ExperimentClient(
       'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
       {
-        initialVariants: appProps['features'],
+        initialVariants: pageProps['features'],
       },
     );
   } else if (!experiment) {
@@ -26,7 +25,7 @@ function MyApp(appProps: AppProps): ReactNode {
     experiment = Experiment.initialize(
       'client-IAxMYws9vVQESrrK88aTcToyqMxiiJoR',
       {
-        initialVariants: appProps['features'],
+        initialVariants: pageProps['features'],
       },
     );
   }
