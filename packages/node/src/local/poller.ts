@@ -49,7 +49,11 @@ export class FlagConfigPoller {
     if (!this.poller) {
       this.logger.debug('[Experiment] poller - start');
       this.poller = setInterval(async () => {
-        await this.update(onChange);
+        try {
+          await this.update(onChange);
+        } catch (e) {
+          this.logger.debug('[Experiment] flag config update failed', e);
+        }
       }, this.pollingIntervalMillis);
 
       // Fetch initial flag configs and await the result.
