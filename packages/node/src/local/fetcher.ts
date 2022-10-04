@@ -37,7 +37,9 @@ export class FlagConfigFetcher {
     const endpoint = `${this.serverUrl}/sdk/rules?eval_mode=local`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
+      Accept: 'application/json',
       'X-Amp-Exp-Library': `experiment-node-server/${PACKAGE_VERSION}`,
+      'Content-Type': 'application/json;charset=utf-8',
     };
     const body = null;
     this.logger.debug('[Experiment] Get flag configs');
