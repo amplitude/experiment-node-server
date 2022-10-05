@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/amplitude/experiment-node-server/compare/v1.2.0...v1.2.1) (2022-10-05)
+
+
+### Bug Fixes
+
+* catch and log error from flag config poller request ([#10](https://github.com/amplitude/experiment-node-server/issues/10)) ([6e6b051](https://github.com/amplitude/experiment-node-server/commit/6e6b05105de7be197472584bd5a0635e9e001e06))
+
+
+
+
+
 # [1.2.0](https://github.com/amplitude/experiment-node-server/compare/v1.1.1...v1.2.0) (2022-09-09)
 
 
