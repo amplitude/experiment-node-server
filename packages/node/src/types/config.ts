@@ -17,7 +17,7 @@ export type RemoteEvaluationConfig = {
   serverUrl?: string;
 
   /**
-   * The request timeout, in milliseconds, used when fetching variants triggered by calling start() or setUser().
+   * The request socket timeout, in milliseconds.
    */
   fetchTimeoutMillis?: number;
 
