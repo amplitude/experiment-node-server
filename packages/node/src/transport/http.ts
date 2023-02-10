@@ -6,9 +6,6 @@ import { SimpleResponse, HttpClient } from '../types/transport';
 
 const defaultHttpAgent = new https.Agent({
   keepAlive: true,
-  // Timeout on the socket, not the request. When the socket times out, close
-  // the connection.
-  timeout: 10000,
 });
 
 export class FetchHttpClient implements HttpClient {
@@ -43,22 +40,12 @@ export class FetchHttpClient implements HttpClient {
         headers: headers,
         body: body,
         agent: this.httpAgent,
+        timeout: timeoutMillis,
       };
       const protocol = urlParams.protocol === 'http:' ? http : https;
       const req = protocol.request(options);
 
-      let responseTimeout: NodeJS.Timeout;
-      if (timeoutMillis) {
-        responseTimeout = setTimeout(() => {
-          clearTimeout(responseTimeout);
-          reject(Error('Response timed out'));
-        }, timeoutMillis);
-      }
-
       req.on('response', (res) => {
-        if (responseTimeout) {
-          clearTimeout(responseTimeout);
-        }
         res.setEncoding('utf-8');
         let responseBody = '';
 
@@ -79,9 +66,6 @@ export class FetchHttpClient implements HttpClient {
       });
 
       req.on('error', (e) => {
-        if (responseTimeout) {
-          clearTimeout(responseTimeout);
-        }
         reject(e);
       });
 
