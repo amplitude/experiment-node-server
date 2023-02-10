@@ -76,22 +76,19 @@ export class RemoteEvaluationClient {
   ): Promise<Variants> {
     const userContext = this.addContext(user || {});
     const endpoint = `${this.config.serverUrl}/sdk/vardata`;
+    const encodedUser = Buffer.from(JSON.stringify(userContext)).toString(
+      'base64',
+    );
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
+      'X-Amp-Exp-User': encodedUser,
     };
-    const body = JSON.stringify(userContext);
-    // CDN can only cache requests where the body is < 8KB
-    if (body.length > 8000) {
-      console.warn(
-        `[Experiment] encoded user object length ${body.length} cannot be cached by CDN; must be < 8KB`,
-      );
-    }
     this.debug('[Experiment] Fetch variants for user: ', userContext);
     const response = await this.httpClient.request(
       endpoint,
-      'POST',
+      'GET',
       headers,
-      body,
+      null,
       timeoutMillis,
     );
     if (response.status !== 200) {
