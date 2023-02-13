@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/amplitude/experiment-node-server/compare/v1.2.1...v1.3.0) (2023-02-13)
+
+
+### Bug Fixes
+
+* use get instead of post ([#12](https://github.com/amplitude/experiment-node-server/issues/12)) ([62074c0](https://github.com/amplitude/experiment-node-server/commit/62074c0142b36c78d159dd7993ca4f7d4657c7a6))
+
+
+### Features
+
+* use socket timeout as default timeout ([#11](https://github.com/amplitude/experiment-node-server/issues/11)) ([3b86c3d](https://github.com/amplitude/experiment-node-server/commit/3b86c3d9a680ed462f57a79aa1f4c2ccc5418dc1))
+
+
+
+
+
 ## [1.2.1](https://github.com/amplitude/experiment-node-server/compare/v1.2.0...v1.2.1) (2022-10-05)
 
 
