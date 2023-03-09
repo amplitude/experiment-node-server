@@ -34,7 +34,7 @@ export class FlagConfigFetcher {
    * environment
    */
   public async fetch(): Promise<Record<string, FlagConfig>> {
-    const endpoint = `${this.serverUrl}/sdk/rules?eval_mode=local`;
+    const endpoint = `${this.serverUrl}/sdk/v1/flags`;
     const headers = {
       Authorization: `Api-Key ${this.apiKey}`,
       Accept: 'application/json',
