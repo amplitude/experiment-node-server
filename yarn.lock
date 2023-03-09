@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@amplitude/evaluation-js@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-js/-/evaluation-js-1.0.0.tgz#1ae828379d3600f433b37a505514b756c94678ef"
-  integrity sha512-U2ibGJ+5XLwfyHPmwDdxkqWhxxmZBs/gnPWalKBnmcY4zGXfBi2XkGbHsghlAD3XD3vZ1eMl7xqhHp3CWtpp/g==
+"@amplitude/evaluation-js@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@amplitude/evaluation-js/-/evaluation-js-1.1.0.tgz#e8c0ae9843165d5b6ab3183df5ba7f54c523faa7"
+  integrity sha512-//PMRmRrmBQMA94hYrDKWvU+037IDxM3rfdyPS3GiQKXMTg6CWPZWsOVlbD2RtXf0QMx5C7q2O6bCjId4tsUWQ==
 
 "@amplitude/experiment-js-client@^0.2.0":
   version "0.2.0"

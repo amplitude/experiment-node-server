@@ -8,7 +8,7 @@ import {
 import { FlagConfig, FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
-import { Variants } from '../types/variant';
+import { Results, Variants } from '../types/variant';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
@@ -80,9 +80,17 @@ export class LocalEvaluationClient {
       'flagConfigs:',
       flagConfigs,
     );
-    const results: Variants = evaluation.evaluate(flagConfigs, user);
-    this.logger.debug('[Experiment] evaluate - result: ', results);
-    return results;
+    const results: Results = evaluation.evaluate(flagConfigs, user);
+    const variants: Variants = {};
+    for (const flagKey in results) {
+      const flagResult = results[flagKey];
+      variants[flagKey] = {
+        value: flagResult.value,
+        payload: flagResult.payload,
+      };
+    }
+    this.logger.debug('[Experiment] evaluate - variants: ', variants);
+    return variants;
   }
 
   /**

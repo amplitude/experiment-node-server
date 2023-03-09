@@ -20,3 +20,16 @@ export type Variant = {
 export type Variants = {
   [flagKey: string]: Variant;
 };
+
+export type FlagResult = {
+  value: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload: any | null | undefined;
+  expKey: string | null | undefined;
+  deployed: boolean;
+  type: string;
+};
+
+export type Results = {
+  [flagKey: string]: FlagResult;
+};
