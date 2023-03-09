@@ -8,7 +8,7 @@ import {
 import { FlagConfig, FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
-import { Results, Variants } from "../types/variant";
+import { Results, Variants } from '../types/variant';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
