@@ -86,7 +86,11 @@ export class LocalEvaluationClient {
     );
     const results: Results = evaluation.evaluate(this.flags, user);
     const variants: Variants = {};
+    const filter = flagKeys && flagKeys.length > 0;
     for (const flagKey in results) {
+      if (filter && !flagKeys.includes(flagKey)) {
+        continue;
+      }
       const flagResult = results[flagKey];
       variants[flagKey] = {
         value: flagResult.value,

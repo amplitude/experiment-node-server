@@ -28,3 +28,36 @@ test('ExperimentClient.evaluate one flag, success', async () => {
   const variant = variants['sdk-local-evaluation-ci-test'];
   expect(variant).toEqual({ value: 'on', payload: 'payload' });
 });
+
+test('ExperimentClient.evaluate with dependencies, no flag keys, success', async () => {
+  const variants = await client.evaluate({
+    user_id: 'user_id',
+    device_id: 'device_id',
+  });
+  const variant = variants['sdk-ci-local-dependencies-test'];
+  expect(variant).toEqual({ value: 'control', payload: null });
+});
+
+test('ExperimentClient.evaluate with dependencies, with flag keys, success', async () => {
+  const variants = await client.evaluate(
+    {
+      user_id: 'user_id',
+      device_id: 'device_id',
+    },
+    ['sdk-ci-local-dependencies-test'],
+  );
+  const variant = variants['sdk-ci-local-dependencies-test'];
+  expect(variant).toEqual({ value: 'control', payload: null });
+});
+
+test('ExperimentClient.evaluate with dependencies, with unknown flag keys, no variant', async () => {
+  const variants = await client.evaluate(
+    {
+      user_id: 'user_id',
+      device_id: 'device_id',
+    },
+    ['does-not-exist'],
+  );
+  const variant = variants['sdk-ci-local-dependencies-test'];
+  expect(variant).toBeUndefined();
+});

@@ -58,7 +58,9 @@ export class FlagConfigFetcher {
       );
     }
     this.logger.debug(`[Experiment] Got flag configs: ${response.body}`);
-    this.receiver(response.body);
+    if (this.receiver) {
+      this.receiver(response.body);
+    }
     return this.parse(response.body);
   }
 
