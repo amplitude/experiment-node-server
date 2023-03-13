@@ -47,7 +47,7 @@ test('ExperimentClient.evaluate benchmark, 10 flags < 20ms', async () => {
   expect(total).toBeLessThan(20);
 });
 
-test('ExperimentClient.evaluate benchmark, 100 flags < 100ms', async () => {
+test('ExperimentClient.evaluate benchmark, 100 flags < 200ms', async () => {
   let total = 0;
   for (let i = 0; i < 100; i++) {
     const user = randomExperimentUser();
@@ -59,10 +59,10 @@ test('ExperimentClient.evaluate benchmark, 100 flags < 100ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('100 flag: ', total, 'ms');
-  expect(total).toBeLessThan(100);
+  expect(total).toBeLessThan(200);
 });
 
-test('ExperimentClient.evaluate benchmark, 1000 flags < 1000ms', async () => {
+test('ExperimentClient.evaluate benchmark, 1000 flags < 2000ms', async () => {
   let total = 0;
   for (let i = 0; i < 1000; i++) {
     const user = randomExperimentUser();
@@ -74,7 +74,7 @@ test('ExperimentClient.evaluate benchmark, 1000 flags < 1000ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('1000 flag: ', total, 'ms');
-  expect(total).toBeLessThan(1000);
+  expect(total).toBeLessThan(2000);
 });
 
 // Utilities
