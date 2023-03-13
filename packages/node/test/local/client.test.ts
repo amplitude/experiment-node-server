@@ -61,3 +61,15 @@ test('ExperimentClient.evaluate with dependencies, with unknown flag keys, no va
   const variant = variants['sdk-ci-local-dependencies-test'];
   expect(variant).toBeUndefined();
 });
+
+test('ExperimentClient.evaluate with dependencies, variant held out', async () => {
+  const variants = await client.evaluate({
+    user_id: 'user_id',
+    device_id: 'device_id',
+  });
+  const variant = variants['sdk-ci-local-dependencies-test-holdout'];
+  expect(variant).toBeUndefined();
+  expect(
+    client.cache.get('sdk-ci-local-dependencies-test-holdout'),
+  ).toBeDefined();
+});

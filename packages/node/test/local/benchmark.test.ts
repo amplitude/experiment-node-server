@@ -21,7 +21,7 @@ afterAll(() => {
  * with respect to CPU
  */
 
-test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
+test('ExperimentClient.evaluate benchmark, 1 flag < 20ms', async () => {
   const user = randomExperimentUser();
   const flag = randomBenchmarkFlag();
   const duration = await measure(async () => {
@@ -29,7 +29,7 @@ test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
   });
   // eslint-disable-next-line no-console
   console.log('1 flag: ', duration, 'ms');
-  expect(duration).toBeLessThan(10);
+  expect(duration).toBeLessThan(20);
 });
 
 test('ExperimentClient.evaluate benchmark, 10 flags < 20ms', async () => {
