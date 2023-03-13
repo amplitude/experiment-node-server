@@ -14,6 +14,8 @@ export class FlagConfigFetcher {
   private readonly serverUrl: string;
   private readonly httpClient: HttpClient;
 
+  private receiver: (string) => void;
+
   public constructor(
     apiKey: string,
     httpClient: HttpClient,
@@ -56,7 +58,12 @@ export class FlagConfigFetcher {
       );
     }
     this.logger.debug(`[Experiment] Got flag configs: ${response.body}`);
+    this.receiver(response.body);
     return this.parse(response.body);
+  }
+
+  public setRawReceiver(rawReceiver: (flags: string) => void): void {
+    this.receiver = rawReceiver;
   }
 
   private parse(flagConfigs: string): Record<string, FlagConfig> {

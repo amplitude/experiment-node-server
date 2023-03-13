@@ -24,6 +24,7 @@ export class LocalEvaluationClient {
   private readonly logger: Logger;
   private readonly config: LocalEvaluationConfig;
   private readonly poller: FlagConfigPoller;
+  private flags: FlagConfig[];
 
   /**
    * Directly access the client's flag config cache.
@@ -47,6 +48,10 @@ export class LocalEvaluationClient {
       this.config.serverUrl,
       this.config.debug,
     );
+    // We no longer use the flag config cache for accessing variants.
+    fetcher.setRawReceiver((flags: string) => {
+      this.flags = JSON.parse(flags);
+    });
     this.cache = flagConfigCache;
     this.logger = new ConsoleLogger(this.config.debug);
     this.poller = new FlagConfigPoller(
@@ -73,14 +78,13 @@ export class LocalEvaluationClient {
     user: ExperimentUser,
     flagKeys?: string[],
   ): Promise<Variants> {
-    const flagConfigs = await this.getFlagConfigs(flagKeys);
     this.logger.debug(
       '[Experiment] evaluate - user:',
       user,
-      'flagConfigs:',
-      flagConfigs,
+      'flags:',
+      this.flags,
     );
-    const results: Results = evaluation.evaluate(flagConfigs, user);
+    const results: Results = evaluation.evaluate(this.flags, user);
     const variants: Variants = {};
     for (const flagKey in results) {
       const flagResult = results[flagKey];
@@ -113,19 +117,5 @@ export class LocalEvaluationClient {
    */
   public stop(): void {
     return this.poller.stop();
-  }
-
-  private async getFlagConfigs(flagKeys?: string[]): Promise<FlagConfig[]> {
-    if (!flagKeys) {
-      return Object.values(await this.cache.getAll());
-    }
-    const result: FlagConfig[] = [];
-    for (const key of flagKeys) {
-      const flagConfig = await this.cache.get(key);
-      if (flagConfig) {
-        result.push(flagConfig);
-      }
-    }
-    return result;
   }
 }
