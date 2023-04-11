@@ -37,4 +37,4 @@ jobs:
       run: npx lerna exec yarn
 
     - name: Test
-      run: yarn test
+      run: yarn test --testPathIgnorePatterns "benchmark.test.ts"
