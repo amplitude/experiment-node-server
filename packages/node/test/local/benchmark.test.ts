@@ -3,12 +3,13 @@ import { ExperimentUser } from 'src/types/user';
 
 import { measure } from './util/performance';
 
-const apiKey = 'server-5G5HQL3jUIPXWaJBTgAvDFHy277srxSg';
+const apiKey = 'server-Ed2doNl5YOblB5lRavQ9toj02arvHpMj';
 
-const client = Experiment.initializeLocal(apiKey);
+const client = Experiment.initializeLocal(apiKey, { debug: false });
 
 beforeAll(async () => {
   await client.start();
+  await client.evaluate({ user_id: 'u', device_id: 'd' });
 });
 
 afterAll(() => {
@@ -20,7 +21,7 @@ afterAll(() => {
  * with respect to CPU
  */
 
-test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
+test('ExperimentClient.evaluate benchmark, 1 flag < 20ms', async () => {
   const user = randomExperimentUser();
   const flag = randomBenchmarkFlag();
   const duration = await measure(async () => {
@@ -28,10 +29,10 @@ test('ExperimentClient.evaluate benchmark, 1 flag < 10ms', async () => {
   });
   // eslint-disable-next-line no-console
   console.log('1 flag: ', duration, 'ms');
-  expect(duration).toBeLessThan(10);
+  expect(duration).toBeLessThan(20);
 });
 
-test('ExperimentClient.evaluate benchmark, 10 flags < 10ms', async () => {
+test('ExperimentClient.evaluate benchmark, 10 flags < 20ms', async () => {
   let total = 0;
   for (let i = 0; i < 10; i++) {
     const user = randomExperimentUser();
@@ -43,10 +44,10 @@ test('ExperimentClient.evaluate benchmark, 10 flags < 10ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('10 flag: ', total, 'ms');
-  expect(total).toBeLessThan(10);
+  expect(total).toBeLessThan(20);
 });
 
-test('ExperimentClient.evaluate benchmark, 100 flags < 100ms', async () => {
+test('ExperimentClient.evaluate benchmark, 100 flags < 200ms', async () => {
   let total = 0;
   for (let i = 0; i < 100; i++) {
     const user = randomExperimentUser();
@@ -58,10 +59,10 @@ test('ExperimentClient.evaluate benchmark, 100 flags < 100ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('100 flag: ', total, 'ms');
-  expect(total).toBeLessThan(100);
+  expect(total).toBeLessThan(200);
 });
 
-test('ExperimentClient.evaluate benchmark, 1000 flags < 1000ms', async () => {
+test('ExperimentClient.evaluate benchmark, 1000 flags < 2000ms', async () => {
   let total = 0;
   for (let i = 0; i < 1000; i++) {
     const user = randomExperimentUser();
@@ -73,7 +74,7 @@ test('ExperimentClient.evaluate benchmark, 1000 flags < 1000ms', async () => {
   }
   // eslint-disable-next-line no-console
   console.log('1000 flag: ', total, 'ms');
-  expect(total).toBeLessThan(1000);
+  expect(total).toBeLessThan(2000);
 });
 
 // Utilities

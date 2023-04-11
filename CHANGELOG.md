@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/amplitude/experiment-node-server/compare/v1.3.0...v1.4.0) (2023-03-14)
+
+
+### Bug Fixes
+
+* flag dependencies; tests ([#14](https://github.com/amplitude/experiment-node-server/issues/14)) ([8ae0118](https://github.com/amplitude/experiment-node-server/commit/8ae01186c0ada351f008e3d17e827cc9de787570))
+
+
+### Features
+
+* flag dependencies ([#13](https://github.com/amplitude/experiment-node-server/issues/13)) ([9f8081e](https://github.com/amplitude/experiment-node-server/commit/9f8081eb37a77e9083016c82b5415b8088629ed4))
+
+
+
+
+
 # [1.3.0](https://github.com/amplitude/experiment-node-server/compare/v1.2.1...v1.3.0) (2023-02-13)
 
 
