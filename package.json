@@ -25,7 +25,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "genversion": "^2.3.1",
     "jest": "^26.6.3",
-    "lerna": "^3.22.1",
+    "lerna": "^6.6.1",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.2",
     "typedoc": "^0.23.9",
