@@ -1,5 +1,6 @@
 import evaluation from '@amplitude/evaluation-js';
 
+import { Assignment, AssignmentService } from 'src/types/assignment';
 import { FetchHttpClient } from '../transport/http';
 import {
   LocalEvaluationConfig,
@@ -15,6 +16,7 @@ import { Logger } from '../util/logger';
 import { InMemoryFlagConfigCache } from './cache';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
+import { AmplitudeAssignmentService } from "src/assignment/assignment-service";
 
 /**
  * Experiment client for evaluating variants for a user locally.
@@ -25,6 +27,7 @@ export class LocalEvaluationClient {
   private readonly config: LocalEvaluationConfig;
   private readonly poller: FlagConfigPoller;
   private flags: FlagConfig[];
+  private readonly assignmentService: AssignmentService;
 
   /**
    * Directly access the client's flag config cache.
@@ -60,6 +63,10 @@ export class LocalEvaluationClient {
       this.config.flagConfigPollingIntervalMillis,
       this.config.debug,
     );
+    this.assignmentService = new AmplitudeAssignmentService(
+      config.assignmentConfiguration,
+      null, // TODO add filter
+    );
   }
 
   /**
@@ -85,6 +92,7 @@ export class LocalEvaluationClient {
       this.flags,
     );
     const results: Results = evaluation.evaluate(this.flags, user);
+    void this.assignmentService.track({ user: user, results: results });
     const variants: Variants = {};
     const filter = flagKeys && flagKeys.length > 0;
     for (const flagKey in results) {

@@ -140,6 +140,18 @@ export type LocalEvaluationConfig = {
    * The agent used to send http requests.
    */
   httpAgent?: https.Agent;
+
+  /**
+   * Configuration for automatically tracking assignment events after an
+   * evaluation.
+   */
+  assignmentConfiguration?: AssignmentConfiguration;
+};
+
+export type AssignmentConfiguration = {
+  apiKey: string;
+  filterCapacity: number;
+  // TODO other analytics sdk configuration options
 };
 
 /**
