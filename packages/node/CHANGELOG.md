@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/amplitude/experiment-node-server/compare/v1.4.0...v1.5.0) (2023-07-10)
+
+
+### Features
+
+* support groups and group properties on skylab user ([#20](https://github.com/amplitude/experiment-node-server/issues/20)) ([7624e1d](https://github.com/amplitude/experiment-node-server/commit/7624e1deaf2c6e981610418f994478d794cdeaa9))
+
+
+
+
+
 # [1.4.0](https://github.com/amplitude/experiment-node-server/compare/v1.3.0...v1.4.0) (2023-03-14)
 
 
