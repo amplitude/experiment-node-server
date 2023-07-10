@@ -23,13 +23,6 @@
     base64-js "1.5.1"
     unfetch "4.1.0"
 
-"@amplitude/experiment-node-server@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-node-server/-/experiment-node-server-1.4.0.tgz#6aeaa3d1f12050260f566b7dd782fd0480365a20"
-  integrity sha512-MbpW50oVndmXH/aKPDXfIM1AmGOhFkzpt5gl9OyZxBAkE/JT5CyeeWXTa2Qj4KcbyRyrBm80BDHoJ/BNhDPIew==
-  dependencies:
-    "@amplitude/evaluation-js" "1.1.0"
-
 "@amplitude/ua-parser-js@0.7.31":
   version "0.7.31"
   resolved "https://registry.yarnpkg.com/@amplitude/ua-parser-js/-/ua-parser-js-0.7.31.tgz#749bf7cb633cfcc7ff3c10805bad7c5f6fbdbc61"
