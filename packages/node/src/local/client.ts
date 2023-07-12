@@ -1,6 +1,12 @@
+import * as amplitude from '@amplitude/analytics-node';
 import evaluation from '@amplitude/evaluation-js';
+import { Assignment, AssignmentService } from 'src/assignment/assignment';
+import {
+  DEFAULT_FILTER_CAPACITY,
+  LRUAssignmentFilter,
+} from 'src/assignment/assignment-filter';
+import { AmplitudeAssignmentService } from 'src/assignment/assignment-service';
 
-import { Assignment, AssignmentService } from 'src/types/assignment';
 import { FetchHttpClient } from '../transport/http';
 import {
   LocalEvaluationConfig,
@@ -16,7 +22,6 @@ import { Logger } from '../util/logger';
 import { InMemoryFlagConfigCache } from './cache';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
-import { AmplitudeAssignmentService } from "src/assignment/assignment-service";
 
 /**
  * Experiment client for evaluating variants for a user locally.
@@ -63,10 +68,21 @@ export class LocalEvaluationClient {
       this.config.flagConfigPollingIntervalMillis,
       this.config.debug,
     );
-    this.assignmentService = new AmplitudeAssignmentService(
-      config.assignmentConfiguration,
-      null, // TODO add filter
-    );
+
+    if (config.assignmentConfiguration) {
+      const instance = amplitude.createInstance();
+      instance.init(
+        config.assignmentConfiguration.apiKey,
+        config.assignmentConfiguration,
+      );
+      const filterCapacity = config?.assignmentConfiguration?.filterCapacity
+        ? config?.assignmentConfiguration?.filterCapacity
+        : DEFAULT_FILTER_CAPACITY;
+      this.assignmentService = new AmplitudeAssignmentService(
+        instance,
+        new LRUAssignmentFilter(filterCapacity), // TODO add filter
+      );
+    }
   }
 
   /**
@@ -92,7 +108,7 @@ export class LocalEvaluationClient {
       this.flags,
     );
     const results: Results = evaluation.evaluate(this.flags, user);
-    void this.assignmentService.track({ user: user, results: results });
+    void this.assignmentService?.track(new Assignment(user, results));
     const variants: Variants = {};
     const filter = flagKeys && flagKeys.length > 0;
     for (const flagKey in results) {

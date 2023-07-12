@@ -1,5 +1,7 @@
 import https from 'https';
 
+import { NodeConfig } from '@amplitude/analytics-node/lib/cjs/config';
+
 import { FlagConfig } from './flag';
 
 /**
@@ -149,10 +151,8 @@ export type LocalEvaluationConfig = {
 };
 
 export type AssignmentConfiguration = {
-  apiKey: string;
-  filterCapacity: number;
-  // TODO other analytics sdk configuration options
-};
+  filterCapacity?: number;
+} & NodeConfig;
 
 /**
  Defaults for {@link LocalEvaluationConfig} options.

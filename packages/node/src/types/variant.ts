@@ -23,8 +23,10 @@ export type Variants = {
 
 export type FlagResult = {
   value: string;
+  payload: string;
+  description: string;
+  isDefaultVariant: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: any | null | undefined;
   expKey: string | null | undefined;
   deployed: boolean;
   type: string;
