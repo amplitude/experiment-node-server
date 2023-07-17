@@ -151,6 +151,11 @@ export type LocalEvaluationConfig = {
 };
 
 export type AssignmentConfiguration = {
+  /**
+   * The maximum number of assignments stored in the assignment cache
+   *
+   * Default: 65536
+   */
   filterCapacity?: number;
 } & NodeConfig;
 

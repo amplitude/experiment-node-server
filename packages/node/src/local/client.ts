@@ -75,12 +75,12 @@ export class LocalEvaluationClient {
         config.assignmentConfiguration.apiKey,
         config.assignmentConfiguration,
       );
-      const filterCapacity = config?.assignmentConfiguration?.filterCapacity
-        ? config?.assignmentConfiguration?.filterCapacity
+      const filterCapacity = config.assignmentConfiguration?.filterCapacity
+        ? config.assignmentConfiguration?.filterCapacity
         : DEFAULT_FILTER_CAPACITY;
       this.assignmentService = new AmplitudeAssignmentService(
         instance,
-        new LRUAssignmentFilter(filterCapacity), // TODO add filter
+        new LRUAssignmentFilter(filterCapacity),
       );
     }
   }

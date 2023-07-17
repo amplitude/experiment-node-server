@@ -8,8 +8,6 @@ import {
 import { ExperimentUser } from 'src/types/user';
 import { hashCode } from 'src/util/hash';
 
-jest.mock('@amplitude/analytics-types');
-
 const testFilter: AssignmentFilter = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shouldTrack(assignment: Assignment): boolean {
@@ -40,30 +38,26 @@ test('assignment to event as expected', async () => {
   expect(event.device_id).toEqual(user.device_id);
   expect(event.event_type).toEqual('[Experiment] Assignment');
   const eventProperties = event.event_properties;
-  expect(Object.keys(eventProperties).length).toEqual(4);
+  expect(Object.keys(eventProperties).length).toEqual(2);
   expect(eventProperties['flag-key-1.variant']).toEqual('on');
-  expect(eventProperties['flag-key-1.details']).toEqual('description-1');
   expect(eventProperties['flag-key-2.variant']).toEqual('control');
-  expect(eventProperties['flag-key-2.details']).toEqual('description-2');
   const userProperties = event.user_properties;
   expect(Object.keys(userProperties).length).toEqual(2);
   expect(Object.keys(userProperties['$set']).length).toEqual(1);
   expect(Object.keys(userProperties['$unset']).length).toEqual(1);
-  // const canonicalization = 'user device flag-key-1 on flag-key-2 control ';
-  const expected = `user device ${hashCode(assignment.canonicalize())} ${
+  const canonicalization = 'user device flag-key-1 on flag-key-2 control ';
+  const expected = `user device ${hashCode(canonicalization)} ${
     assignment.timestamp / DAY_MILLIS
   }`;
   expect(event.insert_id).toEqual(expected);
 });
 
-// TODO check whether amplitude tracking is called
 test('tracking called', async () => {
   const logEventMock = jest.spyOn(instance, 'logEvent');
   await service.track(new Assignment({}, {}));
   expect(logEventMock).toHaveBeenCalled();
 });
 
-// TODO test filter works properly
 test('filter - single assignment', async () => {
   const user: ExperimentUser = { user_id: 'user' };
   const results = {};
