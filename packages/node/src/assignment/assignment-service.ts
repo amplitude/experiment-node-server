@@ -8,6 +8,7 @@ import {
 import { hashCode } from 'src/util/hash';
 
 export const DAY_MILLIS = 24 * 60 * 60 * 1000;
+const FLAG_TYPE_MUTUAL_EXCLUSION_GROUP = 'mutual-exclusion-group';
 
 export class AmplitudeAssignmentService implements AssignmentService {
   private readonly amplitude: CoreClient;
@@ -41,7 +42,11 @@ export class AmplitudeAssignmentService implements AssignmentService {
     const set = {};
     const unset = {};
     for (const resultsKey in assignment.results) {
-      if (assignment.results[resultsKey].isDefaultVariant) {
+      if (
+        assignment.results[resultsKey].type == FLAG_TYPE_MUTUAL_EXCLUSION_GROUP
+      ) {
+        continue;
+      } else if (assignment.results[resultsKey].isDefaultVariant) {
         unset[`[Experiment] ${resultsKey}`] = '-';
       } else {
         set[`[Experiment] ${resultsKey}`] =

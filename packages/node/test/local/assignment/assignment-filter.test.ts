@@ -1,62 +1,7 @@
-import * as amplitude from '@amplitude/analytics-node';
-import { Assignment, AssignmentFilter } from 'src/assignment/assignment';
-import { LRUAssignmentFilter } from 'src/assignment/assignment-filter';
-import {
-  AmplitudeAssignmentService,
-  DAY_MILLIS,
-} from 'src/assignment/assignment-service';
+import { Assignment } from 'src/assignment/assignment';
+import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
 import { ExperimentUser } from 'src/types/user';
-import { hashCode } from 'src/util/hash';
-
-const testFilter: AssignmentFilter = {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  shouldTrack(assignment: Assignment): boolean {
-    return true;
-  },
-};
-
-const instance = amplitude.createInstance();
-const service = new AmplitudeAssignmentService(instance, testFilter);
-test('assignment to event as expected', async () => {
-  const user: ExperimentUser = { user_id: 'user', device_id: 'device' };
-  const results = {};
-  results['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
-  };
-  results['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
-  };
-  const assignment = new Assignment(user, results);
-  const instance = amplitude.createInstance();
-  const service = new AmplitudeAssignmentService(instance, testFilter);
-  const event = service.toEvent(assignment);
-  expect(event.user_id).toEqual(user.user_id);
-  expect(event.device_id).toEqual(user.device_id);
-  expect(event.event_type).toEqual('[Experiment] Assignment');
-  const eventProperties = event.event_properties;
-  expect(Object.keys(eventProperties).length).toEqual(2);
-  expect(eventProperties['flag-key-1.variant']).toEqual('on');
-  expect(eventProperties['flag-key-2.variant']).toEqual('control');
-  const userProperties = event.user_properties;
-  expect(Object.keys(userProperties).length).toEqual(2);
-  expect(Object.keys(userProperties['$set']).length).toEqual(1);
-  expect(Object.keys(userProperties['$unset']).length).toEqual(1);
-  const canonicalization = 'user device flag-key-1 on flag-key-2 control ';
-  const expected = `user device ${hashCode(canonicalization)} ${
-    assignment.timestamp / DAY_MILLIS
-  }`;
-  expect(event.insert_id).toEqual(expected);
-});
-
-test('tracking called', async () => {
-  const logEventMock = jest.spyOn(instance, 'logEvent');
-  await service.track(new Assignment({}, {}));
-  expect(logEventMock).toHaveBeenCalled();
-});
+import { MockAssignmentFilter } from 'test/local/util/mockAssignmentFilter';
 
 test('filter - single assignment', async () => {
   const user: ExperimentUser = { user_id: 'user' };
@@ -72,7 +17,7 @@ test('filter - single assignment', async () => {
     isDefaultVariant: true,
   };
 
-  const filter = new LRUAssignmentFilter(100);
+  const filter = new InMemoryAssignmentFilter(100);
   const assignment = new Assignment(user, results);
   expect(filter.shouldTrack(assignment)).toEqual(true);
 });
@@ -91,7 +36,7 @@ test('filter - duplicate assignment', async () => {
     isDefaultVariant: true,
   };
 
-  const filter = new LRUAssignmentFilter(100);
+  const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user, results);
   const assignment2 = new Assignment(user, results);
   filter.shouldTrack(assignment1);
@@ -124,7 +69,7 @@ test('filter - same user different results', async () => {
     isDefaultVariant: true,
   };
 
-  const filter = new LRUAssignmentFilter(100);
+  const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user, results1);
   const assignment2 = new Assignment(user, results2);
   expect(filter.shouldTrack(assignment1)).toEqual(true);
@@ -146,7 +91,7 @@ test('filter - same result different user', async () => {
     isDefaultVariant: true,
   };
 
-  const filter = new LRUAssignmentFilter(100);
+  const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user1, results);
   const assignment2 = new Assignment(user2, results);
   expect(filter.shouldTrack(assignment1)).toEqual(true);
@@ -157,7 +102,7 @@ test('filter - empty result', async () => {
   const user1: ExperimentUser = { user_id: 'user' };
   const user2: ExperimentUser = { user_id: 'different-user' };
 
-  const filter = new LRUAssignmentFilter(100);
+  const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user1, {});
   const assignment2 = new Assignment(user1, {});
   const assignment3 = new Assignment(user2, {});
@@ -186,7 +131,7 @@ test('filter - duplicate assignments with different result ordering', async () =
   results2['flag-key-2'] = result2;
   results2['flag-key-1'] = result1;
 
-  const filter = new LRUAssignmentFilter(100);
+  const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user, results1);
   const assignment2 = new Assignment(user, results2);
   expect(filter.shouldTrack(assignment1)).toEqual(true);
@@ -209,7 +154,7 @@ test('filter - lru replacement', async () => {
     isDefaultVariant: true,
   };
 
-  const filter = new LRUAssignmentFilter(2);
+  const filter = new InMemoryAssignmentFilter(2);
   const assignment1 = new Assignment(user1, results);
   const assignment2 = new Assignment(user2, results);
   const assignment3 = new Assignment(user3, results);
@@ -217,4 +162,33 @@ test('filter - lru replacement', async () => {
   expect(filter.shouldTrack(assignment2)).toEqual(true);
   expect(filter.shouldTrack(assignment3)).toEqual(true);
   expect(filter.shouldTrack(assignment1)).toEqual(true);
+});
+
+test('filter - ttl-based eviction', async () => {
+  const user1: ExperimentUser = { user_id: 'user' };
+  const user2: ExperimentUser = { user_id: 'different-user' };
+  const results = {};
+  results['flag-key-1'] = {
+    value: 'on',
+    description: 'description-1',
+    isDefaultVariant: false,
+  };
+  results['flag-key-2'] = {
+    value: 'control',
+    description: 'description-2',
+    isDefaultVariant: true,
+  };
+
+  const filter = new MockAssignmentFilter(100, 1000);
+  const assignment1 = new Assignment(user1, results);
+  const assignment2 = new Assignment(user2, results);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // expect assignment1 to be evicted
+  expect(filter.shouldTrack(assignment1)).toEqual(true);
+  await sleep(1050);
+  expect(filter.shouldTrack(assignment1)).toEqual(true);
+  // expect assignment2 to not be evicted
+  expect(filter.shouldTrack(assignment2)).toEqual(true);
+  await sleep(950);
+  expect(filter.shouldTrack(assignment2)).toEqual(false);
 });

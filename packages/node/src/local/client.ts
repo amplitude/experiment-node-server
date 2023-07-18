@@ -3,7 +3,7 @@ import evaluation from '@amplitude/evaluation-js';
 import { Assignment, AssignmentService } from 'src/assignment/assignment';
 import {
   DEFAULT_FILTER_CAPACITY,
-  LRUAssignmentFilter,
+  InMemoryAssignmentFilter,
 } from 'src/assignment/assignment-filter';
 import { AmplitudeAssignmentService } from 'src/assignment/assignment-service';
 
@@ -68,21 +68,26 @@ export class LocalEvaluationClient {
       this.config.flagConfigPollingIntervalMillis,
       this.config.debug,
     );
+    this.assignmentService = this.createAssignmentService();
+  }
 
-    if (config.assignmentConfiguration) {
+  private createAssignmentService(): AssignmentService | null {
+    if (this.config.assignmentConfiguration) {
       const instance = amplitude.createInstance();
       instance.init(
-        config.assignmentConfiguration.apiKey,
-        config.assignmentConfiguration,
+        this.config.assignmentConfiguration.apiKey,
+        this.config.assignmentConfiguration,
       );
-      const filterCapacity = config.assignmentConfiguration?.filterCapacity
-        ? config.assignmentConfiguration?.filterCapacity
+      const filterCapacity = this.config.assignmentConfiguration?.filterCapacity
+        ? this.config.assignmentConfiguration?.filterCapacity
         : DEFAULT_FILTER_CAPACITY;
-      this.assignmentService = new AmplitudeAssignmentService(
+      const assignmentService = new AmplitudeAssignmentService(
         instance,
-        new LRUAssignmentFilter(filterCapacity),
+        new InMemoryAssignmentFilter(filterCapacity),
       );
+      return assignmentService;
     }
+    return null;
   }
 
   /**
