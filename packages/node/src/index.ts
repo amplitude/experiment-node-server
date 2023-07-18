@@ -14,6 +14,7 @@ export {
   RemoteEvaluationDefaults,
 } from './types/config';
 export { Experiment } from './factory';
+export { FetchOptions } from './types/fetch';
 export { ExperimentUser } from './types/user';
 export { Variant, Variants } from './types/variant';
 export { LocalEvaluationClient } from './local/client';

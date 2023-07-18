@@ -5,6 +5,7 @@ import {
   RemoteEvaluationDefaults,
   RemoteEvaluationConfig,
 } from '../types/config';
+import { FetchOptions } from '../types/fetch';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
@@ -37,32 +38,39 @@ export class RemoteEvaluationClient {
    * This method will automatically retry if configured (default).
    *
    * @param user The {@link ExperimentUser} context
+   * @param options The {@link FetchOptions} for this specific fetch request.
    * @return The {@link Variants} for the user on success, empty
    * {@link Variants} on error.
    */
-  public async fetch(user: ExperimentUser): Promise<Variants> {
+  public async fetch(
+    user: ExperimentUser,
+    options?: FetchOptions,
+  ): Promise<Variants> {
     if (!this.apiKey) {
       throw Error('Experiment API key is empty');
     }
     try {
-      return await this.fetchInternal(user);
+      return await this.fetchInternal(user, options);
     } catch (e) {
       console.error('[Experiment] Failed to fetch variants: ', e);
       return {};
     }
   }
 
-  private async fetchInternal(user: ExperimentUser): Promise<Variants> {
+  private async fetchInternal(
+    user: ExperimentUser,
+    options?: FetchOptions,
+  ): Promise<Variants> {
     if (!this.apiKey) {
       throw Error('Experiment API key is empty');
     }
     this.debug('[Experiment] Fetching variants for user: ', user);
     try {
-      return await this.doFetch(user, this.config.fetchTimeoutMillis);
+      return await this.doFetch(user, this.config.fetchTimeoutMillis, options);
     } catch (e) {
       console.error('[Experiment] Fetch failed: ', e);
       try {
-        return await this.retryFetch(user);
+        return await this.retryFetch(user, options);
       } catch (e) {
         console.error(e);
       }
@@ -73,6 +81,7 @@ export class RemoteEvaluationClient {
   private async doFetch(
     user: ExperimentUser,
     timeoutMillis: number,
+    options?: FetchOptions,
   ): Promise<Variants> {
     const userContext = this.addContext(user || {});
     const endpoint = `${this.config.serverUrl}/sdk/vardata`;
@@ -83,6 +92,11 @@ export class RemoteEvaluationClient {
       Authorization: `Api-Key ${this.apiKey}`,
       'X-Amp-Exp-User': encodedUser,
     };
+    if (options && options.flagKeys) {
+      headers['X-Amp-Exp-Flag-Keys'] = Buffer.from(
+        JSON.stringify(options.flagKeys),
+      ).toString('base64url');
+    }
     this.debug('[Experiment] Fetch variants for user: ', userContext);
     const response = await this.httpClient.request(
       endpoint,
@@ -102,7 +116,10 @@ export class RemoteEvaluationClient {
     return variants;
   }
 
-  private async retryFetch(user: ExperimentUser): Promise<Variants> {
+  private async retryFetch(
+    user: ExperimentUser,
+    options?: FetchOptions,
+  ): Promise<Variants> {
     if (this.config.fetchRetries == 0) {
       return {};
     }
@@ -112,7 +129,11 @@ export class RemoteEvaluationClient {
     for (let i = 0; i < this.config.fetchRetries; i++) {
       await sleep(delayMillis);
       try {
-        return await this.doFetch(user, this.config.fetchRetryTimeoutMillis);
+        return await this.doFetch(
+          user,
+          this.config.fetchRetryTimeoutMillis,
+          options,
+        );
       } catch (e) {
         console.error('[Experiment] Retry falied: ', e);
         err = e;
