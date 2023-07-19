@@ -1,6 +1,7 @@
 import { Assignment } from 'src/assignment/assignment';
 import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
 import { ExperimentUser } from 'src/types/user';
+import { sleep } from 'src/util/time';
 import { MockAssignmentFilter } from 'test/local/util/mockAssignmentFilter';
 
 test('filter - single assignment', async () => {
@@ -182,7 +183,6 @@ test('filter - ttl-based eviction', async () => {
   const filter = new MockAssignmentFilter(100, 1000);
   const assignment1 = new Assignment(user1, results);
   const assignment2 = new Assignment(user2, results);
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // expect assignment1 to be evicted
   expect(filter.shouldTrack(assignment1)).toEqual(true);
   await sleep(1050);

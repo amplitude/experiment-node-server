@@ -1,6 +1,6 @@
 import https from 'https';
 
-import { NodeConfig } from '@amplitude/analytics-node/lib/cjs/config';
+import { NodeOptions } from '@amplitude/analytics-types';
 
 import { FlagConfig } from './flag';
 
@@ -152,12 +152,16 @@ export type LocalEvaluationConfig = {
 
 export type AssignmentConfiguration = {
   /**
+   * The analytics API key and NOT the experiment deployment key
+   */
+  apiKey: string;
+  /**
    * The maximum number of assignments stored in the assignment cache
    *
    * Default: 65536
    */
   filterCapacity?: number;
-} & NodeConfig;
+} & NodeOptions;
 
 /**
  Defaults for {@link LocalEvaluationConfig} options.
