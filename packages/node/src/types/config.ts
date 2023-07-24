@@ -2,6 +2,8 @@ import https from 'https';
 
 import { NodeOptions } from '@amplitude/analytics-types';
 
+import { LocalEvaluationClient } from '..';
+
 import { FlagConfig } from './flag';
 
 /**

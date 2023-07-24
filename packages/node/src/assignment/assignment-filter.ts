@@ -12,11 +12,10 @@ export class InMemoryAssignmentFilter implements AssignmentFilter {
   }
 
   public shouldTrack(assignment: Assignment): boolean {
-    const now = Date.now();
     const canonicalAssignment = assignment.canonicalize();
     const track = this.cache.get(canonicalAssignment) == null;
     if (track) {
-      this.cache.put(canonicalAssignment, now);
+      this.cache.put(canonicalAssignment, 0);
     }
     return track;
   }
