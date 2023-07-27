@@ -59,12 +59,12 @@ test('filter - same user different results', async () => {
   };
 
   const results2 = {};
-  results1['flag-key-1'] = {
+  results2['flag-key-1'] = {
     value: 'control',
     description: 'description-1',
     isDefaultVariant: false,
   };
-  results1['flag-key-2'] = {
+  results2['flag-key-2'] = {
     value: 'on',
     description: 'description-2',
     isDefaultVariant: true,

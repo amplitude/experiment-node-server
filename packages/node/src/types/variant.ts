@@ -23,7 +23,7 @@ export type Variants = {
 
 export type FlagResult = {
   value: string;
-  payload: string;
+  payload: any | null | undefined;
   isDefaultVariant: boolean;
   expKey: string | null | undefined;
   deployed: boolean;
