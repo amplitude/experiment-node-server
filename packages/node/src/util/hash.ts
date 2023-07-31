@@ -1,11 +1,8 @@
 export function hashCode(s: string): number {
-  let hash = 0,
-    i,
-    chr,
-    len;
+  let hash = 0;
   if (s.length === 0) return hash;
-  for (i = 0, len = s.length; i < len; i++) {
-    chr = s.charCodeAt(i);
+  for (let i = 0; i < s.length; i++) {
+    const chr = s.charCodeAt(i);
     hash = (hash << 5) - hash + chr;
     hash |= 0;
   }

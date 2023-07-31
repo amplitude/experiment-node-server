@@ -1,11 +1,11 @@
 class ListNode<T> {
-  prev: ListNode<T> | null;
-  next: ListNode<T> | null;
+  prev: ListNode<T> | undefined;
+  next: ListNode<T> | undefined;
   data: T;
 
   constructor(data: T) {
-    this.prev = null;
-    this.next = null;
+    this.prev = undefined;
+    this.next = undefined;
     this.data = data;
   }
 }
@@ -20,15 +20,15 @@ export class Cache<T> {
   private readonly capacity: number;
   private readonly ttlMillis: number;
   private cache: Map<string, ListNode<CacheItem<T>>>;
-  private head: ListNode<CacheItem<T>> | null;
-  private tail: ListNode<CacheItem<T>> | null;
+  private head: ListNode<CacheItem<T>> | undefined;
+  private tail: ListNode<CacheItem<T>> | undefined;
 
   constructor(capacity: number, ttlMillis: number) {
     this.capacity = capacity;
     this.ttlMillis = ttlMillis;
     this.cache = new Map();
-    this.head = null;
-    this.tail = null;
+    this.head = undefined;
+    this.tail = undefined;
   }
 
   put(key: string, value: T): void {
@@ -72,8 +72,8 @@ export class Cache<T> {
 
   clear(): void {
     this.cache.clear();
-    this.head = null;
-    this.tail = null;
+    this.head = undefined;
+    this.tail = undefined;
   }
 
   private evictLRU(): void {
@@ -103,7 +103,7 @@ export class Cache<T> {
     if (this.tail) {
       this.tail.next = node;
       node.prev = this.tail;
-      node.next = null;
+      node.next = undefined;
       this.tail = node;
     } else {
       this.head = node;

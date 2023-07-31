@@ -1,6 +1,14 @@
 import { ExperimentUser } from 'src/types/user';
 import { Results } from 'src/types/variant';
 
+export interface AssignmentService {
+  track(assignment: Assignment): Promise<void>;
+}
+
+export interface AssignmentFilter {
+  shouldTrack(assignment: Assignment): boolean;
+}
+
 export class Assignment {
   public user: ExperimentUser;
   public results: Results;
@@ -12,20 +20,11 @@ export class Assignment {
   }
 
   public canonicalize(): string {
-    let sb =
-      this.user.user_id?.trim() + ' ' + this.user.device_id?.trim() + ' ';
+    let canonical = `${this.user.user_id?.trim()} ${this.user.device_id?.trim()} `;
     for (const key of Object.keys(this.results).sort()) {
       const value = this.results[key];
-      sb += key.trim() + ' ' + value?.value?.trim() + ' ';
+      canonical += key.trim() + ' ' + value?.value?.trim() + ' ';
     }
-    return sb;
+    return canonical;
   }
-}
-
-export interface AssignmentService {
-  track(assignment: Assignment): Promise<void>;
-}
-
-export interface AssignmentFilter {
-  shouldTrack(assignment: Assignment): boolean;
 }

@@ -183,5 +183,11 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
   httpAgent: null,
-  assignmentConfiguration: null,
+};
+
+export const AssignmentConfigurationDefaults: Omit<
+  AssignmentConfiguration,
+  'apiKey'
+> = {
+  filterCapacity: 65536,
 };

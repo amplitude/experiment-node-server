@@ -2,7 +2,6 @@ import { Assignment } from 'src/assignment/assignment';
 import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
 import { ExperimentUser } from 'src/types/user';
 import { sleep } from 'src/util/time';
-import { MockAssignmentFilter } from 'test/local/util/mockAssignmentFilter';
 
 test('filter - single assignment', async () => {
   const user: ExperimentUser = { user_id: 'user' };
@@ -180,7 +179,7 @@ test('filter - ttl-based eviction', async () => {
     isDefaultVariant: true,
   };
 
-  const filter = new MockAssignmentFilter(100, 1000);
+  const filter = new InMemoryAssignmentFilter(100, 1000);
   const assignment1 = new Assignment(user1, results);
   const assignment2 = new Assignment(user2, results);
   // expect assignment1 to be evicted

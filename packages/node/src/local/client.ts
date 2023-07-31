@@ -1,14 +1,13 @@
 import * as amplitude from '@amplitude/analytics-node';
 import evaluation from '@amplitude/evaluation-js';
 import { Assignment, AssignmentService } from 'src/assignment/assignment';
-import {
-  DEFAULT_FILTER_CAPACITY,
-  InMemoryAssignmentFilter,
-} from 'src/assignment/assignment-filter';
+import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
 import { AmplitudeAssignmentService } from 'src/assignment/assignment-service';
 
 import { FetchHttpClient } from '../transport/http';
 import {
+  AssignmentConfiguration,
+  AssignmentConfigurationDefaults,
   LocalEvaluationConfig,
   LocalEvaluationDefaults,
 } from '../types/config';
@@ -68,26 +67,26 @@ export class LocalEvaluationClient {
       this.config.flagConfigPollingIntervalMillis,
       this.config.debug,
     );
-    this.assignmentService = this.createAssignmentService();
-  }
-
-  private createAssignmentService(): AssignmentService | null {
     if (this.config.assignmentConfiguration) {
-      const instance = amplitude.createInstance();
-      instance.init(
-        this.config.assignmentConfiguration.apiKey,
+      this.config.assignmentConfiguration = {
+        ...AssignmentConfigurationDefaults,
+        ...this.config.assignmentConfiguration,
+      };
+      this.assignmentService = this.createAssignmentService(
         this.config.assignmentConfiguration,
       );
-      const filterCapacity = this.config.assignmentConfiguration?.filterCapacity
-        ? this.config.assignmentConfiguration?.filterCapacity
-        : DEFAULT_FILTER_CAPACITY;
-      const assignmentService = new AmplitudeAssignmentService(
-        instance,
-        new InMemoryAssignmentFilter(filterCapacity),
-      );
-      return assignmentService;
     }
-    return null;
+  }
+
+  private createAssignmentService(
+    assignmentConfiguration: AssignmentConfiguration,
+  ): AssignmentService {
+    const instance = amplitude.createInstance();
+    instance.init(assignmentConfiguration.apiKey, assignmentConfiguration);
+    return new AmplitudeAssignmentService(
+      instance,
+      new InMemoryAssignmentFilter(assignmentConfiguration.filterCapacity),
+    );
   }
 
   /**

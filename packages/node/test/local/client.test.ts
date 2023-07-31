@@ -75,21 +75,3 @@ test('ExperimentClient.evaluate with dependencies, variant held out', async () =
     client.cache.get('sdk-ci-local-dependencies-test-holdout'),
   ).toBeDefined();
 });
-
-test('ExperimentClient.evaluate with assignmentConfiguration', async () => {
-  const client = new LocalEvaluationClient(apiKey, {
-    assignmentConfiguration: {
-      apiKey: 'a6dd847b9d2f03c816d4f3f8458cdc1d',
-    },
-  });
-  await client.start();
-  await client.evaluate({ user_id: 'tim.yiu@amplitude.com' });
-  await sleep(4000);
-});
-
-test('ExperimentClient.evaluate without assignmentConfiguration', async () => {
-  const client = new LocalEvaluationClient(apiKey, {});
-  await client.start();
-  await client.evaluate({ user_id: 'tim.yiu@amplitude.com' });
-  await sleep(4000);
-});
