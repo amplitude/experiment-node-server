@@ -149,10 +149,10 @@ export type LocalEvaluationConfig = {
    * Configuration for automatically tracking assignment events after an
    * evaluation.
    */
-  assignmentConfiguration?: AssignmentConfiguration;
+  assignmentConfig?: AssignmentConfig;
 };
 
-export type AssignmentConfiguration = {
+export type AssignmentConfig = {
   /**
    * The analytics API key and NOT the experiment deployment key
    */
@@ -185,9 +185,6 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   httpAgent: null,
 };
 
-export const AssignmentConfigurationDefaults: Omit<
-  AssignmentConfiguration,
-  'apiKey'
-> = {
+export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
   filterCapacity: 65536,
 };

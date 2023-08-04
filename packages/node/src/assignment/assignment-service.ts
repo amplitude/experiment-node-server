@@ -8,7 +8,8 @@ import {
 import { hashCode } from 'src/util/hash';
 
 export const DAY_MILLIS = 24 * 60 * 60 * 1000;
-const FLAG_TYPE_MUTUAL_EXCLUSION_GROUP = 'mutual-exclusion-group';
+export const FLAG_TYPE_MUTUAL_EXCLUSION_GROUP = 'mutual-exclusion-group';
+export const FLAG_TYPE_HOLDOUT_GROUP = 'holdout-group';
 
 export class AmplitudeAssignmentService implements AssignmentService {
   private readonly amplitude: CoreClient;
