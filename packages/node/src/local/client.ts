@@ -86,11 +86,11 @@ export class LocalEvaluationClient {
     assignmentConfig: AssignmentConfig,
   ): AssignmentService {
     const instance = amplitude.createInstance();
-    const { apiKey, filterCapacity, ...ampConfig } = assignmentConfig;
+    const { apiKey, cacheCapacity, ...ampConfig } = assignmentConfig;
     instance.init(apiKey, ampConfig);
     return new AmplitudeAssignmentService(
       instance,
-      new InMemoryAssignmentFilter(filterCapacity),
+      new InMemoryAssignmentFilter(cacheCapacity),
     );
   }
 

@@ -162,7 +162,7 @@ export type AssignmentConfig = {
    *
    * Default: 65536
    */
-  filterCapacity?: number;
+  cacheCapacity?: number;
 } & NodeOptions;
 
 /**
@@ -186,5 +186,5 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
-  filterCapacity: 65536,
+  cacheCapacity: 65536,
 };
