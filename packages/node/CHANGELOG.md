@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/amplitude/experiment-node-server/compare/v1.6.0...v1.7.0) (2023-08-08)
+
+
+### Features
+
+* Auto-assignment tracking ([#22](https://github.com/amplitude/experiment-node-server/issues/22)) ([6866739](https://github.com/amplitude/experiment-node-server/commit/686673918957f1653fe96f1fba6e3feb99629a4a))
+
+
+
+
+
 # [1.6.0](https://github.com/amplitude/experiment-node-server/compare/v1.5.0...v1.6.0) (2023-07-19)
 
 
