@@ -18,7 +18,7 @@ export { FetchOptions } from './types/fetch';
 export { ExperimentUser } from './types/user';
 export { Variant, Variants } from './types/variant';
 export { LocalEvaluationClient } from './local/client';
-export { LocalEvaluationConfig } from './types/config';
+export { LocalEvaluationConfig, AssignmentConfig } from './types/config';
 export { FlagConfigFetcher } from './local/fetcher';
 export { FlagConfigPoller } from './local/poller';
 export { InMemoryFlagConfigCache } from './local/cache';

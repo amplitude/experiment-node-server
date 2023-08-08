@@ -1,5 +1,9 @@
 import https from 'https';
 
+import { NodeOptions } from '@amplitude/analytics-types';
+
+import { LocalEvaluationClient } from '..';
+
 import { FlagConfig } from './flag';
 
 /**
@@ -140,7 +144,26 @@ export type LocalEvaluationConfig = {
    * The agent used to send http requests.
    */
   httpAgent?: https.Agent;
+
+  /**
+   * Configuration for automatically tracking assignment events after an
+   * evaluation.
+   */
+  assignmentConfig?: AssignmentConfig;
 };
+
+export type AssignmentConfig = {
+  /**
+   * The analytics API key and NOT the experiment deployment key
+   */
+  apiKey: string;
+  /**
+   * The maximum number of assignments stored in the assignment cache
+   *
+   * Default: 65536
+   */
+  cacheCapacity?: number;
+} & NodeOptions;
 
 /**
  Defaults for {@link LocalEvaluationConfig} options.
@@ -160,4 +183,8 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
   httpAgent: null,
+};
+
+export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
+  cacheCapacity: 65536,
 };

@@ -1,7 +1,17 @@
+import * as amplitude from '@amplitude/analytics-node';
 import evaluation from '@amplitude/evaluation-js';
+import { Assignment, AssignmentService } from 'src/assignment/assignment';
+import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
+import {
+  AmplitudeAssignmentService,
+  FLAG_TYPE_HOLDOUT_GROUP,
+  FLAG_TYPE_MUTUAL_EXCLUSION_GROUP,
+} from 'src/assignment/assignment-service';
 
 import { FetchHttpClient } from '../transport/http';
 import {
+  AssignmentConfig,
+  AssignmentConfigDefaults,
   LocalEvaluationConfig,
   LocalEvaluationDefaults,
 } from '../types/config';
@@ -25,6 +35,7 @@ export class LocalEvaluationClient {
   private readonly config: LocalEvaluationConfig;
   private readonly poller: FlagConfigPoller;
   private flags: FlagConfig[];
+  private readonly assignmentService: AssignmentService;
 
   /**
    * Directly access the client's flag config cache.
@@ -60,6 +71,27 @@ export class LocalEvaluationClient {
       this.config.flagConfigPollingIntervalMillis,
       this.config.debug,
     );
+    if (this.config.assignmentConfig) {
+      this.config.assignmentConfig = {
+        ...AssignmentConfigDefaults,
+        ...this.config.assignmentConfig,
+      };
+      this.assignmentService = this.createAssignmentService(
+        this.config.assignmentConfig,
+      );
+    }
+  }
+
+  private createAssignmentService(
+    assignmentConfig: AssignmentConfig,
+  ): AssignmentService {
+    const instance = amplitude.createInstance();
+    const { apiKey, cacheCapacity, ...ampConfig } = assignmentConfig;
+    instance.init(apiKey, ampConfig);
+    return new AmplitudeAssignmentService(
+      instance,
+      new InMemoryAssignmentFilter(cacheCapacity),
+    );
   }
 
   /**
@@ -85,18 +117,27 @@ export class LocalEvaluationClient {
       this.flags,
     );
     const results: Results = evaluation.evaluate(this.flags, user);
+    const assignmentResults: Results = {};
     const variants: Variants = {};
     const filter = flagKeys && flagKeys.length > 0;
     for (const flagKey in results) {
-      if (filter && !flagKeys.includes(flagKey)) {
-        continue;
+      const included = !filter || flagKeys.includes(flagKey);
+      if (included) {
+        const flagResult = results[flagKey];
+        variants[flagKey] = {
+          value: flagResult.value,
+          payload: flagResult.payload,
+        };
       }
-      const flagResult = results[flagKey];
-      variants[flagKey] = {
-        value: flagResult.value,
-        payload: flagResult.payload,
-      };
+      if (
+        included ||
+        results[flagKey].type == FLAG_TYPE_MUTUAL_EXCLUSION_GROUP ||
+        results[flagKey].type == FLAG_TYPE_HOLDOUT_GROUP
+      ) {
+        assignmentResults[flagKey] = results[flagKey];
+      }
     }
+    void this.assignmentService?.track(new Assignment(user, assignmentResults));
     this.logger.debug('[Experiment] evaluate - variants: ', variants);
     return variants;
   }
