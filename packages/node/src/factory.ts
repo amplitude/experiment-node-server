@@ -10,8 +10,6 @@ import {
 const remoteEvaluationInstances = {};
 const localEvaluationInstances = {};
 
-const defaultInstance = '$default_instance';
-
 /**
  * Initializes a singleton {@link ExperimentClient} for remote evaluation.
  *
@@ -36,13 +34,13 @@ const initializeRemote = (
   apiKey: string,
   config?: RemoteEvaluationConfig,
 ): RemoteEvaluationClient => {
-  if (!remoteEvaluationInstances[defaultInstance]) {
-    remoteEvaluationInstances[defaultInstance] = new RemoteEvaluationClient(
+  if (!remoteEvaluationInstances[apiKey]) {
+    remoteEvaluationInstances[apiKey] = new RemoteEvaluationClient(
       apiKey,
       config,
     );
   }
-  return remoteEvaluationInstances[defaultInstance];
+  return remoteEvaluationInstances[apiKey];
 };
 
 /**
