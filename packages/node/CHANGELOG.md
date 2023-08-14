@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.2](https://github.com/amplitude/experiment-node-server/compare/v1.7.1...v1.7.2) (2023-08-14)
+
+
+### Bug Fixes
+
+* Assignment should use relative imports ([#28](https://github.com/amplitude/experiment-node-server/issues/28)) ([bdb9703](https://github.com/amplitude/experiment-node-server/commit/bdb9703abe0252719760ed732f37329746167c15))
+
+
+
+
+
 ## [1.7.1](https://github.com/amplitude/experiment-node-server/compare/v1.7.0...v1.7.1) (2023-08-09)
 
 **Note:** Version bump only for package @amplitude/experiment-node-server
