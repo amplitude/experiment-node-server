@@ -1,5 +1,5 @@
-import { ExperimentUser } from 'src/types/user';
-import { Results } from 'src/types/variant';
+import { ExperimentUser } from '../types/user';
+import { Results } from '../types/variant';
 
 export interface AssignmentService {
   track(assignment: Assignment): Promise<void>;

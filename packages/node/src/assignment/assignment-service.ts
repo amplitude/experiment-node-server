@@ -1,11 +1,9 @@
 import { BaseEvent } from '@amplitude/analytics-types';
 import { CoreClient } from '@amplitude/analytics-types';
-import {
-  Assignment,
-  AssignmentFilter,
-  AssignmentService,
-} from 'src/assignment/assignment';
-import { hashCode } from 'src/util/hash';
+
+import { hashCode } from '../util/hash';
+
+import { Assignment, AssignmentFilter, AssignmentService } from './assignment';
 
 export const DAY_MILLIS = 24 * 60 * 60 * 1000;
 export const FLAG_TYPE_MUTUAL_EXCLUSION_GROUP = 'mutual-exclusion-group';
