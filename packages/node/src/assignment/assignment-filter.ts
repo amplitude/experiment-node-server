@@ -1,6 +1,7 @@
-import { Assignment, AssignmentFilter } from 'src/assignment/assignment';
-import { DAY_MILLIS } from 'src/assignment/assignment-service';
-import { Cache } from 'src/util/cache';
+import { Cache } from '../util/cache';
+
+import { Assignment, AssignmentFilter } from './assignment';
+import { DAY_MILLIS } from './assignment-service';
 
 export class InMemoryAssignmentFilter implements AssignmentFilter {
   private readonly cache: Cache<number>;

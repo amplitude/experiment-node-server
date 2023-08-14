@@ -1,11 +1,15 @@
 import * as amplitude from '@amplitude/analytics-node';
-import { Assignment, AssignmentFilter } from 'src/assignment/assignment';
+
+import {
+  Assignment,
+  AssignmentFilter,
+} from '../../../../node/src/assignment/assignment';
 import {
   AmplitudeAssignmentService,
   DAY_MILLIS,
-} from 'src/assignment/assignment-service';
-import { ExperimentUser } from 'src/types/user';
-import { hashCode } from 'src/util/hash';
+} from '../../../../node/src/assignment/assignment-service';
+import { ExperimentUser } from '../../../../node/src/types/user';
+import { hashCode } from '../../../../node/src/util/hash';
 
 const testFilter: AssignmentFilter = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

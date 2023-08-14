@@ -1,7 +1,7 @@
-import { Assignment } from 'src/assignment/assignment';
-import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
-import { ExperimentUser } from 'src/types/user';
-import { sleep } from 'src/util/time';
+import { Assignment } from '../../../../node/src/assignment/assignment';
+import { InMemoryAssignmentFilter } from '../../../../node/src/assignment/assignment-filter';
+import { ExperimentUser } from '../../../../node/src/types/user';
+import { sleep } from '../../../../node/src/util/time';
 
 test('filter - single assignment', async () => {
   const user: ExperimentUser = { user_id: 'user' };

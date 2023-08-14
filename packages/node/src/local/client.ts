@@ -1,13 +1,13 @@
 import * as amplitude from '@amplitude/analytics-node';
 import evaluation from '@amplitude/evaluation-js';
-import { Assignment, AssignmentService } from 'src/assignment/assignment';
-import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
+
+import { Assignment, AssignmentService } from '../assignment/assignment';
+import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
 import {
   AmplitudeAssignmentService,
   FLAG_TYPE_HOLDOUT_GROUP,
   FLAG_TYPE_MUTUAL_EXCLUSION_GROUP,
-} from 'src/assignment/assignment-service';
-
+} from '../assignment/assignment-service';
 import { FetchHttpClient } from '../transport/http';
 import {
   AssignmentConfig,
