@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.3](https://github.com/amplitude/experiment-node-server/compare/v1.7.2...v1.7.3) (2023-08-24)
+
+
+### Bug Fixes
+
+* Auto assignment tracking insert_id timestamp round to integer ([#30](https://github.com/amplitude/experiment-node-server/issues/30)) ([e1710f1](https://github.com/amplitude/experiment-node-server/commit/e1710f1d98317a1c34702db69b20f2d3cec79f49))
+
+
+
+
+
 ## [1.7.2](https://github.com/amplitude/experiment-node-server/compare/v1.7.1...v1.7.2) (2023-08-14)
 
 
