@@ -57,7 +57,7 @@ export class AmplitudeAssignmentService implements AssignmentService {
 
     event.insert_id = `${event.user_id} ${event.device_id} ${hashCode(
       assignment.canonicalize(),
-    )} ${assignment.timestamp / DAY_MILLIS}`;
+    )} ${Math.floor(assignment.timestamp / DAY_MILLIS)}`;
     return event;
   }
 }

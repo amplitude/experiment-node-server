@@ -49,9 +49,9 @@ test('assignment to event as expected', async () => {
   expect(Object.keys(userProperties['$set']).length).toEqual(1);
   expect(Object.keys(userProperties['$unset']).length).toEqual(1);
   const canonicalization = 'user device flag-key-1 on flag-key-2 control ';
-  const expected = `user device ${hashCode(canonicalization)} ${
-    assignment.timestamp / DAY_MILLIS
-  }`;
+  const expected = `user device ${hashCode(canonicalization)} ${Math.floor(
+    assignment.timestamp / DAY_MILLIS,
+  )}`;
   expect(event.insert_id).toEqual(expected);
 });
 
