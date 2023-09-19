@@ -191,3 +191,9 @@ test('filter - ttl-based eviction', async () => {
   await sleep(950);
   expect(filter.shouldTrack(assignment2)).toEqual(false);
 });
+
+test('filter - returns false on empty assignment results', () => {
+  const filter = new InMemoryAssignmentFilter(100, 1000);
+  const emptyAssignment = new Assignment({ user_id: 'user' }, {});
+  expect(filter.shouldTrack(emptyAssignment)).toEqual(false);
+});
