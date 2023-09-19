@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.4](https://github.com/amplitude/experiment-node-server/compare/v1.7.3...v1.7.4) (2023-09-19)
+
+**Note:** Version bump only for package ssr-demo
+
+
+
+
+
 ## [1.7.3](https://github.com/amplitude/experiment-node-server/compare/v1.7.2...v1.7.3) (2023-08-24)
 
 **Note:** Version bump only for package ssr-demo

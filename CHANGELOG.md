@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.4](https://github.com/amplitude/experiment-node-server/compare/v1.7.3...v1.7.4) (2023-09-19)
+
+
+### Bug Fixes
+
+* don't track empty assignment events ([#31](https://github.com/amplitude/experiment-node-server/issues/31)) ([53f3506](https://github.com/amplitude/experiment-node-server/commit/53f35068af55c09cb5b34f6cf0a013b79ef8c3c6))
+
+
+
+
+
 ## [1.7.3](https://github.com/amplitude/experiment-node-server/compare/v1.7.2...v1.7.3) (2023-08-24)
 
 
