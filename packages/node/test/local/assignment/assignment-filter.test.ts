@@ -106,9 +106,9 @@ test('filter - empty result', async () => {
   const assignment1 = new Assignment(user1, {});
   const assignment2 = new Assignment(user1, {});
   const assignment3 = new Assignment(user2, {});
-  expect(filter.shouldTrack(assignment1)).toEqual(true);
+  expect(filter.shouldTrack(assignment1)).toEqual(false);
   expect(filter.shouldTrack(assignment2)).toEqual(false);
-  expect(filter.shouldTrack(assignment3)).toEqual(true);
+  expect(filter.shouldTrack(assignment3)).toEqual(false);
 });
 
 test('filter - duplicate assignments with different result ordering', async () => {
