@@ -11,6 +11,10 @@ export class InMemoryAssignmentFilter implements AssignmentFilter {
   }
 
   public shouldTrack(assignment: Assignment): boolean {
+    if (Object.keys(assignment.results).length === 0) {
+      // Don't track empty assignments.
+      return false;
+    }
     const canonicalAssignment = assignment.canonicalize();
     const track = this.cache.get(canonicalAssignment) == undefined;
     if (track) {
