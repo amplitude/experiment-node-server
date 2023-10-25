@@ -1,4 +1,4 @@
-import { ConsoleLogger } from 'src/util/logger';
+import { ConsoleLogger } from './util/logger';
 
 import { ExperimentUser } from './types/user';
 
