@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.7](https://github.com/amplitude/experiment-node-server/compare/v1.7.6...v1.7.7) (2023-10-25)
+
+
+### Bug Fixes
+
+* AmplitudeCookie should use relative imports ([#35](https://github.com/amplitude/experiment-node-server/issues/35)) ([e473e84](https://github.com/amplitude/experiment-node-server/commit/e473e849bda63e4ff58fb35961830a0373c5f772))
+
+
+
+
+
 ## [1.7.6](https://github.com/amplitude/experiment-node-server/compare/v1.7.5...v1.7.6) (2023-10-23)
 
 **Note:** Version bump only for package experiment-node-server-root
