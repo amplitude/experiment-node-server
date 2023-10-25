@@ -1,6 +1,5 @@
-import { ConsoleLogger } from 'src/util/logger';
-
 import { ExperimentUser } from './types/user';
+import { ConsoleLogger } from './util/logger';
 
 /**
  * This class provides utility functions for parsing and handling identity
