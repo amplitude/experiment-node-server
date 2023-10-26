@@ -9,27 +9,32 @@
   dependencies:
     "@amplitude/ua-parser-js" "0.7.31"
 
-"@amplitude/analytics-core@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@amplitude/analytics-core/-/analytics-core-1.2.1.tgz#c7c07f66c2bedb5daa8623d35399dcc5144204bf"
-  integrity sha512-84Gju+Ai9jPO0PLVlJ5f6ssJh8eLLGhhTGaHzNBlvUB00HpPETyf8XlK++cuDIVG0wIy4h+EXc/tAZbKdLeAvg==
+"@amplitude/analytics-core@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-core/-/analytics-core-1.2.4.tgz#d13ac0b7ce69d19e76ccdc22a6bd52317627e96c"
+  integrity sha512-i4wx7hhjx0vjpudx21UTIM0Uxn+yL7P82Uh4NHxIGVVrTmPG9f9lZvdLQRbYg229CwH9FnmLCAiicRtTTtnq7g==
   dependencies:
-    "@amplitude/analytics-types" "^1.3.1"
+    "@amplitude/analytics-types" "^1.3.3"
     tslib "^2.4.1"
 
-"@amplitude/analytics-node@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@amplitude/analytics-node/-/analytics-node-1.3.1.tgz#ed7ce8ef2f2b59e47ad2608079f268ef4d44547c"
-  integrity sha512-r65fCDWjXGjJs1iEyNjRDdxfBXxneLyUN2LVtL/MMKNsMOpN/JKOllK4iO1SgRA+K3aHqBycmKLvV6ZqY3f1Pg==
+"@amplitude/analytics-node@^1.3.4":
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-node/-/analytics-node-1.3.4.tgz#df5e7be70e1c3fb8dcf073732ae12dcb99fe3559"
+  integrity sha512-R0H+fYV5KIfl1Q1symBynfTDiylLD7JfvIOFl0oZBynvFwg6v93xh09nG/oDqIQcnvn5fzlSjusXcMGebPjRYw==
   dependencies:
-    "@amplitude/analytics-core" "^1.2.1"
-    "@amplitude/analytics-types" "^1.3.1"
+    "@amplitude/analytics-core" "^1.2.4"
+    "@amplitude/analytics-types" "^1.3.3"
     tslib "^2.4.1"
 
 "@amplitude/analytics-types@^1.3.1":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@amplitude/analytics-types/-/analytics-types-1.3.1.tgz#2aad023bedf00bc4f95d4923163ebf4c381b1b7b"
   integrity sha512-8BjipTDzgeqVvxKPTOg7zGQXGifGj/foKVO/6PY7Q6PgtQh9DGLRDiC+7yyqNHyQ3QwUycpT+7B/RL8PswhE8w==
+
+"@amplitude/analytics-types@^1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-types/-/analytics-types-1.3.3.tgz#c7b2a21e6ab0eb1670cce4d03127b62c373c6ed4"
+  integrity sha512-V4/h+izhG7NyVfIva1uhe6bToI/l5n+UnEomL3KEO9DkFoKiOG7KmXo/fmzfU6UmD1bUEWmy//hUFF16BfrEww==
 
 "@amplitude/evaluation-js@1.1.1":
   version "1.1.1"
