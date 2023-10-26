@@ -1,6 +1,6 @@
 {
   "name": "ssr-demo",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@amplitude/experiment-js-client": "^1.7.3",
-    "@amplitude/experiment-node-server": "^1.7.7",
+    "@amplitude/experiment-node-server": "^1.7.8",
     "next": "^13.3.0",
     "next-transpile-modules": "^10.0.0",
     "react": "^16.13.1",

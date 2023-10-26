@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.8](https://github.com/amplitude/experiment-node-server/compare/v1.7.7...v1.7.8) (2023-10-26)
+
+
+### Bug Fixes
+
+* update analytics node sdk version ([03b7617](https://github.com/amplitude/experiment-node-server/commit/03b76171ad771d71f8f03719809404fd3550d302))
+
+
+
+
+
 ## [1.7.7](https://github.com/amplitude/experiment-node-server/compare/v1.7.6...v1.7.7) (2023-10-25)
 
 
