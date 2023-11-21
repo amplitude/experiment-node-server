@@ -1,6 +1,6 @@
 import { FlagConfigCache, FlagConfig } from '../types/flag';
 
-export class InMemoryFlagConfigCache {
+export class InMemoryFlagConfigCache implements FlagConfigCache {
   private readonly store: FlagConfigCache | undefined;
   private cache: Record<string, FlagConfig>;
 
