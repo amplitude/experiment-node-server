@@ -16,7 +16,7 @@ import {
   LocalEvaluationConfig,
   LocalEvaluationDefaults,
 } from '../types/config';
-import { FlagConfig, FlagConfigCache } from '../types/flag';
+import { FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
