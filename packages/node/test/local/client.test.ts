@@ -1,13 +1,11 @@
 import { Experiment } from 'src/factory';
-import { LocalEvaluationClient } from 'src/local/client';
 import { ExperimentUser } from 'src/types/user';
-import { sleep } from 'src/util/time';
 
 const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
 const testUser: ExperimentUser = { user_id: 'test_user' };
 
-const client = Experiment.initializeLocal(apiKey, { debug: false });
+const client = Experiment.initializeLocal(apiKey, { debug: true });
 
 beforeAll(async () => {
   await client.start();
@@ -20,7 +18,9 @@ afterAll(async () => {
 test('ExperimentClient.evaluate all flags, success', async () => {
   const variants = await client.evaluate(testUser);
   const variant = variants['sdk-local-evaluation-ci-test'];
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(variant.payload).toEqual('payload');
 });
 
 test('ExperimentClient.evaluate one flag, success', async () => {
@@ -28,7 +28,9 @@ test('ExperimentClient.evaluate one flag, success', async () => {
     'sdk-local-evaluation-ci-test',
   ]);
   const variant = variants['sdk-local-evaluation-ci-test'];
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(variant.payload).toEqual('payload');
 });
 
 test('ExperimentClient.evaluate with dependencies, no flag keys, success', async () => {
@@ -37,7 +39,8 @@ test('ExperimentClient.evaluate with dependencies, no flag keys, success', async
     device_id: 'device_id',
   });
   const variant = variants['sdk-ci-local-dependencies-test'];
-  expect(variant).toEqual({ value: 'control', payload: null });
+  expect(variant.key).toEqual('control');
+  expect(variant.value).toEqual('control');
 });
 
 test('ExperimentClient.evaluate with dependencies, with flag keys, success', async () => {
@@ -49,7 +52,8 @@ test('ExperimentClient.evaluate with dependencies, with flag keys, success', asy
     ['sdk-ci-local-dependencies-test'],
   );
   const variant = variants['sdk-ci-local-dependencies-test'];
-  expect(variant).toEqual({ value: 'control', payload: null });
+  expect(variant.key).toEqual('control');
+  expect(variant.value).toEqual('control');
 });
 
 test('ExperimentClient.evaluate with dependencies, with unknown flag keys, no variant', async () => {
@@ -72,6 +76,6 @@ test('ExperimentClient.evaluate with dependencies, variant held out', async () =
   const variant = variants['sdk-ci-local-dependencies-test-holdout'];
   expect(variant).toBeUndefined();
   expect(
-    client.cache.get('sdk-ci-local-dependencies-test-holdout'),
+    await client.cache.get('sdk-ci-local-dependencies-test-holdout'),
   ).toBeDefined();
 });

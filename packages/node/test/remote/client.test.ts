@@ -9,7 +9,7 @@ test('ExperimentClient.fetch, success', async () => {
   const client = new RemoteEvaluationClient(API_KEY, {});
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 test('ExperimentClient.fetch, no retries, timeout failure', async () => {
@@ -28,7 +28,7 @@ test('ExperimentClient.fetch, no retries, timeout failure, retry success', async
   });
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 backoff', async () => {
@@ -40,13 +40,13 @@ test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 back
   });
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
-  expect(variant).toEqual({ value: 'on', payload: 'payload' });
+  expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
 test('ExperimentClient.fetch, with flag keys options, success', async () => {
   const client = new RemoteEvaluationClient(API_KEY, {});
   const variants = await client.fetch(testUser, { flagKeys: ['sdk-ci-test'] });
   expect(variants).toEqual({
-    'sdk-ci-test': { value: 'on', payload: 'payload' },
+    'sdk-ci-test': { key: 'on', value: 'on', payload: 'payload' },
   });
 });

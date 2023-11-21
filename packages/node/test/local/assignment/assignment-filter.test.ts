@@ -1,22 +1,14 @@
-import { Assignment } from '../../../../node/src/assignment/assignment';
-import { InMemoryAssignmentFilter } from '../../../../node/src/assignment/assignment-filter';
-import { ExperimentUser } from '../../../../node/src/types/user';
-import { sleep } from '../../../../node/src/util/time';
+import { Assignment } from 'src/assignment/assignment';
+import { InMemoryAssignmentFilter } from 'src/assignment/assignment-filter';
+import { ExperimentUser } from 'src/types/user';
+import { sleep } from 'src/util/time';
 
 test('filter - single assignment', async () => {
   const user: ExperimentUser = { user_id: 'user' };
-  const results = {};
-  results['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
-  results['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
-  };
-
   const filter = new InMemoryAssignmentFilter(100);
   const assignment = new Assignment(user, results);
   expect(filter.shouldTrack(assignment)).toEqual(true);
@@ -24,18 +16,10 @@ test('filter - single assignment', async () => {
 
 test('filter - duplicate assignment', async () => {
   const user: ExperimentUser = { user_id: 'user' };
-  const results = {};
-  results['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
-  results['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
-  };
-
   const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user, results);
   const assignment2 = new Assignment(user, results);
@@ -45,28 +29,14 @@ test('filter - duplicate assignment', async () => {
 
 test('filter - same user different results', async () => {
   const user: ExperimentUser = { user_id: 'user' };
-  const results1 = {};
-  results1['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
-  };
-  results1['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
+  const results1 = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
 
-  const results2 = {};
-  results2['flag-key-1'] = {
-    value: 'control',
-    description: 'description-1',
-    isDefaultVariant: false,
-  };
-  results2['flag-key-2'] = {
-    value: 'on',
-    description: 'description-2',
-    isDefaultVariant: true,
+  const results2 = {
+    'flag-key-1': { key: 'control', value: 'control' },
+    'flag-key-2': { key: 'on', value: 'on' },
   };
 
   const filter = new InMemoryAssignmentFilter(100);
@@ -79,16 +49,9 @@ test('filter - same user different results', async () => {
 test('filter - same result different user', async () => {
   const user1: ExperimentUser = { user_id: 'user' };
   const user2: ExperimentUser = { user_id: 'different-user' };
-  const results = {};
-  results['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
-  };
-  results['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
 
   const filter = new InMemoryAssignmentFilter(100);
@@ -113,24 +76,14 @@ test('filter - empty result', async () => {
 
 test('filter - duplicate assignments with different result ordering', async () => {
   const user: ExperimentUser = { user_id: 'user' };
-  const result1 = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
+  const results1 = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
-  const result2 = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
+  const results2 = {
+    'flag-key-2': { key: 'control', value: 'control' },
+    'flag-key-1': { key: 'on', value: 'on' },
   };
-
-  const results1 = {};
-  const results2 = {};
-  results1['flag-key-1'] = result1;
-  results1['flag-key-2'] = result2;
-  results2['flag-key-2'] = result2;
-  results2['flag-key-1'] = result1;
-
   const filter = new InMemoryAssignmentFilter(100);
   const assignment1 = new Assignment(user, results1);
   const assignment2 = new Assignment(user, results2);
@@ -142,16 +95,9 @@ test('filter - lru replacement', async () => {
   const user1: ExperimentUser = { user_id: 'user1' };
   const user2: ExperimentUser = { user_id: 'user2' };
   const user3: ExperimentUser = { user_id: 'user3' };
-  const results = {};
-  results['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
-  };
-  results['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
 
   const filter = new InMemoryAssignmentFilter(2);
@@ -167,16 +113,9 @@ test('filter - lru replacement', async () => {
 test('filter - ttl-based eviction', async () => {
   const user1: ExperimentUser = { user_id: 'user' };
   const user2: ExperimentUser = { user_id: 'different-user' };
-  const results = {};
-  results['flag-key-1'] = {
-    value: 'on',
-    description: 'description-1',
-    isDefaultVariant: false,
-  };
-  results['flag-key-2'] = {
-    value: 'control',
-    description: 'description-2',
-    isDefaultVariant: true,
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+    'flag-key-2': { key: 'control', value: 'control' },
   };
 
   const filter = new InMemoryAssignmentFilter(100, 1000);
