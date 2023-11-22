@@ -101,6 +101,10 @@ export class LocalEvaluationClient {
    * {@link flagKeys} argument. If {@link flagKeys} is missing, all flags in the
    * {@link FlagConfigCache} will be evaluated.
    *
+   * Unlike {@link evaluate}, this function returns a default variant object
+   * if the flag or experiment was evaluated, but the user was not assigned a
+   * variant (i.e. 'off').
+   *
    * @param user The user to evaluate
    * @param flagKeys The flags to evaluate with the user. If empty, all flags
    * from the flag cache are evaluated.
