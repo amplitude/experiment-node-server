@@ -87,7 +87,7 @@ export class FetchHttpClient implements HttpClient {
 
 /**
  * Wrap the exposed HttpClient in a CoreClient implementation to work with
- * FlagsApi and EvaluationApi.
+ * FlagApi and EvaluationApi.
  */
 export class WrapperClient implements CoreHttpClient {
   private readonly client: HttpClient;
