@@ -1,4 +1,4 @@
-import { Variant } from 'src/types/variant';
+import { Variant } from '../types/variant';
 
 export const filterDefaultVariants = (
   variants: Record<string, Variant>,

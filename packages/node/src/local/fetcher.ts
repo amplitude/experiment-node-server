@@ -1,7 +1,7 @@
 import { FlagApi, SdkFlagApi } from '@amplitude/experiment-core';
-import { WrapperClient } from 'src/transport/http';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
+import { WrapperClient } from '../transport/http';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfig } from '../types/flag';
 import { HttpClient } from '../types/transport';

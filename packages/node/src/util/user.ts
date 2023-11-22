@@ -1,6 +1,6 @@
 import { ExperimentUser } from '../types/user';
 
-export const convertUserToContext = (
+export const convertUserToEvaluationContext = (
   user: ExperimentUser | undefined,
 ): Record<string, unknown> => {
   if (!user) {

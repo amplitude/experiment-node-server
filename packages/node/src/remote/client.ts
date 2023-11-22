@@ -1,5 +1,4 @@
 import { EvaluationApi, SdkEvaluationApi } from '@amplitude/experiment-core';
-import { filterDefaultVariants } from 'src/util/variant';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
@@ -12,6 +11,7 @@ import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
 import { sleep } from '../util/time';
+import { filterDefaultVariants } from '../util/variant';
 
 /**
  * Experiment client for fetching variants for a user remotely.

@@ -4,7 +4,6 @@ import {
   EvaluationFlag,
   topologicalSort,
 } from '@amplitude/experiment-core';
-import { filterDefaultVariants } from 'src/util/variant';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
@@ -22,7 +21,8 @@ import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
-import { convertUserToContext } from '../util/user';
+import { convertUserToEvaluationContext } from '../util/user';
+import { filterDefaultVariants } from '../util/variant';
 
 import { InMemoryFlagConfigCache } from './cache';
 import { FlagConfigFetcher } from './fetcher';
@@ -112,7 +112,7 @@ export class LocalEvaluationClient {
   ): Record<string, Variant> {
     const flags = this.cache.getAllCached() as Record<string, EvaluationFlag>;
     this.logger.debug('[Experiment] evaluate - user:', user, 'flags:', flags);
-    const context = convertUserToContext(user);
+    const context = convertUserToEvaluationContext(user);
     const sortedFlags = topologicalSort(flags, flagKeys);
     const results = this.evaluation.evaluate(context, sortedFlags);
     void this.assignmentService?.track(new Assignment(user, results));
