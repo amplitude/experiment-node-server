@@ -11,7 +11,10 @@ import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
 import { sleep } from '../util/time';
-import { filterDefaultVariants } from '../util/variant';
+import {
+  evaluationVariantsToVariants,
+  filterDefaultVariants,
+} from '../util/variant';
 
 /**
  * Experiment client for fetching variants for a user remotely.
@@ -101,12 +104,12 @@ export class RemoteEvaluationClient {
     options?: FetchOptions,
   ): Promise<Record<string, Variant>> {
     const userContext = this.addContext(user || {});
-    const variants = await this.evaluationApi.getVariants(userContext, {
+    const results = await this.evaluationApi.getVariants(userContext, {
       flagKeys: options?.flagKeys,
       timeoutMillis: timeoutMillis,
     });
-    this.debug('[Experiment] Fetched variants: ', variants);
-    return variants as Variants;
+    this.debug('[Experiment] Fetched variants: ', results);
+    return evaluationVariantsToVariants(results);
   }
 
   private async retryFetch(

@@ -22,7 +22,10 @@ import { Variant, Variants } from '../types/variant';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 import { convertUserToEvaluationContext } from '../util/user';
-import { filterDefaultVariants } from '../util/variant';
+import {
+  evaluationVariantsToVariants,
+  filterDefaultVariants,
+} from '../util/variant';
 
 import { InMemoryFlagConfigCache } from './cache';
 import { FlagConfigFetcher } from './fetcher';
@@ -121,7 +124,7 @@ export class LocalEvaluationClient {
     const results = this.evaluation.evaluate(context, sortedFlags);
     void this.assignmentService?.track(new Assignment(user, results));
     this.logger.debug('[Experiment] evaluate - variants: ', results);
-    return results as Record<string, Variant>;
+    return evaluationVariantsToVariants(results);
   }
 
   /**

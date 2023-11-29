@@ -1,4 +1,6 @@
-import { Variant } from '../types/variant';
+import { EvaluationVariant } from '@amplitude/experiment-core';
+
+import { Variant, Variants } from '../types/variant';
 
 export const filterDefaultVariants = (
   variants: Record<string, Variant>,
@@ -13,4 +15,29 @@ export const filterDefaultVariants = (
     }
   }
   return results;
+};
+
+export const evaluationVariantToVariant = (
+  evaluationVariant: EvaluationVariant,
+): Variant => {
+  let stringValue: string | undefined;
+  if (typeof evaluationVariant.value === 'string') {
+    stringValue = evaluationVariant.value;
+  } else {
+    stringValue = JSON.stringify(evaluationVariant.value);
+  }
+  return {
+    ...evaluationVariant,
+    value: stringValue,
+  };
+};
+
+export const evaluationVariantsToVariants = (
+  evaluationVariants: Record<string, EvaluationVariant>,
+): Variants => {
+  const variants: Variants = {};
+  Object.keys(evaluationVariants).forEach((key) => {
+    variants[key] = evaluationVariantToVariant(evaluationVariants[key]);
+  });
+  return variants;
 };

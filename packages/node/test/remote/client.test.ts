@@ -43,10 +43,16 @@ test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 back
   expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
-test('ExperimentClient.fetch, with flag keys options, success', async () => {
+test('ExperimentClient.fetch, v1 off returns undefined', async () => {
   const client = new RemoteEvaluationClient(API_KEY, {});
-  const variants = await client.fetch(testUser, { flagKeys: ['sdk-ci-test'] });
-  expect(variants).toEqual({
-    'sdk-ci-test': { key: 'on', value: 'on', payload: 'payload' },
-  });
+  const variant = (await client.fetch({}))['sdk-ci-test'];
+  expect(variant).toBeUndefined();
+});
+
+test('ExperimentClient.fetch, v2 off returns default variant', async () => {
+  const client = new RemoteEvaluationClient(API_KEY, {});
+  const variant = (await client.fetchV2({}))['sdk-ci-test'];
+  expect(variant.key).toEqual('off');
+  expect(variant.value).toBeUndefined();
+  expect(variant.metadata.default).toEqual(true);
 });
