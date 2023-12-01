@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/amplitude/experiment-node-server/compare/v1.7.8...v1.8.0) (2023-12-01)
+
+
+### Features
+
+* evaluation v2 ([#36](https://github.com/amplitude/experiment-node-server/issues/36)) ([5443a7a](https://github.com/amplitude/experiment-node-server/commit/5443a7a95cea956502e1722673b473591ed0d82b))
+
+
+
+
+
 ## [1.7.8](https://github.com/amplitude/experiment-node-server/compare/v1.7.7...v1.7.8) (2023-10-26)
 
 
