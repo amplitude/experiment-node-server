@@ -1,5 +1,6 @@
+import { EvaluationVariant } from '@amplitude/experiment-core';
+
 import { ExperimentUser } from '../types/user';
-import { Results } from '../types/variant';
 
 export interface AssignmentService {
   track(assignment: Assignment): Promise<void>;
@@ -11,10 +12,13 @@ export interface AssignmentFilter {
 
 export class Assignment {
   public user: ExperimentUser;
-  public results: Results;
+  public results: Record<string, EvaluationVariant>;
   public timestamp: number = Date.now();
 
-  public constructor(user: ExperimentUser, results: Results) {
+  public constructor(
+    user: ExperimentUser,
+    results: Record<string, EvaluationVariant>,
+  ) {
     this.user = user;
     this.results = results;
   }
@@ -22,8 +26,10 @@ export class Assignment {
   public canonicalize(): string {
     let canonical = `${this.user.user_id?.trim()} ${this.user.device_id?.trim()} `;
     for (const key of Object.keys(this.results).sort()) {
-      const value = this.results[key];
-      canonical += key.trim() + ' ' + value?.value?.trim() + ' ';
+      const variant = this.results[key];
+      if (variant?.key) {
+        canonical += key.trim() + ' ' + variant?.key?.trim() + ' ';
+      }
     }
     return canonical;
   }

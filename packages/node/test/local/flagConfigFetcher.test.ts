@@ -8,7 +8,7 @@ test('FlagConfigFetcher.fetch, success', async () => {
   const fetcher = new FlagConfigFetcher(
     apiKey,
     new MockHttpClient(async () => {
-      return { status: 200, body: '{}' };
+      return { status: 200, body: '[]' };
     }),
   );
   try {

@@ -2,6 +2,12 @@ import http from 'http';
 import https from 'https';
 import url from 'url';
 
+import {
+  HttpClient as CoreHttpClient,
+  HttpRequest,
+  HttpResponse,
+} from '@amplitude/experiment-core';
+
 import { SimpleResponse, HttpClient } from '../types/transport';
 
 const defaultHttpAgent = new https.Agent({
@@ -13,6 +19,7 @@ export class FetchHttpClient implements HttpClient {
   constructor(httpAgent: https.Agent) {
     this.httpAgent = httpAgent || defaultHttpAgent;
   }
+
   /**
    * Wraps the http and https libraries in a fetch()-like interface
    * @param requestUrl
@@ -75,5 +82,26 @@ export class FetchHttpClient implements HttpClient {
 
       req.end();
     });
+  }
+}
+
+/**
+ * Wrap the exposed HttpClient in a CoreClient implementation to work with
+ * FlagApi and EvaluationApi.
+ */
+export class WrapperClient implements CoreHttpClient {
+  private readonly client: HttpClient;
+  constructor(client: HttpClient) {
+    this.client = client;
+  }
+
+  async request(request: HttpRequest): Promise<HttpResponse> {
+    return await this.client.request(
+      request.requestUrl,
+      request.method,
+      request.headers,
+      null,
+      request.timeoutMillis,
+    );
   }
 }

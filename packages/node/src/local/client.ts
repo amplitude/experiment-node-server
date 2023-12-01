@@ -1,13 +1,13 @@
 import * as amplitude from '@amplitude/analytics-node';
-import evaluation from '@amplitude/evaluation-js';
+import {
+  EvaluationEngine,
+  EvaluationFlag,
+  topologicalSort,
+} from '@amplitude/experiment-core';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
-import {
-  AmplitudeAssignmentService,
-  FLAG_TYPE_HOLDOUT_GROUP,
-  FLAG_TYPE_MUTUAL_EXCLUSION_GROUP,
-} from '../assignment/assignment-service';
+import { AmplitudeAssignmentService } from '../assignment/assignment-service';
 import { FetchHttpClient } from '../transport/http';
 import {
   AssignmentConfig,
@@ -15,12 +15,17 @@ import {
   LocalEvaluationConfig,
   LocalEvaluationDefaults,
 } from '../types/config';
-import { FlagConfig, FlagConfigCache } from '../types/flag';
+import { FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
-import { Results, Variants } from '../types/variant';
+import { Variant, Variants } from '../types/variant';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
+import { convertUserToEvaluationContext } from '../util/user';
+import {
+  evaluationVariantsToVariants,
+  filterDefaultVariants,
+} from '../util/variant';
 
 import { InMemoryFlagConfigCache } from './cache';
 import { FlagConfigFetcher } from './fetcher';
@@ -34,22 +39,20 @@ export class LocalEvaluationClient {
   private readonly logger: Logger;
   private readonly config: LocalEvaluationConfig;
   private readonly poller: FlagConfigPoller;
-  private flags: FlagConfig[];
   private readonly assignmentService: AssignmentService;
+  private readonly evaluation: EvaluationEngine;
 
   /**
    * Directly access the client's flag config cache.
    *
    * Used for directly manipulating the flag configs used for evaluation.
    */
-  public readonly cache: FlagConfigCache;
+  public readonly cache: InMemoryFlagConfigCache;
 
   constructor(
     apiKey: string,
     config: LocalEvaluationConfig,
-    flagConfigCache: FlagConfigCache = new InMemoryFlagConfigCache(
-      config?.bootstrap,
-    ),
+    flagConfigCache?: FlagConfigCache,
     httpClient: HttpClient = new FetchHttpClient(config?.httpAgent),
   ) {
     this.config = { ...LocalEvaluationDefaults, ...config };
@@ -59,11 +62,10 @@ export class LocalEvaluationClient {
       this.config.serverUrl,
       this.config.debug,
     );
-    // We no longer use the flag config cache for accessing variants.
-    fetcher.setRawReceiver((flags: string) => {
-      this.flags = JSON.parse(flags);
-    });
-    this.cache = flagConfigCache;
+    this.cache = new InMemoryFlagConfigCache(
+      flagConfigCache,
+      this.config.bootstrap,
+    );
     this.logger = new ConsoleLogger(this.config.debug);
     this.poller = new FlagConfigPoller(
       fetcher,
@@ -80,6 +82,7 @@ export class LocalEvaluationClient {
         this.config.assignmentConfig,
       );
     }
+    this.evaluation = new EvaluationEngine();
   }
 
   private createAssignmentService(
@@ -95,6 +98,36 @@ export class LocalEvaluationClient {
   }
 
   /**
+   * Locally evaluate varints for a user.
+   *
+   * This function will only evaluate flags for the keys specified in the
+   * {@link flagKeys} argument. If {@link flagKeys} is missing, all flags in the
+   * {@link FlagConfigCache} will be evaluated.
+   *
+   * Unlike {@link evaluate}, this function returns a default variant object
+   * if the flag or experiment was evaluated, but the user was not assigned a
+   * variant (i.e. 'off').
+   *
+   * @param user The user to evaluate
+   * @param flagKeys The flags to evaluate with the user. If empty, all flags
+   * from the flag cache are evaluated.
+   * @returns The evaluated variants
+   */
+  public evaluateV2(
+    user: ExperimentUser,
+    flagKeys?: string[],
+  ): Record<string, Variant> {
+    const flags = this.cache.getAllCached() as Record<string, EvaluationFlag>;
+    this.logger.debug('[Experiment] evaluate - user:', user, 'flags:', flags);
+    const context = convertUserToEvaluationContext(user);
+    const sortedFlags = topologicalSort(flags, flagKeys);
+    const results = this.evaluation.evaluate(context, sortedFlags);
+    void this.assignmentService?.track(new Assignment(user, results));
+    this.logger.debug('[Experiment] evaluate - variants: ', results);
+    return evaluationVariantsToVariants(results);
+  }
+
+  /**
    * Locally evaluates flag variants for a user.
    *
    * This function will only evaluate flags for the keys specified in the
@@ -105,41 +138,14 @@ export class LocalEvaluationClient {
    * @param flagKeys The flags to evaluate with the user. If empty, all flags
    * from the flag cache are evaluated.
    * @returns The evaluated variants
+   * @deprecated use evaluateV2 instead
    */
   public async evaluate(
     user: ExperimentUser,
     flagKeys?: string[],
   ): Promise<Variants> {
-    this.logger.debug(
-      '[Experiment] evaluate - user:',
-      user,
-      'flags:',
-      this.flags,
-    );
-    const results: Results = evaluation.evaluate(this.flags, user);
-    const assignmentResults: Results = {};
-    const variants: Variants = {};
-    const filter = flagKeys && flagKeys.length > 0;
-    for (const flagKey in results) {
-      const included = !filter || flagKeys.includes(flagKey);
-      if (included) {
-        const flagResult = results[flagKey];
-        variants[flagKey] = {
-          value: flagResult.value,
-          payload: flagResult.payload,
-        };
-      }
-      if (
-        included ||
-        results[flagKey].type == FLAG_TYPE_MUTUAL_EXCLUSION_GROUP ||
-        results[flagKey].type == FLAG_TYPE_HOLDOUT_GROUP
-      ) {
-        assignmentResults[flagKey] = results[flagKey];
-      }
-    }
-    void this.assignmentService?.track(new Assignment(user, assignmentResults));
-    this.logger.debug('[Experiment] evaluate - variants: ', variants);
-    return variants;
+    const results = this.evaluateV2(user, flagKeys);
+    return filterDefaultVariants(results);
   }
 
   /**

@@ -1,9 +1,11 @@
+import { EvaluationFlag } from '@amplitude/experiment-core';
+
 /**
  * Useful for clarity over functionality. Flag configs are JSON objects that
  * should not need to be inspected or modified after being received from the
  * server.
  */
-export type FlagConfig = Record<string, unknown>;
+export type FlagConfig = Record<string, unknown> | EvaluationFlag;
 
 /**
  * Used to store flag configurations for use in local evaluations.

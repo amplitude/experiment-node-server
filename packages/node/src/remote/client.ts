@@ -1,15 +1,20 @@
+import { EvaluationApi, SdkEvaluationApi } from '@amplitude/experiment-core';
+
 import { version as PACKAGE_VERSION } from '../../gen/version';
-import { FetchHttpClient } from '../transport/http';
+import { FetchHttpClient, WrapperClient } from '../transport/http';
 import {
   ExperimentConfig,
   RemoteEvaluationDefaults,
   RemoteEvaluationConfig,
 } from '../types/config';
 import { FetchOptions } from '../types/fetch';
-import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
 import { sleep } from '../util/time';
+import {
+  evaluationVariantsToVariants,
+  filterDefaultVariants,
+} from '../util/variant';
 
 /**
  * Experiment client for fetching variants for a user remotely.
@@ -17,8 +22,8 @@ import { sleep } from '../util/time';
  */
 export class RemoteEvaluationClient {
   private readonly apiKey: string;
-  private readonly httpClient: HttpClient;
   private readonly config: RemoteEvaluationConfig;
+  private readonly evaluationApi: EvaluationApi;
 
   /**
    * Creates a new RemoteEvaluationClient instance.
@@ -29,38 +34,29 @@ export class RemoteEvaluationClient {
   public constructor(apiKey: string, config: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
     this.config = { ...RemoteEvaluationDefaults, ...config };
-    this.httpClient = new FetchHttpClient(config?.httpAgent);
+    this.evaluationApi = new SdkEvaluationApi(
+      apiKey,
+      this.config.serverUrl,
+      new WrapperClient(new FetchHttpClient(this.config?.httpAgent)),
+    );
   }
 
   /**
-   * Fetch all variants for a user.
+   * Fetch remote evaluated variants for a user. This function can
+   * automatically retry the request on failure (if configured), and will
+   * throw the original error if all retries fail.
    *
-   * This method will automatically retry if configured (default).
+   * Unlike {@link fetch}, this function returns a default variant object
+   * if the flag or experiment was evaluated, but the user was not assigned a
+   * variant (i.e. 'off').
    *
-   * @param user The {@link ExperimentUser} context
-   * @param options The {@link FetchOptions} for this specific fetch request.
-   * @return The {@link Variants} for the user on success, empty
-   * {@link Variants} on error.
+   * @param user The user to fetch variants for.
+   * @param options Options to configure the fetch request.
    */
-  public async fetch(
+  public async fetchV2(
     user: ExperimentUser,
     options?: FetchOptions,
-  ): Promise<Variants> {
-    if (!this.apiKey) {
-      throw Error('Experiment API key is empty');
-    }
-    try {
-      return await this.fetchInternal(user, options);
-    } catch (e) {
-      console.error('[Experiment] Failed to fetch variants: ', e);
-      return {};
-    }
-  }
-
-  private async fetchInternal(
-    user: ExperimentUser,
-    options?: FetchOptions,
-  ): Promise<Variants> {
+  ): Promise<Record<string, Variant>> {
     if (!this.apiKey) {
       throw Error('Experiment API key is empty');
     }
@@ -78,48 +74,48 @@ export class RemoteEvaluationClient {
     }
   }
 
+  /**
+   * Fetch all variants for a user.
+   *
+   * This method will automatically retry if configured (default).
+   *
+   * @param user The {@link ExperimentUser} context
+   * @param options The {@link FetchOptions} for this specific fetch request.
+   * @return The {@link Variants} for the user on success, empty
+   * {@link Variants} on error.
+   * @deprecated use fetchV2 instead
+   */
+  public async fetch(
+    user: ExperimentUser,
+    options?: FetchOptions,
+  ): Promise<Variants> {
+    try {
+      const results = await this.fetchV2(user, options);
+      return filterDefaultVariants(results);
+    } catch (e) {
+      console.error('[Experiment] Failed to fetch variants: ', e);
+      return {};
+    }
+  }
+
   private async doFetch(
     user: ExperimentUser,
     timeoutMillis: number,
     options?: FetchOptions,
-  ): Promise<Variants> {
+  ): Promise<Record<string, Variant>> {
     const userContext = this.addContext(user || {});
-    const endpoint = `${this.config.serverUrl}/sdk/vardata`;
-    const encodedUser = Buffer.from(JSON.stringify(userContext)).toString(
-      'base64',
-    );
-    const headers = {
-      Authorization: `Api-Key ${this.apiKey}`,
-      'X-Amp-Exp-User': encodedUser,
-    };
-    if (options && options.flagKeys) {
-      headers['X-Amp-Exp-Flag-Keys'] = Buffer.from(
-        JSON.stringify(options.flagKeys),
-      ).toString('base64url');
-    }
-    this.debug('[Experiment] Fetch variants for user: ', userContext);
-    const response = await this.httpClient.request(
-      endpoint,
-      'GET',
-      headers,
-      null,
-      timeoutMillis,
-    );
-    if (response.status !== 200) {
-      throw Error(
-        `fetch - received error response: ${response.status}: ${response.body}`,
-      );
-    }
-    const json = JSON.parse(response.body);
-    const variants = this.parseJsonVariants(json);
-    this.debug('[Experiment] Fetched variants: ', variants);
-    return variants;
+    const results = await this.evaluationApi.getVariants(userContext, {
+      flagKeys: options?.flagKeys,
+      timeoutMillis: timeoutMillis,
+    });
+    this.debug('[Experiment] Fetched variants: ', results);
+    return evaluationVariantsToVariants(results);
   }
 
   private async retryFetch(
     user: ExperimentUser,
     options?: FetchOptions,
-  ): Promise<Variants> {
+  ): Promise<Record<string, Variant>> {
     if (this.config.fetchRetries == 0) {
       return {};
     }
@@ -144,25 +140,6 @@ export class RemoteEvaluationClient {
       );
     }
     throw err;
-  }
-
-  private async parseJsonVariants(json: string): Promise<Variants> {
-    const variants: Variants = {};
-    for (const key of Object.keys(json)) {
-      let value: string;
-      if ('value' in json[key]) {
-        value = json[key].value;
-      } else if ('key' in json[key]) {
-        // value was previously under the "key" field
-        value = json[key].key;
-      }
-      const variant: Variant = {
-        value,
-        payload: json[key].payload,
-      };
-      variants[key] = variant;
-    }
-    return variants;
   }
 
   private addContext(user: ExperimentUser): ExperimentUser {
