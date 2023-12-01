@@ -57,7 +57,7 @@ describe('evaluation variant to variant with typed values', () => {
     };
     const variant = evaluationVariantToVariant(evaluationVariant);
     expect(variant.key).toEqual('on');
-    expect(variant.value).toEqual('null');
+    expect(variant.value).toBeUndefined();
   });
   test('undefined value', () => {
     const evaluationVariant: EvaluationVariant = {

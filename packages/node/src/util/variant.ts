@@ -23,7 +23,10 @@ export const evaluationVariantToVariant = (
   let stringValue: string | undefined;
   if (typeof evaluationVariant.value === 'string') {
     stringValue = evaluationVariant.value;
-  } else {
+  } else if (
+    evaluationVariant.value !== null &&
+    evaluationVariant.value !== undefined
+  ) {
     stringValue = JSON.stringify(evaluationVariant.value);
   }
   return {
