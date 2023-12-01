@@ -86,7 +86,7 @@ test('test evaluation variants to variants', () => {
     number: { key: 'on', value: '1.2' },
     array: { key: 'on', value: '[1,2,3]' },
     object: { key: 'on', value: '{"k":"v"}' },
-    null: { key: 'on', value: 'null' },
+    null: { key: 'on', value: undefined },
     undefined: { key: 'on' },
   });
 });
