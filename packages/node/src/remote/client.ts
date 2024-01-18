@@ -65,12 +65,19 @@ export class RemoteEvaluationClient {
       return await this.doFetch(user, this.config.fetchTimeoutMillis, options);
     } catch (e) {
       console.error('[Experiment] Fetch failed: ', e);
+      // get status from error message
+      const statusString = e.message.match(/(\d+)/)?.[0];
+      if (statusString) {
+        const status = parseInt(statusString);
+        if (status && status >= 400 && status < 500 && status != 429) {
+          throw e;
+        }
+      }
       try {
         return await this.retryFetch(user, options);
       } catch (e) {
         console.error(e);
       }
-      throw e;
     }
   }
 
