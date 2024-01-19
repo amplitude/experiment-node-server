@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.1](https://github.com/amplitude/experiment-node-server/compare/v1.8.0...v1.8.1) (2024-01-19)
+
+
+### Bug Fixes
+
+* add IP property to user object ([#39](https://github.com/amplitude/experiment-node-server/issues/39)) ([9b67eee](https://github.com/amplitude/experiment-node-server/commit/9b67eee008728b6fbcfe0d96da24a2910ea6c885))
+
+
+
+
+
 # [1.8.0](https://github.com/amplitude/experiment-node-server/compare/v1.7.8...v1.8.0) (2023-12-01)
 
 
