@@ -68,6 +68,7 @@ export class RemoteEvaluationClient {
     try {
       return await this.doFetch(user, this.config.fetchTimeoutMillis, options);
     } catch (e) {
+      console.error('[Experiment] Fetch failed: ', e);
       if (!this.shouldRetryFetch(e)) {
         throw e;
       }
