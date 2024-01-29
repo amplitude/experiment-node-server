@@ -1,5 +1,6 @@
 import { RemoteEvaluationClient } from 'src/remote/client';
 import { ExperimentUser } from 'src/types/user';
+import { FetchError } from '@amplitude/experiment-core';
 
 const API_KEY = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
@@ -55,4 +56,44 @@ test('ExperimentClient.fetch, v2 off returns default variant', async () => {
   expect(variant.key).toEqual('off');
   expect(variant.value).toBeUndefined();
   expect(variant.metadata.default).toEqual(true);
+});
+
+describe('ExperimentClient.fetch, retry with different response codes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  test.each([
+    [300, 'Fetch Exception 300', 1],
+    [400, 'Fetch Exception 400', 0],
+    [429, 'Fetch Exception 429', 1],
+    [500, 'Fetch Exception 500', 1],
+    [0, 'Other Exception', 1],
+  ])(
+    'responseCode=%p, errorMessage=%p, retryCalled=%p',
+    async (responseCode, errorMessage, retryCalled) => {
+      const client = new RemoteEvaluationClient(API_KEY, { fetchRetries: 1 });
+
+      jest
+        .spyOn(RemoteEvaluationClient.prototype as any, 'doFetch')
+        .mockImplementation(async () => {
+          return new Promise<RemoteEvaluationClient>((_resolve, reject) => {
+            if (responseCode === 0) {
+              reject(new Error(errorMessage));
+            } else {
+              reject(new FetchError(responseCode, errorMessage));
+            }
+          });
+        });
+      const retryMock = jest.spyOn(
+        RemoteEvaluationClient.prototype as any,
+        'retryFetch',
+      );
+      try {
+        await client.fetch({ user_id: 'test_user' });
+      } catch (e) {
+        // catch error
+      }
+      expect(retryMock).toHaveBeenCalledTimes(retryCalled);
+    },
+  );
 });
