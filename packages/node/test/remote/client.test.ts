@@ -74,6 +74,7 @@ describe('ExperimentClient.fetch, retry with different response codes', () => {
       const client = new RemoteEvaluationClient(API_KEY, { fetchRetries: 1 });
 
       jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(RemoteEvaluationClient.prototype as any, 'doFetch')
         .mockImplementation(async () => {
           return new Promise<RemoteEvaluationClient>((_resolve, reject) => {
@@ -85,6 +86,7 @@ describe('ExperimentClient.fetch, retry with different response codes', () => {
           });
         });
       const retryMock = jest.spyOn(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         RemoteEvaluationClient.prototype as any,
         'retryFetch',
       );
