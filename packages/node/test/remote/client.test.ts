@@ -1,6 +1,6 @@
+import { FetchError } from '@amplitude/experiment-core';
 import { RemoteEvaluationClient } from 'src/remote/client';
 import { ExperimentUser } from 'src/types/user';
-import { FetchError } from '@amplitude/experiment-core';
 
 const API_KEY = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
