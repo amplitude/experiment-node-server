@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.2](https://github.com/amplitude/experiment-node-server/compare/v1.8.1...v1.8.2) (2024-01-31)
+
+
+### Bug Fixes
+
+* Improve remote evaluation fetch retry logic ([#40](https://github.com/amplitude/experiment-node-server/issues/40)) ([525cf0f](https://github.com/amplitude/experiment-node-server/commit/525cf0f48e3ed53cf6f57d42087fbe961315324b))
+
+
+
+
+
 ## [1.8.1](https://github.com/amplitude/experiment-node-server/compare/v1.8.0...v1.8.1) (2024-01-19)
 
 
