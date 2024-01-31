@@ -1,4 +1,8 @@
-import { EvaluationApi, SdkEvaluationApi } from '@amplitude/experiment-core';
+import {
+  EvaluationApi,
+  FetchError,
+  SdkEvaluationApi,
+} from '@amplitude/experiment-core';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
@@ -65,10 +69,12 @@ export class RemoteEvaluationClient {
       return await this.doFetch(user, this.config.fetchTimeoutMillis, options);
     } catch (e) {
       console.error('[Experiment] Fetch failed: ', e);
-      try {
-        return await this.retryFetch(user, options);
-      } catch (e) {
-        console.error(e);
+      if (this.shouldRetryFetch(e)) {
+        try {
+          return await this.retryFetch(user, options);
+        } catch (e) {
+          console.error(e);
+        }
       }
       throw e;
     }
@@ -154,6 +160,13 @@ export class RemoteEvaluationClient {
     if (this.config.debug) {
       console.debug(message, ...optionalParams);
     }
+  }
+
+  private shouldRetryFetch(e: Error): boolean {
+    if (e instanceof FetchError) {
+      return e.statusCode < 400 || e.statusCode >= 500 || e.statusCode === 429;
+    }
+    return true;
   }
 }
 
