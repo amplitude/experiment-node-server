@@ -34,13 +34,14 @@ const initializeRemote = (
   apiKey: string,
   config?: RemoteEvaluationConfig,
 ): RemoteEvaluationClient => {
-  if (!remoteEvaluationInstances[apiKey]) {
-    remoteEvaluationInstances[apiKey] = new RemoteEvaluationClient(
-      apiKey,
+  const usedKey = config?.deploymentKey || apiKey;
+  if (!remoteEvaluationInstances[usedKey]) {
+    remoteEvaluationInstances[usedKey] = new RemoteEvaluationClient(
+      usedKey,
       config,
     );
   }
-  return remoteEvaluationInstances[apiKey];
+  return remoteEvaluationInstances[usedKey];
 };
 
 /**
@@ -59,14 +60,15 @@ const initializeLocal = (
   apiKey: string,
   config?: LocalEvaluationConfig,
 ): LocalEvaluationClient => {
-  if (!localEvaluationInstances[apiKey]) {
-    localEvaluationInstances[apiKey] = new LocalEvaluationClient(
-      apiKey,
+  const usedKey = config?.deploymentKey || apiKey;
+  if (!localEvaluationInstances[usedKey]) {
+    localEvaluationInstances[usedKey] = new LocalEvaluationClient(
+      usedKey,
       config,
       new InMemoryFlagConfigCache(),
     );
   }
-  return localEvaluationInstances[apiKey];
+  return localEvaluationInstances[usedKey];
 };
 
 /**

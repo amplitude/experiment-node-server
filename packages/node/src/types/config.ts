@@ -54,6 +54,12 @@ export type RemoteEvaluationConfig = {
    * The agent used to send http requests.
    */
   httpAgent?: https.Agent;
+
+  /**
+   * The deployment key for the experiment. If provided, this will be used instead
+   * of the Amplitude project API key.
+   */
+  deploymentKey?: string;
 };
 
 /**
@@ -75,6 +81,7 @@ export type ExperimentConfig = RemoteEvaluationConfig;
  | **fetchRetryBackoffScalar**    | `1.5` |
  | **fetchRetryTimeoutMillis**    | `10000` |
  | **httpAgent** | null |
+ | **deploymentKey** | null |
 
  *
  * @category Configuration
@@ -89,6 +96,7 @@ export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
   httpAgent: null,
+  deploymentKey: null,
 };
 
 /**
@@ -104,6 +112,7 @@ export const Defaults: ExperimentConfig = {
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
   httpAgent: null,
+  deploymentKey: null,
 };
 
 /**
@@ -148,6 +157,12 @@ export type LocalEvaluationConfig = {
    * evaluation.
    */
   assignmentConfig?: AssignmentConfig;
+
+  /**
+   * The deployment key for the experiment. If provided, this will be used instead
+   * of the Amplitude project API key.
+   */
+  deploymentKey?: string;
 };
 
 export type AssignmentConfig = {
@@ -172,6 +187,7 @@ export type AssignmentConfig = {
  | **serverUrl**    | `"https://api.lab.amplitude.com"` |
  | **flagConfigPollingIntervalMillis**    | `30000` |
  | **httpAgent** | null |
+ | **deploymentKey** | null |
 
  * @category Configuration
  */
@@ -181,6 +197,7 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
   httpAgent: null,
+  deploymentKey: null,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
