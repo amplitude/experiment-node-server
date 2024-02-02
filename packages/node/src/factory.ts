@@ -13,8 +13,8 @@ const localEvaluationInstances = {};
 /**
  * Initializes a singleton {@link ExperimentClient} for remote evaluation.
  *
- * @param apiKey The Amplitude Project API Key, if a deployment key is provided in the config,
- * it will be used instead.
+ * @param apiKey The Amplitude Project API Key used in the client, if a deployment key is provided
+ * in the config, it will be used instead.
  * @param config See {@link ExperimentConfig} for config options
  * @deprecated use initializeRemote
  */
@@ -53,8 +53,8 @@ const initializeRemote = (
  * to best leverage local evaluation, all flags and experiments being evaluated
  * server side should be configured as local.
  *
- * @param apiKey The Amplitude Project API Key, if a deployment key is provided in the config,
- * it will be used instead.
+ * @param apiKey The Amplitude Project API Key used in the client, if a deployment key is provided
+ * in the config, it will be used instead.
  * @param config See {@link ExperimentConfig} for config options
  * @returns The local evaluation client.
  */
