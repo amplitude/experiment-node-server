@@ -57,7 +57,7 @@ export type RemoteEvaluationConfig = {
 
   /**
    * The deployment key for the experiment. If provided, this will be used instead
-   * of the Amplitude project API key.
+   * of the Amplitude Project API key.
    */
   deploymentKey?: string;
 };
@@ -160,7 +160,7 @@ export type LocalEvaluationConfig = {
 
   /**
    * The deployment key for the experiment. If provided, this will be used instead
-   * of the Amplitude project API key.
+   * of the Amplitude Project API key.
    */
   deploymentKey?: string;
 };
