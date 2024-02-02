@@ -81,7 +81,7 @@ export type ExperimentConfig = RemoteEvaluationConfig;
  | **fetchRetryBackoffScalar**    | `1.5` |
  | **fetchRetryTimeoutMillis**    | `10000` |
  | **httpAgent** | null |
- | **deploymentKey** | null |
+ | **deploymentKey** | undefined |
 
  *
  * @category Configuration
@@ -96,7 +96,7 @@ export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
   httpAgent: null,
-  deploymentKey: null,
+  deploymentKey: undefined,
 };
 
 /**
@@ -112,7 +112,7 @@ export const Defaults: ExperimentConfig = {
   fetchRetryBackoffScalar: 1.5,
   fetchRetryTimeoutMillis: 10000,
   httpAgent: null,
-  deploymentKey: null,
+  deploymentKey: undefined,
 };
 
 /**
@@ -187,7 +187,7 @@ export type AssignmentConfig = {
  | **serverUrl**    | `"https://api.lab.amplitude.com"` |
  | **flagConfigPollingIntervalMillis**    | `30000` |
  | **httpAgent** | null |
- | **deploymentKey** | null |
+ | **deploymentKey** | undefined |
 
  * @category Configuration
  */
@@ -197,7 +197,7 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
   httpAgent: null,
-  deploymentKey: null,
+  deploymentKey: undefined,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
