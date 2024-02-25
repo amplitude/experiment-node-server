@@ -148,6 +148,44 @@ export type LocalEvaluationConfig = {
    * evaluation.
    */
   assignmentConfig?: AssignmentConfig;
+
+  /**
+   * To use streaming API or polling. With streaming, flag config updates are
+   * received immediately, no polling is necessary. If stream fails, it will
+   * fallback to polling automatically.
+   */
+  getFlagConfigUpdateWithStream?: boolean;
+
+  /**
+   * The stream server endpoint from which to stream data.
+   */
+  streamServerUrl?: string;
+
+  /**
+   * To use with streaming. The timeout for connecting an server-side event stream. Aka, the timeout for http connection.
+   */
+  streamConnTimeoutMillis?: number;
+
+  /**
+   * To use with streaming. The timeout for a single attempt of establishing a valid stream of flag configs.
+   * This includes streamConnTimeoutMillis and time for receiving initial flag configs.
+   */
+  streamFlagConnTimeoutMillis?: number;
+
+  /**
+   * To use with streaming. The number attempts to connect before declaring streaming fatal error.
+   */
+  streamFlagTryAttempts?: number;
+
+  /**
+   * To use with streaming. The delay between attempts to connect.
+   */
+  streamFlagTryDelayMillis?: number;
+
+  /**
+   * To use with streaming. The delay to retry streaming after stream fatal error and fallbacked to poller.
+   */
+  retryStreamFlagDelayMillis?: number;
 };
 
 export type AssignmentConfig = {
@@ -181,6 +219,13 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
   httpAgent: null,
+  getFlagConfigUpdateWithStream: false,
+  streamServerUrl: 'https://stream.lab.amplitude.com',
+  streamConnTimeoutMillis: 1000,
+  streamFlagConnTimeoutMillis: 1000,
+  streamFlagTryAttempts: 2,
+  streamFlagTryDelayMillis: 1000,
+  retryStreamFlagDelayMillis: 15000,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {

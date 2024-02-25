@@ -5,6 +5,7 @@ import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
 import { FlagConfigFetcher } from './fetcher';
+import { FlagConfigUpdater } from './updater';
 
 const BACKOFF_POLICY: BackoffPolicy = {
   attempts: 5,
@@ -13,7 +14,7 @@ const BACKOFF_POLICY: BackoffPolicy = {
   scalar: 1,
 };
 
-export class FlagConfigPoller {
+export class FlagConfigPoller implements FlagConfigUpdater {
   private readonly logger: Logger;
   private readonly pollingIntervalMillis: number;
 

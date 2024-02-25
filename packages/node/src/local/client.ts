@@ -2,8 +2,10 @@ import * as amplitude from '@amplitude/analytics-node';
 import {
   EvaluationEngine,
   EvaluationFlag,
+  StreamEventSourceClass,
   topologicalSort,
 } from '@amplitude/experiment-core';
+import EventSource from 'eventsource';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
@@ -30,6 +32,8 @@ import {
 import { InMemoryFlagConfigCache } from './cache';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
+import { FlagConfigStreamer } from './streamer';
+import { FlagConfigUpdater } from './updater';
 
 /**
  * Experiment client for evaluating variants for a user locally.
@@ -38,7 +42,7 @@ import { FlagConfigPoller } from './poller';
 export class LocalEvaluationClient {
   private readonly logger: Logger;
   private readonly config: LocalEvaluationConfig;
-  private readonly poller: FlagConfigPoller;
+  private readonly updater: FlagConfigUpdater;
   private readonly assignmentService: AssignmentService;
   private readonly evaluation: EvaluationEngine;
 
@@ -54,6 +58,7 @@ export class LocalEvaluationClient {
     config: LocalEvaluationConfig,
     flagConfigCache?: FlagConfigCache,
     httpClient: HttpClient = new FetchHttpClient(config?.httpAgent),
+    streamEventSourceClass: StreamEventSourceClass = EventSource,
   ) {
     this.config = { ...LocalEvaluationDefaults, ...config };
     const fetcher = new FlagConfigFetcher(
@@ -67,12 +72,27 @@ export class LocalEvaluationClient {
       this.config.bootstrap,
     );
     this.logger = new ConsoleLogger(this.config.debug);
-    this.poller = new FlagConfigPoller(
-      fetcher,
-      this.cache,
-      this.config.flagConfigPollingIntervalMillis,
-      this.config.debug,
-    );
+    this.updater = this.config.getFlagConfigUpdateWithStream
+      ? new FlagConfigStreamer(
+          apiKey,
+          fetcher,
+          this.cache,
+          streamEventSourceClass,
+          this.config.flagConfigPollingIntervalMillis,
+          this.config.streamConnTimeoutMillis,
+          this.config.streamFlagConnTimeoutMillis,
+          this.config.streamFlagTryAttempts,
+          this.config.streamFlagTryDelayMillis,
+          this.config.retryStreamFlagDelayMillis,
+          this.config.streamServerUrl,
+          this.config.debug,
+        )
+      : new FlagConfigPoller(
+          fetcher,
+          this.cache,
+          this.config.flagConfigPollingIntervalMillis,
+          this.config.debug,
+        );
     if (this.config.assignmentConfig) {
       this.config.assignmentConfig = {
         ...AssignmentConfigDefaults,
@@ -158,7 +178,7 @@ export class LocalEvaluationClient {
    * Calling this function while the poller is already running does nothing.
    */
   public async start(): Promise<void> {
-    return await this.poller.start();
+    return await this.updater.start();
   }
 
   /**
@@ -167,6 +187,6 @@ export class LocalEvaluationClient {
    * Calling this function while the poller is not running will do nothing.
    */
   public stop(): void {
-    return this.poller.stop();
+    return this.updater.stop();
   }
 }
