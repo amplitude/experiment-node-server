@@ -20,7 +20,7 @@ export class FlagConfigStreamer {
   private readonly stream: SdkStreamFlagApi;
   private readonly retryStreamFlagDelayMillis: number;
 
-  private streamRetryTimeout?: NodeJS.Timeout;
+  private streamRetryInterval?: NodeJS.Timeout;
 
   public readonly cache: FlagConfigCache;
 
@@ -77,7 +77,7 @@ export class FlagConfigStreamer {
         `[Experiment] streamer - onError, fallback to poller, err status: ${err.status}, err message: ${err.message}`,
       );
       this.poller.start(onChange);
-      this.startRetryStreamTimeout();
+      this.startRetryStreamInterval();
     };
 
     this.stream.onUpdate = async (flagConfigs) => {
@@ -99,9 +99,7 @@ export class FlagConfigStreamer {
     try {
       // Clear retry timeout. If stream isn't connected, we're trying now.
       // If stream is connected, timeout will be undefined and connect will do nothing.
-      if (this.streamRetryTimeout) {
-        clearTimeout(this.streamRetryTimeout);
-      }
+      this.clearRetryStreamInterval();
       // stream connect error will be raised, not through calling onError.
       // So onError won't be called.
       await this.stream.connect({
@@ -116,7 +114,7 @@ export class FlagConfigStreamer {
         `[Experiment] streamer - start stream failed, fallback to poller, err status: ${err.status}, err message: ${err.message}`,
       );
       await this.poller.start(onChange);
-      this.startRetryStreamTimeout();
+      this.startRetryStreamInterval();
     }
   }
 
@@ -127,9 +125,7 @@ export class FlagConfigStreamer {
    */
   public stop(): void {
     this.logger.debug('[Experiment] streamer - stop');
-    if (this.streamRetryTimeout) {
-      clearTimeout(this.streamRetryTimeout);
-    }
+    this.clearRetryStreamInterval();
     this.poller.stop();
     this.stream.close();
   }
@@ -148,22 +144,29 @@ export class FlagConfigStreamer {
   }
 
   // Retry stream after a while.
-  private startRetryStreamTimeout() {
-    if (this.streamRetryTimeout) {
-      clearTimeout(this.streamRetryTimeout);
-    }
-    this.streamRetryTimeout = setTimeout(() => {
+  private startRetryStreamInterval() {
+    this.clearRetryStreamInterval();
+    this.streamRetryInterval = setInterval(() => {
       this.logger.debug('[Experiment] streamer - retry stream');
       this.stream
         .connect()
         .then(() => {
           this.logger.debug('[Experiment] streamer - retry stream success');
+          // Clear interval.
+          this.clearRetryStreamInterval();
           // Stop poller.
           this.poller.stop();
         })
-        // No need to set timeout here. onError handles calling startRetryStreamInterval().
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         .catch(() => {});
     }, this.retryStreamFlagDelayMillis);
+  }
+
+  // Clear retry interval.
+  private clearRetryStreamInterval() {
+    if (this.streamRetryInterval) {
+      clearInterval(this.streamRetryInterval);
+      this.streamRetryInterval = undefined;
+    }
   }
 }

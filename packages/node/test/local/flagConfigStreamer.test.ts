@@ -875,6 +875,136 @@ test('FlagConfigUpdater.connect, start success, keep alive fail, retry fail twic
   }
 });
 
+test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream success, stop poller, no more retry stream', async () => {
+  jest.setTimeout(10000);
+  const mockClient = getNewClient();
+  let fetchCalls = 0;
+  const mockFetcher = new FlagConfigFetcher(
+    apiKey,
+    new MockHttpClient(async () => {
+      fetchCalls++;
+      return { status: 200, body: '[]' };
+    }),
+  );
+  const updater = new FlagConfigStreamer(
+    apiKey,
+    mockFetcher,
+    cache,
+    mockClient.clientClass,
+    200, // poller fetch every 100ms.
+    streamConnTimeoutMillis,
+    streamFlagConnTimeoutMillis,
+    streamFlagTryAttempts,
+    streamFlagTryDelayMillis,
+    2000,
+    serverUrl,
+    false,
+  );
+  try {
+    updater.start();
+    await mockClient.client!.doErr({ status: 501 }); // Fatal err to fail initial conn.
+    await new Promise((r) => setTimeout(r, 500)); // Wait for poller to start.
+    assert(fetchCalls > 0);
+    let n = mockClient.numCreated;
+    assert(n == 1);
+
+    // Check for retry stream start.
+    await new Promise((r) => setTimeout(r, 2000)); // Wait for retry.
+    n = mockClient.numCreated;
+    assert(n == 2);
+
+    // Retry stream success.
+    const prevFetchCalls = fetchCalls;
+    await mockClient.client!.doOpen({ type: 'open' });
+    await mockClient.client!.doMsg({ data: '[]' });
+    assert(fetchCalls == prevFetchCalls);
+
+    // Wait to check poller stopped.
+    await new Promise((r) => setTimeout(r, 500));
+    assert(fetchCalls == prevFetchCalls);
+
+    // Check there is no more retry stream.
+    await new Promise((r) => setTimeout(r, 2000)); // Wait for retry.
+    n = mockClient.numCreated;
+    assert(n == 2);
+
+    await updater.stop();
+    // Pass
+  } catch (e) {
+    updater.stop();
+    fail(e);
+  }
+});
+
+test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream fail, continue poller, retry stream success, stop poller', async () => {
+  jest.setTimeout(10000);
+  const mockClient = getNewClient();
+  let fetchCalls = 0;
+  const mockFetcher = new FlagConfigFetcher(
+    apiKey,
+    new MockHttpClient(async () => {
+      fetchCalls++;
+      return { status: 200, body: '[]' };
+    }),
+  );
+  const updater = new FlagConfigStreamer(
+    apiKey,
+    mockFetcher,
+    cache,
+    mockClient.clientClass,
+    200, // poller fetch every 100ms.
+    streamConnTimeoutMillis,
+    streamFlagConnTimeoutMillis,
+    streamFlagTryAttempts,
+    streamFlagTryDelayMillis,
+    2000,
+    serverUrl,
+    false,
+  );
+  try {
+    updater.start();
+    await mockClient.client!.doErr({ status: 501 }); // Fatal err to fail initial conn.
+    await new Promise((r) => setTimeout(r, 500)); // Wait for poller to start.
+    assert(fetchCalls > 0);
+    let n = mockClient.numCreated;
+    assert(n == 1);
+
+    // Wait for retry stream start.
+    await new Promise((r) => setTimeout(r, 2000)); // Wait for retry.
+    n = mockClient.numCreated;
+    assert(n == 2);
+
+    // Retry stream fail.
+    let prevFetchCalls = fetchCalls;
+    await mockClient.client!.doErr({ status: 500 }); // Fatal err to fail stream retry.
+
+    // Wait to check poller continues to poll.
+    await new Promise((r) => setTimeout(r, 500));
+    assert(fetchCalls > prevFetchCalls);
+
+    // Wait for another retry stream start.
+    await new Promise((r) => setTimeout(r, 2000)); // Wait for retry.
+    n = mockClient.numCreated;
+    assert(n == 3);
+
+    // Retry stream success.
+    prevFetchCalls = fetchCalls;
+    await mockClient.client!.doOpen({ type: 'open' });
+    await mockClient.client!.doMsg({ data: '[]' });
+    assert(fetchCalls == prevFetchCalls);
+
+    // Wait to check poller stopped.
+    await new Promise((r) => setTimeout(r, 500));
+    assert(fetchCalls == prevFetchCalls);
+
+    await updater.stop();
+    // Pass
+  } catch (e) {
+    updater.stop();
+    fail(e);
+  }
+});
+
 test.todo(
   'FlagConfigUpdater.connect, start and immediately stop and immediately start is an unhandled edge case',
 );
