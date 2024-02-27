@@ -1,14 +1,24 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { ReactNode, useContext } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
-import { ExperimentContext } from '../contexts/experimentContext';
 import styles from '../styles/Home.module.css';
 
-const Home = (): ReactNode => {
-  const experiment = useContext(ExperimentContext);
-  const feature = experiment.variant('js-ssr-demo');
-  return (
+import { getServerSideProps, initializeExperimentClient } from './utils';
+
+const Home = ({ variants }): ReactNode => {
+  const CLIENT_DEPLOYMENT_KEY = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  const experiment = initializeExperimentClient(
+    CLIENT_DEPLOYMENT_KEY,
+    variants,
+  );
+  const feature = experiment.variant('sdk-ci-test-local');
+  return isClient ? (
     <div className={styles.container}>
       <Head>
         <title>SSR Demo</title>
@@ -36,7 +46,9 @@ const Home = (): ReactNode => {
         </footer>
       ) : null}
     </div>
-  );
+  ) : null;
 };
+
+export { getServerSideProps };
 
 export default Home;

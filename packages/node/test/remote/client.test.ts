@@ -4,7 +4,10 @@ import { ExperimentUser } from 'src/types/user';
 
 const API_KEY = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
-const testUser: ExperimentUser = { user_id: 'test_user' };
+const testUser: ExperimentUser = {
+  user_id: 'tim.yiu@amplitude.com',
+  platform: 'something',
+};
 
 test('ExperimentClient.fetch, success', async () => {
   const client = new RemoteEvaluationClient(API_KEY, {});
