@@ -59,8 +59,9 @@ const getTestObjs = ({
 };
 
 test('FlagConfigUpdater.connect, success', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -76,8 +77,9 @@ test('FlagConfigUpdater.connect, success', async () => {
 });
 
 test('FlagConfigUpdater.connect, start success, gets initial flag configs, gets subsequent flag configs', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, cache, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -129,8 +131,9 @@ test('FlagConfigUpdater.connect, stream start fail, fallback to poller, poller u
 });
 
 test('FlagConfigUpdater.connect, start success, gets error initial flag configs, fallback to poller', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -158,8 +161,9 @@ test('FlagConfigUpdater.connect, start success, gets error initial flag configs,
 });
 
 test('FlagConfigUpdater.connect, start success, gets ok initial flag configs, but gets error flag configs later, fallback to poller', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -202,8 +206,9 @@ test('FlagConfigUpdater.connect, start success, gets ok initial flag configs, bu
 });
 
 test('FlagConfigUpdater.connect, open but no initial flag configs', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -221,8 +226,9 @@ test('FlagConfigUpdater.connect, open but no initial flag configs', async () => 
 });
 
 test('FlagConfigUpdater.connect, success and then fails and then reconnects', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -242,8 +248,7 @@ test('FlagConfigUpdater.connect, success and then fails and then reconnects', as
 });
 
 test('FlagConfigUpdater.connect, timeout first try, retry success', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({});
+  const { mockClient, updater } = getTestObjs({});
   try {
     updater.start();
     await new Promise((r) => setTimeout(r, 2200)); // Wait at least 2 secs, at most 3 secs for first try timeout.
@@ -259,8 +264,9 @@ test('FlagConfigUpdater.connect, timeout first try, retry success', async () => 
 });
 
 test('FlagConfigUpdater.connect, retry timeout, backoff to poll after 2 tries', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     await updater.start(); // Awaits start(), no data sent.
     assert(fetchObj.fetchCalls >= 1);
@@ -274,8 +280,9 @@ test('FlagConfigUpdater.connect, retry timeout, backoff to poll after 2 tries', 
 });
 
 test('FlagConfigUpdater.connect, 501, backoff to poll after 1 try', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doErr({ status: 501 }); // Send 501 fatal err.
@@ -291,8 +298,9 @@ test('FlagConfigUpdater.connect, 501, backoff to poll after 1 try', async () => 
 });
 
 test('FlagConfigUpdater.connect, 404, backoff to poll after 2 tries', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     await mockClient.client.doErr({ status: 404 }); // Send error for first try.
@@ -310,8 +318,9 @@ test('FlagConfigUpdater.connect, 404, backoff to poll after 2 tries', async () =
 });
 
 test('FlagConfigUpdater.connect, two starts, second does nothing', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     updater.start();
@@ -329,8 +338,9 @@ test('FlagConfigUpdater.connect, two starts, second does nothing', async () => {
 });
 
 test('FlagConfigUpdater.connect, start and immediately stop does not retry', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 100 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
   try {
     updater.start();
     updater.stop();
@@ -347,11 +357,10 @@ test('FlagConfigUpdater.connect, start and immediately stop does not retry', asy
 test('FlagConfigUpdater.connect, test error after connection, poller starts, stream retry success, poller stops', async () => {
   jest.setTimeout(25000);
   const retryStreamFlagDelayMillis = 15000;
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({
-      pollingIntervalMillis: 200,
-      retryStreamFlagDelayMillis,
-    });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+    retryStreamFlagDelayMillis,
+  });
   try {
     // Test error after normal close.
     updater.start();
@@ -391,8 +400,9 @@ test('FlagConfigUpdater.connect, test error after connection, poller starts, str
 });
 
 test('FlagConfigUpdater.connect, test restarts', async () => {
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 200 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -445,8 +455,9 @@ test('FlagConfigUpdater.connect, test restarts', async () => {
 
 test('FlagConfigUpdater.connect, start success, keep alive success, no fallback to poller', async () => {
   jest.setTimeout(20000);
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 200 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -477,8 +488,9 @@ test('FlagConfigUpdater.connect, start success, keep alive success, no fallback 
 
 test('FlagConfigStreamer.connect, start success, keep alive fail, retry success', async () => {
   jest.setTimeout(20000);
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 200 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -505,8 +517,9 @@ test('FlagConfigStreamer.connect, start success, keep alive fail, retry success'
 
 test('FlagConfigUpdater.connect, start success, keep alive fail, retry fail twice, fallback to poller', async () => {
   jest.setTimeout(20000);
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({ pollingIntervalMillis: 200 });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+  });
   try {
     updater.start();
     await mockClient.client.doOpen({ type: 'open' });
@@ -535,11 +548,10 @@ test('FlagConfigUpdater.connect, start success, keep alive fail, retry fail twic
 
 test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream success, stop poller, no more retry stream', async () => {
   jest.setTimeout(10000);
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({
-      pollingIntervalMillis: 200,
-      retryStreamFlagDelayMillis: 2000,
-    });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+    retryStreamFlagDelayMillis: 2000,
+  });
   try {
     updater.start();
     await mockClient.client.doErr({ status: 501 }); // Fatal err to fail initial conn.
@@ -578,11 +590,10 @@ test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream su
 
 test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream fail, continue poller, retry stream success, stop poller', async () => {
   jest.setTimeout(10000);
-  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
-    getTestObjs({
-      pollingIntervalMillis: 200,
-      retryStreamFlagDelayMillis: 2000,
-    });
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 200,
+    retryStreamFlagDelayMillis: 2000,
+  });
   try {
     updater.start();
     await mockClient.client.doErr({ status: 501 }); // Fatal err to fail initial conn.
