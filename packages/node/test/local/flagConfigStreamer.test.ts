@@ -16,6 +16,7 @@ const getTestObjs = ({
   retryStreamFlagDelayMillis = 15000,
   apiKey = 'client-xxxx',
   serverUrl = 'http://localhostxxxx:799999999',
+  debug = false,
 }) => {
   const fetchObj = { fetchCalls: 0, fetcher: undefined };
   let dataI = 0;
@@ -47,7 +48,7 @@ const getTestObjs = ({
     streamFlagTryDelayMillis,
     retryStreamFlagDelayMillis,
     serverUrl,
-    false,
+    debug,
   );
   return {
     fetchObj,
@@ -140,13 +141,13 @@ test('FlagConfigUpdater.connect, start success, gets error initial flag configs,
     await mockClient.client.doMsg({
       data: 'xxx',
     }); // Initial error flag configs for first try.
-    await new Promise((r) => setTimeout(r, 1000)); // Need to yield quite some time to start retry.
+    await new Promise((r) => setTimeout(r, 1100)); // Wait try delay.
 
     await mockClient.client.doOpen({ type: 'open' });
     await mockClient.client.doMsg({
       data: '[{"key: aaa}]',
     }); // Another error flag configs for second try.
-    await new Promise((r) => setTimeout(r, 1000)); // Need to yield quite some time to start retry.
+    await new Promise((r) => setTimeout(r, 1100)); // Wait try delay.
 
     // Should fallbacked to poller.
     assert(fetchObj.fetchCalls > 0);
@@ -347,6 +348,26 @@ test('FlagConfigUpdater.connect, start and immediately stop does not retry', asy
     await new Promise((r) => setTimeout(r, 1000));
     assert(fetchObj.fetchCalls == 0);
     assert(mockClient.numCreated == 1);
+    // Pass
+  } catch (e) {
+    updater.stop();
+    fail(e);
+  }
+});
+
+test('FlagConfigUpdater.connect, start fail, retry and immediately stop, no poller start', async () => {
+  const { fetchObj, mockClient, updater } = getTestObjs({
+    pollingIntervalMillis: 100,
+  });
+  try {
+    updater.start();
+    await new Promise((r) => setTimeout(r, 2100)); // Wait for timeout and try delay.
+    updater.stop();
+    assert(fetchObj.fetchCalls == 0);
+    assert(mockClient.numCreated == 2);
+
+    await new Promise((r) => setTimeout(r, 200)); // Wait to check poller start.
+    assert(fetchObj.fetchCalls == 0);
     // Pass
   } catch (e) {
     updater.stop();

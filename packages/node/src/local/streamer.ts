@@ -102,6 +102,7 @@ export class FlagConfigStreamer {
       this.clearRetryStreamInterval();
       // stream connect error will be raised, not through calling onError.
       // So onError won't be called.
+      // If close is called during connect, connect will return success. No sideeffects here.
       await this.stream.connect({
         libraryName: 'experiment-node-server',
         libraryVersion: PACKAGE_VERSION,
