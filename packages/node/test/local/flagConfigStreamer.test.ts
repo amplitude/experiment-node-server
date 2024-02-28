@@ -15,7 +15,7 @@ const getTestObjs = ({
   streamFlagTryDelayMillis = 1000,
   retryStreamFlagDelayMillis = 15000,
   apiKey = 'client-xxxx',
-  serverUrl = 'http://localhostxxxx:799999999',
+  serverUrl = 'http://localhostxxxx:00000000',
   debug = false,
 }) => {
   const fetchObj = { fetchCalls: 0, fetcher: undefined };
@@ -69,8 +69,7 @@ test('FlagConfigUpdater.connect, success', async () => {
     await mockClient.client.doMsg({ data: '[]' });
     assert(fetchObj.fetchCalls == 0);
     assert(mockClient.numCreated == 1);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -99,8 +98,7 @@ test('FlagConfigUpdater.connect, start success, gets initial flag configs, gets 
     assert((await cache.get('b')).key == 'b');
     assert((await cache.get('a')) == undefined);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -123,8 +121,7 @@ test('FlagConfigUpdater.connect, stream start fail, fallback to poller, poller u
     assert((await cache.get('fetcher-b')).key == 'fetcher-b');
     assert((await cache.get('fetcher-a')) == undefined);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -153,8 +150,7 @@ test('FlagConfigUpdater.connect, start success, gets error initial flag configs,
     assert(fetchObj.fetchCalls > 0);
     assert(mockClient.numCreated == 2);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -198,8 +194,7 @@ test('FlagConfigUpdater.connect, start success, gets ok initial flag configs, bu
     n = mockClient.numCreated;
     assert(n == 3);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -218,8 +213,7 @@ test('FlagConfigUpdater.connect, open but no initial flag configs', async () => 
     await new Promise((r) => setTimeout(r, 2000));
     assert(fetchObj.fetchCalls > 0);
     assert(mockClient.numCreated == 2);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -240,8 +234,7 @@ test('FlagConfigUpdater.connect, success and then fails and then reconnects', as
     await mockClient.client.doMsg({ data: '[]' });
     assert(fetchObj.fetchCalls == 0);
     assert(mockClient.numCreated == 2);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -256,8 +249,7 @@ test('FlagConfigUpdater.connect, timeout first try, retry success', async () => 
     await mockClient.client.doOpen({ type: 'open' });
     await mockClient.client.doMsg({ data: '[]' });
     assert(mockClient.numCreated == 2);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -272,8 +264,7 @@ test('FlagConfigUpdater.connect, retry timeout, backoff to poll after 2 tries', 
     await updater.start(); // Awaits start(), no data sent.
     assert(fetchObj.fetchCalls >= 1);
     assert(mockClient.numCreated == 2);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -290,8 +281,7 @@ test('FlagConfigUpdater.connect, 501, backoff to poll after 1 try', async () => 
     await new Promise((r) => setTimeout(r, 200)); // Wait for poller to poll.
     assert(fetchObj.fetchCalls >= 1);
     assert(mockClient.numCreated == 1);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -310,8 +300,7 @@ test('FlagConfigUpdater.connect, 404, backoff to poll after 2 tries', async () =
     await new Promise((r) => setTimeout(r, 200)); // Wait for poller to poll.
     assert(fetchObj.fetchCalls >= 1);
     assert(mockClient.numCreated == 2);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -330,8 +319,7 @@ test('FlagConfigUpdater.connect, two starts, second does nothing', async () => {
     await new Promise((r) => setTimeout(r, 2500)); // Wait for stream to init success.
     assert(fetchObj.fetchCalls == 0);
     assert(mockClient.numCreated == 1);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -348,7 +336,6 @@ test('FlagConfigUpdater.connect, start and immediately stop does not retry', asy
     await new Promise((r) => setTimeout(r, 1000));
     assert(fetchObj.fetchCalls == 0);
     assert(mockClient.numCreated == 1);
-    // Pass
   } catch (e) {
     updater.stop();
     fail(e);
@@ -368,7 +355,6 @@ test('FlagConfigUpdater.connect, start fail, retry and immediately stop, no poll
 
     await new Promise((r) => setTimeout(r, 200)); // Wait to check poller start.
     assert(fetchObj.fetchCalls == 0);
-    // Pass
   } catch (e) {
     updater.stop();
     fail(e);
@@ -412,8 +398,7 @@ test('FlagConfigUpdater.connect, test error after connection, poller starts, str
     const prevFetchCalls = fetchObj.fetchCalls;
     await new Promise((r) => setTimeout(r, 500)); // Wait to see if poller runs while waiting.
     assert(fetchObj.fetchCalls == prevFetchCalls);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -431,7 +416,7 @@ test('FlagConfigUpdater.connect, test restarts', async () => {
     assert(fetchObj.fetchCalls == 0);
     let n = mockClient.numCreated;
     assert(n == 1);
-    await updater.stop();
+    updater.stop();
 
     // Test start after normal close.
     updater.start();
@@ -440,7 +425,7 @@ test('FlagConfigUpdater.connect, test restarts', async () => {
     assert(fetchObj.fetchCalls == 0);
     n = mockClient.numCreated;
     assert(n == 2);
-    await updater.stop();
+    updater.stop();
 
     // Test error after normal close.
     updater.start();
@@ -466,8 +451,7 @@ test('FlagConfigUpdater.connect, test restarts', async () => {
     assert(fetchObj.fetchCalls == prevFetchCalls);
     n = mockClient.numCreated;
     assert(n == 6);
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -499,8 +483,7 @@ test('FlagConfigUpdater.connect, start success, keep alive success, no fallback 
     n = mockClient.numCreated;
     assert(n == 1);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -528,8 +511,7 @@ test('FlagConfigStreamer.connect, start success, keep alive fail, retry success'
     n = mockClient.numCreated;
     assert(n == 2);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -559,8 +541,7 @@ test('FlagConfigUpdater.connect, start success, keep alive fail, retry fail twic
     n = mockClient.numCreated;
     assert(n == 3);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -601,8 +582,7 @@ test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream su
     n = mockClient.numCreated;
     assert(n == 2);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
@@ -651,8 +631,7 @@ test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream fa
     await new Promise((r) => setTimeout(r, 500));
     assert(fetchObj.fetchCalls == prevFetchCalls);
 
-    await updater.stop();
-    // Pass
+    updater.stop();
   } catch (e) {
     updater.stop();
     fail(e);
