@@ -178,10 +178,8 @@ export class LocalEvaluationClient {
    *
    * Calling this function while the poller is already running does nothing.
    */
-  public async start(
-    cb: (cache: FlagConfigCache) => Promise<void>,
-  ): Promise<void> {
-    return await this.updater.start(cb);
+  public async start(): Promise<void> {
+    return await this.updater.start();
   }
 
   /**
