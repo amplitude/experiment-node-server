@@ -2,7 +2,6 @@ import * as amplitude from '@amplitude/analytics-node';
 import {
   EvaluationEngine,
   EvaluationFlag,
-  StreamEventSourceFactory,
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
@@ -11,6 +10,7 @@ import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
 import { AmplitudeAssignmentService } from '../assignment/assignment-service';
 import { FetchHttpClient } from '../transport/http';
+import { StreamEventSourceFactory } from '../transport/stream';
 import {
   AssignmentConfig,
   AssignmentConfigDefaults,

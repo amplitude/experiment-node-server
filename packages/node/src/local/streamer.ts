@@ -1,10 +1,8 @@
+import { version as PACKAGE_VERSION } from '../../gen/version';
 import {
-  SdkStreamFlagApi,
   StreamErrorEvent,
   StreamEventSourceFactory,
-} from '@amplitude/experiment-core';
-
-import { version as PACKAGE_VERSION } from '../../gen/version';
+} from '../transport/stream';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { ConsoleLogger } from '../util/logger';
@@ -12,6 +10,7 @@ import { Logger } from '../util/logger';
 
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
+import { SdkStreamFlagApi } from './stream-flag-api';
 
 export class FlagConfigStreamer {
   private readonly logger: Logger;

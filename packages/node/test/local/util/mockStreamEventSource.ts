@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
+
 import {
   StreamEventSource,
   StreamOpenEvent,
   StreamMessageEvent,
   StreamErrorEvent,
-  StreamEvent,
   StreamEventSourceFactory,
-} from '@amplitude/experiment-core';
+  StreamEvent,
+} from 'src/transport/stream';
 
 export interface MockStreamEventSourceClient extends StreamEventSource {
   // Methods for test.
