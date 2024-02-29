@@ -46,9 +46,13 @@ export class FetchHttpClient implements HttpClient {
         method: method,
         headers: headers,
         body: body,
-        agent: this.httpAgent,
         timeout: timeoutMillis,
       };
+
+      if (urlParams.protocol === 'https:') {
+        options['agent'] = this.httpAgent;
+      }
+
       const protocol = urlParams.protocol === 'http:' ? http : https;
       const req = protocol.request(options);
 
