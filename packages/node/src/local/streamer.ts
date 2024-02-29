@@ -1,7 +1,7 @@
 import {
   SdkStreamFlagApi,
   StreamErrorEvent,
-  StreamEventSourceClass,
+  StreamEventSourceFactory,
 } from '@amplitude/experiment-core';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
@@ -28,7 +28,7 @@ export class FlagConfigStreamer {
     apiKey: string,
     fetcher: FlagConfigFetcher,
     cache: FlagConfigCache,
-    streamEventSourceClass: StreamEventSourceClass,
+    streamEventSourceFactory: StreamEventSourceFactory,
     pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
     streamConnTimeoutMillis = LocalEvaluationDefaults.streamConnTimeoutMillis,
     streamFlagConnTimeoutMillis = LocalEvaluationDefaults.streamFlagConnTimeoutMillis,
@@ -50,7 +50,7 @@ export class FlagConfigStreamer {
     this.stream = new SdkStreamFlagApi(
       apiKey,
       serverUrl,
-      streamEventSourceClass,
+      streamEventSourceFactory,
       streamConnTimeoutMillis,
       streamFlagConnTimeoutMillis,
       streamFlagTryAttempts,

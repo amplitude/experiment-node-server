@@ -2,7 +2,7 @@ import * as amplitude from '@amplitude/analytics-node';
 import {
   EvaluationEngine,
   EvaluationFlag,
-  StreamEventSourceClass,
+  StreamEventSourceFactory,
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
@@ -58,7 +58,8 @@ export class LocalEvaluationClient {
     config: LocalEvaluationConfig,
     flagConfigCache?: FlagConfigCache,
     httpClient: HttpClient = new FetchHttpClient(config?.httpAgent),
-    streamEventSourceClass: StreamEventSourceClass = EventSource,
+    streamEventSourceFactory: StreamEventSourceFactory = (url, params) =>
+      new EventSource(url, params),
   ) {
     this.config = { ...LocalEvaluationDefaults, ...config };
     const fetcher = new FlagConfigFetcher(
@@ -77,7 +78,7 @@ export class LocalEvaluationClient {
           apiKey,
           fetcher,
           this.cache,
-          streamEventSourceClass,
+          streamEventSourceFactory,
           this.config.flagConfigPollingIntervalMillis,
           this.config.streamConnTimeoutMillis,
           this.config.streamFlagConnTimeoutMillis,
@@ -177,8 +178,10 @@ export class LocalEvaluationClient {
    *
    * Calling this function while the poller is already running does nothing.
    */
-  public async start(): Promise<void> {
-    return await this.updater.start();
+  public async start(
+    cb: (cache: FlagConfigCache) => Promise<void>,
+  ): Promise<void> {
+    return await this.updater.start(cb);
   }
 
   /**

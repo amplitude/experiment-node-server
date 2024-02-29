@@ -40,7 +40,7 @@ const getTestObjs = ({
     apiKey,
     fetchObj.fetcher,
     cache,
-    mockClient.clientClass,
+    mockClient.clientFactory,
     pollingIntervalMillis,
     streamConnTimeoutMillis,
     streamFlagConnTimeoutMillis,

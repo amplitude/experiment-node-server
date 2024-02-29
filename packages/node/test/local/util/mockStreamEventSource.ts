@@ -7,7 +7,7 @@ import {
   StreamMessageEvent,
   StreamErrorEvent,
   StreamEvent,
-  StreamEventSourceClass,
+  StreamEventSourceFactory,
 } from '@amplitude/experiment-core';
 
 export interface MockStreamEventSourceClient extends StreamEventSource {
@@ -20,12 +20,12 @@ export interface MockStreamEventSourceClient extends StreamEventSource {
 export function getNewClient(): {
   client: MockStreamEventSourceClient | undefined;
   numCreated: number;
-  clientClass: StreamEventSourceClass;
+  clientFactory: StreamEventSourceFactory;
 } {
   const clientObj = {
     client: undefined,
     numCreated: 0,
-    clientClass: undefined,
+    clientFactory: undefined,
   };
   class AClientClass implements MockStreamEventSourceClient {
     static readonly CLOSED: number = 0;
@@ -88,6 +88,7 @@ export function getNewClient(): {
       await this.onerror(evt);
     }
   }
-  clientObj.clientClass = AClientClass;
+  clientObj.clientFactory = (url: string, params: Record<string, any>) =>
+    new AClientClass(url, params);
   return clientObj;
 }
