@@ -13,7 +13,7 @@ const getTestObjs = ({
   streamFlagConnTimeoutMillis = 1000,
   streamFlagTryAttempts = 2,
   streamFlagTryDelayMillis = 1000,
-  retryStreamFlagDelayMillis = 15000,
+  streamFlagRetryDelayMillis = 15000,
   apiKey = 'client-xxxx',
   serverUrl = 'http://localhostxxxx:00000000',
   debug = false,
@@ -46,7 +46,7 @@ const getTestObjs = ({
     streamFlagConnTimeoutMillis,
     streamFlagTryAttempts,
     streamFlagTryDelayMillis,
-    retryStreamFlagDelayMillis,
+    streamFlagRetryDelayMillis,
     serverUrl,
     debug,
   );
@@ -363,10 +363,10 @@ test('FlagConfigUpdater.connect, start fail, retry and immediately stop, no poll
 
 test('FlagConfigUpdater.connect, test error after connection, poller starts, stream retry success, poller stops', async () => {
   jest.setTimeout(25000);
-  const retryStreamFlagDelayMillis = 15000;
+  const streamFlagRetryDelayMillis = 15000;
   const { fetchObj, mockClient, updater } = getTestObjs({
     pollingIntervalMillis: 200,
-    retryStreamFlagDelayMillis,
+    streamFlagRetryDelayMillis,
   });
   try {
     // Test error after normal close.
@@ -389,7 +389,7 @@ test('FlagConfigUpdater.connect, test error after connection, poller starts, str
     n = mockClient.numCreated;
     assert(n == 3);
     // Check retry.
-    await new Promise((r) => setTimeout(r, retryStreamFlagDelayMillis)); // Wait for retry.
+    await new Promise((r) => setTimeout(r, streamFlagRetryDelayMillis)); // Wait for retry.
     await mockClient.client.doOpen({ type: 'open' });
     await mockClient.client.doMsg({ data: '[]' });
     n = mockClient.numCreated;
@@ -552,7 +552,7 @@ test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream su
   jest.setTimeout(10000);
   const { fetchObj, mockClient, updater } = getTestObjs({
     pollingIntervalMillis: 200,
-    retryStreamFlagDelayMillis: 2000,
+    streamFlagRetryDelayMillis: 2000,
   });
   try {
     updater.start();
@@ -593,7 +593,7 @@ test('FlagConfigUpdater.connect, start fail, fallback to poller, retry stream fa
   jest.setTimeout(10000);
   const { fetchObj, mockClient, updater } = getTestObjs({
     pollingIntervalMillis: 200,
-    retryStreamFlagDelayMillis: 2000,
+    streamFlagRetryDelayMillis: 2000,
   });
   try {
     updater.start();

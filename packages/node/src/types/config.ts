@@ -151,10 +151,11 @@ export type LocalEvaluationConfig = {
 
   /**
    * To use streaming API or polling. With streaming, flag config updates are
-   * received immediately, no polling is necessary. If stream fails, it will
-   * fallback to polling automatically.
+   * received immediately, no polling is necessary. If stream fails for any
+   * reason, it will fallback to polling automatically.
+   * Default will be false, using poller.
    */
-  getFlagConfigUpdateWithStream?: boolean;
+  streamUpdates?: boolean;
 
   /**
    * The stream server endpoint from which to stream data.
@@ -185,7 +186,7 @@ export type LocalEvaluationConfig = {
   /**
    * To use with streaming. The delay to retry streaming after stream fatal error and fallbacked to poller.
    */
-  retryStreamFlagDelayMillis?: number;
+  streamFlagRetryDelayMillis?: number;
 };
 
 export type AssignmentConfig = {
@@ -219,13 +220,13 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
   httpAgent: null,
-  getFlagConfigUpdateWithStream: false,
+  streamUpdates: false,
   streamServerUrl: 'https://stream.lab.amplitude.com',
   streamConnTimeoutMillis: 1000,
   streamFlagConnTimeoutMillis: 1000,
   streamFlagTryAttempts: 2,
   streamFlagTryDelayMillis: 1000,
-  retryStreamFlagDelayMillis: 15000,
+  streamFlagRetryDelayMillis: 15000,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {

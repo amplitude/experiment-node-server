@@ -73,7 +73,7 @@ export class LocalEvaluationClient {
       this.config.bootstrap,
     );
     this.logger = new ConsoleLogger(this.config.debug);
-    this.updater = this.config.getFlagConfigUpdateWithStream
+    this.updater = this.config.streamUpdates
       ? new FlagConfigStreamer(
           apiKey,
           fetcher,
@@ -84,7 +84,7 @@ export class LocalEvaluationClient {
           this.config.streamFlagConnTimeoutMillis,
           this.config.streamFlagTryAttempts,
           this.config.streamFlagTryDelayMillis,
-          this.config.retryStreamFlagDelayMillis,
+          this.config.streamFlagRetryDelayMillis,
           this.config.streamServerUrl,
           this.config.debug,
         )

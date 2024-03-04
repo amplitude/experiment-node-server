@@ -17,7 +17,7 @@ export class FlagConfigStreamer {
 
   private readonly poller: FlagConfigPoller;
   private readonly stream: SdkStreamFlagApi;
-  private readonly retryStreamFlagDelayMillis: number;
+  private readonly streamFlagRetryDelayMillis: number;
 
   private streamRetryInterval?: NodeJS.Timeout;
 
@@ -33,7 +33,7 @@ export class FlagConfigStreamer {
     streamFlagConnTimeoutMillis = LocalEvaluationDefaults.streamFlagConnTimeoutMillis,
     streamFlagTryAttempts = LocalEvaluationDefaults.streamFlagTryAttempts,
     streamFlagTryDelayMillis = LocalEvaluationDefaults.streamFlagTryDelayMillis,
-    retryStreamFlagDelayMillis = LocalEvaluationDefaults.retryStreamFlagDelayMillis,
+    streamFlagRetryDelayMillis = LocalEvaluationDefaults.streamFlagRetryDelayMillis,
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
     debug = false,
   ) {
@@ -55,7 +55,7 @@ export class FlagConfigStreamer {
       streamFlagTryAttempts,
       streamFlagTryDelayMillis,
     );
-    this.retryStreamFlagDelayMillis = retryStreamFlagDelayMillis;
+    this.streamFlagRetryDelayMillis = streamFlagRetryDelayMillis;
   }
 
   /**
@@ -159,7 +159,7 @@ export class FlagConfigStreamer {
         })
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         .catch(() => {});
-    }, this.retryStreamFlagDelayMillis);
+    }, this.streamFlagRetryDelayMillis);
   }
 
   // Clear retry interval.
