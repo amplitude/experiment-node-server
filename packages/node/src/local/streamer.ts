@@ -11,8 +11,9 @@ import { Logger } from '../util/logger';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 import { SdkStreamFlagApi } from './stream-flag-api';
+import { FlagConfigUpdater } from './updater';
 
-export class FlagConfigStreamer {
+export class FlagConfigStreamer implements FlagConfigUpdater {
   private readonly logger: Logger;
 
   private readonly poller: FlagConfigPoller;

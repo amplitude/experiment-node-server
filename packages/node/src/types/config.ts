@@ -163,18 +163,22 @@ export type LocalEvaluationConfig = {
   streamServerUrl?: string;
 
   /**
-   * To use with streaming. The timeout for connecting an server-side event stream. Aka, the timeout for http connection.
+   * To use with streaming. The timeout for connecting an server-side event
+   * stream. Aka, the timeout for http connection.
    */
   streamConnTimeoutMillis?: number;
 
   /**
-   * To use with streaming. The timeout for a single attempt of establishing a valid stream of flag configs.
-   * This includes streamConnTimeoutMillis and time for receiving initial flag configs.
+   * To use with streaming. The timeout for a single attempt of establishing
+   * a valid stream of flag configs.
+   * This includes streamConnTimeoutMillis and time for receiving initial
+   * flag configs.
    */
   streamFlagConnTimeoutMillis?: number;
 
   /**
-   * To use with streaming. The number attempts to connect before declaring streaming fatal error.
+   * To use with streaming. The number attempts to connect before declaring
+   * streaming fatal error.
    */
   streamFlagTryAttempts?: number;
 
@@ -184,9 +188,18 @@ export type LocalEvaluationConfig = {
   streamFlagTryDelayMillis?: number;
 
   /**
-   * To use with streaming. The delay to retry streaming after stream fatal error and fallbacked to poller.
+   * To use with streaming. The base delay to retry streaming after stream
+   * fatal error and fallbacked to poller.
    */
   streamFlagRetryDelayMillis?: number;
+
+  /**
+   * To use with streaming. The jitter to add to the delay for retry streaming
+   * after stream fatal error and fallbacked to poller.
+   * A random number between 0 and streamFlagRetryJitterMillis will be added to
+   * streamFlagRetryDelayMillis as the delay.
+   */
+  streamFlagRetryJitterMillis?: number;
 };
 
 export type AssignmentConfig = {
@@ -227,6 +240,7 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   streamFlagTryAttempts: 2,
   streamFlagTryDelayMillis: 1000,
   streamFlagRetryDelayMillis: 15000,
+  streamFlagRetryJitterMillis: 2000,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {

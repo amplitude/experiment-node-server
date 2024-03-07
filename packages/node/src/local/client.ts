@@ -84,7 +84,8 @@ export class LocalEvaluationClient {
           this.config.streamFlagConnTimeoutMillis,
           this.config.streamFlagTryAttempts,
           this.config.streamFlagTryDelayMillis,
-          this.config.streamFlagRetryDelayMillis,
+          this.config.streamFlagRetryDelayMillis +
+            Math.floor(Math.random() * this.config.streamFlagRetryJitterMillis),
           this.config.streamServerUrl,
           this.config.debug,
         )
