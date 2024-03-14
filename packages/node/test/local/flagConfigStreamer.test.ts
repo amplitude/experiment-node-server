@@ -103,6 +103,29 @@ test('FlagConfigUpdater.connect, start success, gets initial flag configs, gets 
   }
 });
 
+test('FlagConfigUpdater.connect, stream start fail, only 1 attempt, fallback to poller, poller updates flag configs correctly', async () => {
+  const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
+    getTestObjs({ pollingIntervalMillis: 100, streamFlagTryAttempts: 1 });
+  try {
+    updater.start();
+    await mockClient.client.doErr({ status: 503 }); // Send 503 non fatal to fallback to poller after single attempt.
+    await new Promise((r) => setTimeout(r, 200)); // Wait for poller to poll.
+    assert(fetchObj.fetchCalls >= 1);
+    assert(mockClient.numCreated == 1);
+    assert((await cache.get('fetcher-a')).key == 'fetcher-a');
+
+    fetcherReturnNext();
+    await new Promise((r) => setTimeout(r, 200)); // Wait for poller to poll.
+    assert((await cache.get('fetcher-b')).key == 'fetcher-b');
+    assert((await cache.get('fetcher-a')) == undefined);
+
+    updater.stop();
+  } catch (e) {
+    updater.stop();
+    fail(e);
+  }
+});
+
 test('FlagConfigUpdater.connect, stream start fail, fallback to poller, poller updates flag configs correctly', async () => {
   const { fetchObj, fetcherReturnNext, cache, mockClient, updater } =
     getTestObjs({ pollingIntervalMillis: 100 });
