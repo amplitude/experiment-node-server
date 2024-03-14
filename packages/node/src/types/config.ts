@@ -163,43 +163,12 @@ export type LocalEvaluationConfig = {
   streamServerUrl?: string;
 
   /**
-   * To use with streaming. The timeout for connecting an server-side event
-   * stream. Aka, the timeout for http connection.
-   */
-  streamConnTimeoutMillis?: number;
-
-  /**
    * To use with streaming. The timeout for a single attempt of establishing
    * a valid stream of flag configs.
-   * This includes streamConnTimeoutMillis and time for receiving initial
+   * The time starts at making request and ends when received the initial
    * flag configs.
    */
   streamFlagConnTimeoutMillis?: number;
-
-  /**
-   * To use with streaming. The number attempts to connect before declaring
-   * streaming fatal error.
-   */
-  streamFlagTryAttempts?: number;
-
-  /**
-   * To use with streaming. The delay between attempts to connect.
-   */
-  streamFlagTryDelayMillis?: number;
-
-  /**
-   * To use with streaming. The base delay to retry streaming after stream
-   * fatal error and fallbacked to poller.
-   */
-  streamFlagRetryDelayMillis?: number;
-
-  /**
-   * To use with streaming. The jitter to add to the delay for retry streaming
-   * after stream fatal error and fallbacked to poller.
-   * A random number between 0 and streamFlagRetryJitterMillis will be added to
-   * streamFlagRetryDelayMillis as the delay.
-   */
-  streamFlagRetryJitterMillis?: number;
 };
 
 export type AssignmentConfig = {
@@ -235,12 +204,7 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   httpAgent: null,
   streamUpdates: false,
   streamServerUrl: 'https://stream.lab.amplitude.com',
-  streamConnTimeoutMillis: 1000,
-  streamFlagConnTimeoutMillis: 1000,
-  streamFlagTryAttempts: 2,
-  streamFlagTryDelayMillis: 1000,
-  streamFlagRetryDelayMillis: 15000,
-  streamFlagRetryJitterMillis: 2000,
+  streamFlagConnTimeoutMillis: 1500,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {

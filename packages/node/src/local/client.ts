@@ -35,6 +35,11 @@ import { FlagConfigPoller } from './poller';
 import { FlagConfigStreamer } from './streamer';
 import { FlagConfigUpdater } from './updater';
 
+const STREAM_RETRY_DELAY_MILLIS = 15000; // The base delay to retry stream after fallback to poller.
+const STREAM_RETRY_JITTER_MAX_MILLIS = 2000; // The jitter to add to delay after fallbacked to poller.
+const STREAM_ATTEMPTS = 1; // Number of attempts before fallback to poller.
+const STREAM_TRY_DELAY_MILLIS = 1000; // The delay between attempts.
+
 /**
  * Experiment client for evaluating variants for a user locally.
  * @category Core Usage
@@ -80,12 +85,11 @@ export class LocalEvaluationClient {
           this.cache,
           streamEventSourceFactory,
           this.config.flagConfigPollingIntervalMillis,
-          this.config.streamConnTimeoutMillis,
           this.config.streamFlagConnTimeoutMillis,
-          this.config.streamFlagTryAttempts,
-          this.config.streamFlagTryDelayMillis,
-          this.config.streamFlagRetryDelayMillis +
-            Math.floor(Math.random() * this.config.streamFlagRetryJitterMillis),
+          STREAM_ATTEMPTS,
+          STREAM_TRY_DELAY_MILLIS,
+          STREAM_RETRY_DELAY_MILLIS +
+            Math.floor(Math.random() * STREAM_RETRY_JITTER_MAX_MILLIS),
           this.config.streamServerUrl,
           this.config.debug,
         )

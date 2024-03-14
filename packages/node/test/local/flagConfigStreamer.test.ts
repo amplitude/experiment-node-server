@@ -9,7 +9,6 @@ import { getNewClient } from './util/mockStreamEventSource';
 
 const getTestObjs = ({
   pollingIntervalMillis = 1000,
-  streamConnTimeoutMillis = 1000,
   streamFlagConnTimeoutMillis = 1000,
   streamFlagTryAttempts = 2,
   streamFlagTryDelayMillis = 1000,
@@ -42,7 +41,6 @@ const getTestObjs = ({
     cache,
     mockClient.clientFactory,
     pollingIntervalMillis,
-    streamConnTimeoutMillis,
     streamFlagConnTimeoutMillis,
     streamFlagTryAttempts,
     streamFlagTryDelayMillis,

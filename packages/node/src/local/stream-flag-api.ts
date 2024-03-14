@@ -146,7 +146,7 @@ export class SdkStreamFlagApi implements StreamFlagApi {
 
   // Do try up to 2 times. If any of error is fatal, stop any further tries.
   // If trials times reached, fatal error.
-  public async connect(options?: StreamFlagOptions) {
+  public async connect(options?: StreamFlagOptions): Promise<void> {
     // Makes sure there is no other connect running.
     if (!this.isClosedAndNotTrying) {
       return;
@@ -187,17 +187,17 @@ export class SdkStreamFlagApi implements StreamFlagApi {
   }
 
   // Close stream.
-  public close() {
+  public close(): void {
     this.closeForRetry();
     this.isClosedAndNotTrying = true;
   }
 
   // Close stream, but we know there will be another try happening very soon.
-  public closeForRetry() {
+  private closeForRetry(): void {
     this.api.close();
   }
 
-  get isClosed() {
+  get isClosed(): boolean {
     return this.isClosedAndNotTrying;
   }
 
