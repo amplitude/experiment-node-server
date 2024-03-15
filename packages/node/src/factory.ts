@@ -13,7 +13,8 @@ const localEvaluationInstances = {};
 /**
  * Initializes a singleton {@link ExperimentClient} for remote evaluation.
  *
- * @param apiKey The environment API Key
+ * @param apiKey The Amplitude Project API Key used in the client, if a deployment key is provided
+ * in the config, it will be used instead.
  * @param config See {@link ExperimentConfig} for config options
  * @deprecated use initializeRemote
  */
@@ -34,13 +35,14 @@ const initializeRemote = (
   apiKey: string,
   config?: RemoteEvaluationConfig,
 ): RemoteEvaluationClient => {
-  if (!remoteEvaluationInstances[apiKey]) {
-    remoteEvaluationInstances[apiKey] = new RemoteEvaluationClient(
-      apiKey,
+  const usedKey = config?.deploymentKey || apiKey;
+  if (!remoteEvaluationInstances[usedKey]) {
+    remoteEvaluationInstances[usedKey] = new RemoteEvaluationClient(
+      usedKey,
       config,
     );
   }
-  return remoteEvaluationInstances[apiKey];
+  return remoteEvaluationInstances[usedKey];
 };
 
 /**
@@ -51,7 +53,8 @@ const initializeRemote = (
  * to best leverage local evaluation, all flags and experiments being evaluated
  * server side should be configured as local.
  *
- * @param apiKey The environment API Key
+ * @param apiKey The Amplitude Project API Key used in the client, if a deployment key is provided
+ * in the config, it will be used instead.
  * @param config See {@link ExperimentConfig} for config options
  * @returns The local evaluation client.
  */
@@ -59,14 +62,15 @@ const initializeLocal = (
   apiKey: string,
   config?: LocalEvaluationConfig,
 ): LocalEvaluationClient => {
-  if (!localEvaluationInstances[apiKey]) {
-    localEvaluationInstances[apiKey] = new LocalEvaluationClient(
-      apiKey,
+  const usedKey = config?.deploymentKey || apiKey;
+  if (!localEvaluationInstances[usedKey]) {
+    localEvaluationInstances[usedKey] = new LocalEvaluationClient(
+      usedKey,
       config,
       new InMemoryFlagConfigCache(),
     );
   }
-  return localEvaluationInstances[apiKey];
+  return localEvaluationInstances[usedKey];
 };
 
 /**
