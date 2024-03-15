@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/amplitude/experiment-node-server/compare/v1.8.3...v1.9.0) (2024-03-15)
+
+
+### Features
+
+* add stream support ([#42](https://github.com/amplitude/experiment-node-server/issues/42)) ([70b1f94](https://github.com/amplitude/experiment-node-server/commit/70b1f94e53ff8b0212ac89b6fa4fa451c067b946))
+
+
+
+
+
 ## [1.8.3](https://github.com/amplitude/experiment-node-server/compare/v1.8.2...v1.8.3) (2024-02-29)
 
 
