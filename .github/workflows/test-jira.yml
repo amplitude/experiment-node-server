@@ -1,0 +1,23 @@
+# Creates jira tickets for new github issues to help triage
+name: Jira Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseUrl:
+        required: true
+        type: string
+        description: the base jira url
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: Jira
+    name: SDK Bot Jira Issue Creation
+    steps:
+      - name: Login
+        uses: atlassian/gajira-login@master
+        env:
+          JIRA_BASE_URL: ${{ github.event.inputs.dryRun }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
