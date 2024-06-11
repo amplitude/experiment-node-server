@@ -78,13 +78,18 @@ export class LocalEvaluationClient {
       this.config.bootstrap,
     );
     this.logger = new ConsoleLogger(this.config.debug);
+    const flagsPoller = new FlagConfigPoller(
+      fetcher,
+      this.cache,
+      this.config.flagConfigPollingIntervalMillis,
+      this.config.debug,
+    );
     this.updater = this.config.streamUpdates
       ? new FlagConfigStreamer(
           apiKey,
-          fetcher,
+          flagsPoller,
           this.cache,
           streamEventSourceFactory,
-          this.config.flagConfigPollingIntervalMillis,
           this.config.streamFlagConnTimeoutMillis,
           STREAM_ATTEMPTS,
           STREAM_TRY_DELAY_MILLIS,
@@ -93,12 +98,7 @@ export class LocalEvaluationClient {
           this.config.streamServerUrl,
           this.config.debug,
         )
-      : new FlagConfigPoller(
-          fetcher,
-          this.cache,
-          this.config.flagConfigPollingIntervalMillis,
-          this.config.debug,
-        );
+      : flagsPoller;
     if (this.config.assignmentConfig) {
       this.config.assignmentConfig = {
         ...AssignmentConfigDefaults,

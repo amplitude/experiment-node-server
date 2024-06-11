@@ -26,10 +26,9 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
 
   constructor(
     apiKey: string,
-    fetcher: FlagConfigFetcher,
+    poller: FlagConfigPoller,
     cache: FlagConfigCache,
     streamEventSourceFactory: StreamEventSourceFactory,
-    pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
     streamFlagConnTimeoutMillis = LocalEvaluationDefaults.streamFlagConnTimeoutMillis,
     streamFlagTryAttempts: number,
     streamFlagTryDelayMillis: number,
@@ -40,12 +39,7 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
     this.logger = new ConsoleLogger(debug);
     this.logger.debug('[Experiment] streamer - init');
     this.cache = cache;
-    this.poller = new FlagConfigPoller(
-      fetcher,
-      cache,
-      pollingIntervalMillis,
-      debug,
-    );
+    this.poller = poller;
     this.stream = new SdkStreamFlagApi(
       apiKey,
       serverUrl,
