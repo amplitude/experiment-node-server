@@ -103,16 +103,16 @@ export class FlagConfigPoller implements FlagConfigUpdater {
         changed = true;
       }
     }
-    if (changed) {
-      try {
-        await this.cohortUpdater?.update(
-          CohortUtils.extractCohortIds(flagConfigs),
-        );
-      } catch {
-        this.logger.debug('[Experiment] cohort update failed');
-      } finally {
-        await this.cache.clear();
-        await this.cache.putAll(flagConfigs);
+    try {
+      await this.cohortUpdater?.update(
+        CohortUtils.extractCohortIds(flagConfigs),
+      );
+    } catch {
+      this.logger.debug('[Experiment] cohort update failed');
+    } finally {
+      await this.cache.clear();
+      await this.cache.putAll(flagConfigs);
+      if (changed) {
         await onChange(this.cache);
       }
     }
