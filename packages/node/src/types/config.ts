@@ -169,6 +169,12 @@ export type LocalEvaluationConfig = {
    * flag configs.
    */
   streamFlagConnTimeoutMillis?: number;
+
+  /**
+   * The max cohort size to be able to download. Any cohort larger than this
+   * size will be skipped.
+   */
+  maxCohortSize?: number;
 };
 
 export type AssignmentConfig = {
@@ -205,6 +211,7 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   streamUpdates: false,
   streamServerUrl: 'https://stream.lab.amplitude.com',
   streamFlagConnTimeoutMillis: 1500,
+  maxCohortSize: 10_000_000,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {

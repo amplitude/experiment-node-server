@@ -30,6 +30,9 @@ import {
 } from '../util/variant';
 
 import { InMemoryFlagConfigCache } from './cache';
+import { CohortFetcher } from './cohort/fetcher';
+import { CohortPoller } from './cohort/poller';
+import { InMemoryCohortStorage } from './cohort/storage';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 import { FlagConfigStreamer } from './streamer';
@@ -57,6 +60,7 @@ export class LocalEvaluationClient {
    * Used for directly manipulating the flag configs used for evaluation.
    */
   public readonly cache: InMemoryFlagConfigCache;
+  public readonly cohortStorage: InMemoryCohortStorage;
 
   constructor(
     apiKey: string,
@@ -78,10 +82,27 @@ export class LocalEvaluationClient {
       this.config.bootstrap,
     );
     this.logger = new ConsoleLogger(this.config.debug);
+
+    const cohortFetcher = new CohortFetcher(
+      'apiKey',
+      'secretKey',
+      httpClient,
+      this.config.serverUrl,
+      this.config.debug,
+    );
+    const cohortPoller = new CohortPoller(
+      cohortFetcher,
+      this.cohortStorage,
+      this.config.maxCohortSize,
+      this.config.debug,
+    );
+    const cohortUpdater = cohortPoller;
+
     const flagsPoller = new FlagConfigPoller(
       fetcher,
       this.cache,
       this.config.flagConfigPollingIntervalMillis,
+      cohortUpdater,
       this.config.debug,
     );
     this.updater = this.config.streamUpdates
@@ -96,9 +117,11 @@ export class LocalEvaluationClient {
           STREAM_RETRY_DELAY_MILLIS +
             Math.floor(Math.random() * STREAM_RETRY_JITTER_MAX_MILLIS),
           this.config.streamServerUrl,
+          cohortUpdater,
           this.config.debug,
         )
       : flagsPoller;
+
     if (this.config.assignmentConfig) {
       this.config.assignmentConfig = {
         ...AssignmentConfigDefaults,

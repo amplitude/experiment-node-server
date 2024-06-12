@@ -1,9 +1,17 @@
+import {
+  EvaluationCondition,
+  EvaluationOperator,
+  EvaluationSegment,
+} from '@amplitude/experiment-core';
+import { CohortUtils } from 'src/util/cohort';
+
 import { LocalEvaluationDefaults } from '../types/config';
-import { FlagConfigCache } from '../types/flag';
+import { FlagConfig, FlagConfigCache } from '../types/flag';
 import { doWithBackoff, BackoffPolicy } from '../util/backoff';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
+import { CohortUpdater } from './cohort/updater';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigUpdater } from './updater';
 
@@ -23,15 +31,19 @@ export class FlagConfigPoller implements FlagConfigUpdater {
   public readonly fetcher: FlagConfigFetcher;
   public readonly cache: FlagConfigCache;
 
+  public readonly cohortUpdater?: CohortUpdater;
+
   constructor(
     fetcher: FlagConfigFetcher,
     cache: FlagConfigCache,
     pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
+    cohortUpdater?: CohortUpdater,
     debug = false,
   ) {
     this.fetcher = fetcher;
     this.cache = cache;
     this.pollingIntervalMillis = pollingIntervalMillis;
+    this.cohortUpdater = cohortUpdater;
     this.logger = new ConsoleLogger(debug);
   }
 
@@ -96,10 +108,18 @@ export class FlagConfigPoller implements FlagConfigUpdater {
         changed = true;
       }
     }
-    await this.cache.clear();
-    await this.cache.putAll(flagConfigs);
     if (changed) {
-      await onChange(this.cache);
+      try {
+        await this.cohortUpdater?.update(
+          CohortUtils.extractCohortIds(flagConfigs),
+        );
+      } catch {
+        this.logger.debug('[Experiment] cohort update failed');
+      } finally {
+        await this.cache.clear();
+        await this.cache.putAll(flagConfigs);
+        await onChange(this.cache);
+      }
     }
   }
 }
