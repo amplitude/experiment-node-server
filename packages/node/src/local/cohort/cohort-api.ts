@@ -1,4 +1,4 @@
-import { HttpClient, EvaluationFlag } from '@amplitude/experiment-core';
+import { HttpClient } from '@amplitude/experiment-core';
 import { Cohort } from 'src/types/cohort';
 
 export type GetCohortOptions = {

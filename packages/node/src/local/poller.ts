@@ -1,12 +1,7 @@
-import {
-  EvaluationCondition,
-  EvaluationOperator,
-  EvaluationSegment,
-} from '@amplitude/experiment-core';
 import { CohortUtils } from 'src/util/cohort';
 
 import { LocalEvaluationDefaults } from '../types/config';
-import { FlagConfig, FlagConfigCache } from '../types/flag';
+import { FlagConfigCache } from '../types/flag';
 import { doWithBackoff, BackoffPolicy } from '../util/backoff';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
