@@ -20,7 +20,7 @@ export class CohortFetcher {
     serverUrl = LocalEvaluationDefaults.cohortServerUrl,
     debug = false,
   ) {
-    const key = apiKey + ':' + secretKey;
+    const key = Buffer.from(apiKey + ':' + secretKey).toString('base64');
     this.cohortApi = new SdkCohortApi(
       key,
       serverUrl,

@@ -44,12 +44,13 @@ export class SdkCohortApi implements CohortApi {
       ] = `${options.libraryName}/${options.libraryVersion}`;
     }
 
+    const reqUrl = `${this.serverUrl}/sdk/v1/cohort/${
+      options.cohortId
+    }?maxCohortSize=${options.maxCohortSize}${
+      options.lastModified ? `&lastModified=${options.lastModified}` : ''
+    }`;
     const response = await this.httpClient.request({
-      requestUrl: `${this.serverUrl}/sdk/v1/cohort/${
-        options.cohortId
-      }?maxCohortSize=${options.maxCohortSize}${
-        options.lastModified ? `&lastModified=${options.lastModified}` : ''
-      }`,
+      requestUrl: reqUrl,
       method: 'GET',
       headers: headers,
       timeoutMillis: options?.timeoutMillis,
@@ -61,6 +62,9 @@ export class SdkCohortApi implements CohortApi {
     // 413: cohort larger than maxCohortSize
     if (response.status == 200) {
       const cohort: Cohort = JSON.parse(response.body) as Cohort;
+      if (Array.isArray(cohort.memberIds)) {
+        cohort.memberIds = new Set<string>(cohort.memberIds);
+      }
       return cohort;
     } else if (response.status == 204) {
       return undefined;
