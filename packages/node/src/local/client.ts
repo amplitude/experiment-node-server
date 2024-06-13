@@ -87,7 +87,7 @@ export class LocalEvaluationClient {
       'apiKey',
       'secretKey',
       httpClient,
-      this.config.serverUrl,
+      this.config.cohortServerUrl,
       this.config.debug,
     );
     const cohortPoller = new CohortPoller(

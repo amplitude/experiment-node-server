@@ -30,7 +30,7 @@ export class CohortPoller implements CohortUpdater {
     cohortIds: Set<string>,
     onChange?: (storage: CohortStorage) => Promise<void>,
   ): Promise<void> {
-    this.logger.debug('[Experiment] updating cohorts');
+    this.logger.debug(`[Experiment] updating cohorts ${cohortIds}`);
 
     let changed = false;
     for (const cohortId of cohortIds) {

@@ -17,7 +17,7 @@ export class CohortFetcher {
     apiKey: string,
     secretKey: string,
     httpClient: HttpClient,
-    serverUrl = LocalEvaluationDefaults.serverUrl,
+    serverUrl = LocalEvaluationDefaults.cohortServerUrl,
     debug = false,
   ) {
     const key = apiKey + ':' + secretKey;
