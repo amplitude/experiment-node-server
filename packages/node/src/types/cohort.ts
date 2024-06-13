@@ -6,7 +6,7 @@ export interface CohortStorage {
     groupName: string,
     cohortIds: string[],
   ): string[];
-  put(cohort: Cohort): undefined;
+  put(cohort: Cohort): void;
 }
 
 export const USER_GROUP_TYPE = 'User';
