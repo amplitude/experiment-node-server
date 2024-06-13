@@ -5,6 +5,8 @@ import {
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
+import { USER_GROUP_TYPE } from 'src/types/cohort';
+import { CohortUtils } from 'src/util/cohort';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
@@ -84,16 +86,16 @@ export class LocalEvaluationClient {
     this.logger = new ConsoleLogger(this.config.debug);
 
     const cohortFetcher = new CohortFetcher(
-      'apiKey',
-      'secretKey',
+      this.config.cohortConfig.apiKey,
+      this.config.cohortConfig.secretKey,
       httpClient,
-      this.config.cohortServerUrl,
+      this.config.cohortConfig?.cohortServerUrl,
       this.config.debug,
     );
     const cohortPoller = new CohortPoller(
       cohortFetcher,
       this.cohortStorage,
-      this.config.maxCohortSize,
+      this.config.cohortConfig?.maxCohortSize,
       this.config.debug,
     );
     const cohortUpdater = cohortPoller;
@@ -167,6 +169,7 @@ export class LocalEvaluationClient {
     flagKeys?: string[],
   ): Record<string, Variant> {
     const flags = this.cache.getAllCached() as Record<string, EvaluationFlag>;
+    this.enrichUserWithCohorts(user, flags);
     this.logger.debug('[Experiment] evaluate - user:', user, 'flags:', flags);
     const context = convertUserToEvaluationContext(user);
     const sortedFlags = topologicalSort(flags, flagKeys);
@@ -174,6 +177,48 @@ export class LocalEvaluationClient {
     void this.assignmentService?.track(new Assignment(user, results));
     this.logger.debug('[Experiment] evaluate - variants: ', results);
     return evaluationVariantsToVariants(results);
+  }
+
+  private enrichUserWithCohorts(
+    user: ExperimentUser,
+    flags: Record<string, EvaluationFlag>,
+  ): void {
+    const cohortIdsByGroup = CohortUtils.extractCohortIdsByGroup(flags);
+
+    // Enrich cohorts with user group type.
+    const userCohortIds = cohortIdsByGroup[USER_GROUP_TYPE];
+    if (user.user_id && userCohortIds && userCohortIds.size == 0) {
+      user.cohort_ids = this.cohortStorage.getCohortsForUser(
+        user.user_id,
+        userCohortIds,
+      );
+    }
+
+    // Enrich other group types for this user.
+    if (user.groups) {
+      for (const groupType in user.groups) {
+        const groupNames = user.groups[groupType];
+        if (groupNames.length == 0) {
+          continue;
+        }
+        const groupName = groupNames[0]; // TODO: Only get the first one?
+
+        const cohortIds = cohortIdsByGroup[groupType];
+        if (!cohortIds || cohortIds.size == 0) {
+          continue;
+        }
+
+        if (!(groupType in user.group_cohort_ids)) {
+          user.group_cohort_ids[groupType] = {};
+        }
+        user.group_cohort_ids[groupType][groupName] =
+          this.cohortStorage.getCohortsForGroup(
+            groupType,
+            groupName,
+            cohortIds,
+          );
+      }
+    }
   }
 
   /**

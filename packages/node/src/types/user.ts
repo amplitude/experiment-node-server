@@ -112,4 +112,12 @@ export type ExperimentUser = {
       };
     };
   };
+
+  cohort_ids: Set<string>;
+
+  group_cohort_ids: {
+    [groupType: string]: {
+      [groupName: string]: Set<string>;
+    };
+  };
 };

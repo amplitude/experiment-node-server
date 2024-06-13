@@ -1,5 +1,8 @@
 import { CohortStorage } from 'src/types/cohort';
-import { LocalEvaluationDefaults } from 'src/types/config';
+import {
+  CohortConfigDefaults,
+  LocalEvaluationDefaults,
+} from 'src/types/config';
 
 import { ConsoleLogger } from '../../util/logger';
 import { Logger } from '../../util/logger';
@@ -17,7 +20,7 @@ export class CohortPoller implements CohortUpdater {
   constructor(
     fetcher: CohortFetcher,
     storage: CohortStorage,
-    maxCohortSize = LocalEvaluationDefaults.maxCohortSize,
+    maxCohortSize = CohortConfigDefaults.maxCohortSize,
     debug = false,
   ) {
     this.fetcher = fetcher;
@@ -54,8 +57,8 @@ export class CohortPoller implements CohortUpdater {
           this.storage.put(cohort);
           changed = true;
         }
-      } catch {
-        this.logger.error(`[Experiment] cohort ${cohortId} download failed`);
+      } catch (e) {
+        this.logger.error(`[Experiment] cohort ${cohortId} download failed`, e);
       }
     }
 

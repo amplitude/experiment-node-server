@@ -1,11 +1,11 @@
 export interface CohortStorage {
   getCohort(cohortId: string): Cohort | undefined;
-  getCohortsForUser(userId: string, cohortIds: string[]): string[];
+  getCohortsForUser(userId: string, cohortIds: Set<string>): Set<string>;
   getCohortsForGroup(
     groupType: string,
     groupName: string,
-    cohortIds: string[],
-  ): string[];
+    cohortIds: Set<string>,
+  ): Set<string>;
   put(cohort: Cohort): void;
 }
 

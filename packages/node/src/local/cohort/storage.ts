@@ -7,22 +7,22 @@ export class InMemoryCohortStorage implements CohortStorage {
     return cohortId in this.store ? this.store[cohortId] : undefined;
   }
 
-  getCohortsForUser(userId: string, cohortIds: string[]): string[] {
+  getCohortsForUser(userId: string, cohortIds: Set<string>): Set<string> {
     return this.getCohortsForGroup(USER_GROUP_TYPE, userId, cohortIds);
   }
 
   getCohortsForGroup(
     groupType: string,
     groupName: string,
-    cohortIds: string[],
-  ): string[] {
-    const validCohortIds = [];
+    cohortIds: Set<string>,
+  ): Set<string> {
+    const validCohortIds = new Set<string>();
     for (const cohortId of cohortIds) {
       if (
         this.store[cohortId]?.groupType == groupType &&
         this.store[cohortId]?.memberIds.has(groupName)
       ) {
-        validCohortIds.push(cohortId);
+        validCohortIds.add(cohortId);
       }
     }
     return validCohortIds;

@@ -1,6 +1,6 @@
 import { WrapperClient } from 'src/transport/http';
 import { Cohort } from 'src/types/cohort';
-import { LocalEvaluationDefaults } from 'src/types/config';
+import { CohortConfigDefaults } from 'src/types/config';
 import { HttpClient } from 'src/types/transport';
 
 import { version as PACKAGE_VERSION } from '../../../gen/version';
@@ -17,12 +17,11 @@ export class CohortFetcher {
     apiKey: string,
     secretKey: string,
     httpClient: HttpClient,
-    serverUrl = LocalEvaluationDefaults.cohortServerUrl,
+    serverUrl = CohortConfigDefaults.cohortServerUrl,
     debug = false,
   ) {
-    const key = Buffer.from(apiKey + ':' + secretKey).toString('base64');
     this.cohortApi = new SdkCohortApi(
-      key,
+      Buffer.from(apiKey + ':' + secretKey).toString('base64'),
       serverUrl,
       new WrapperClient(httpClient),
     );

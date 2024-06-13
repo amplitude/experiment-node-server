@@ -22,12 +22,12 @@ export interface CohortApi {
   getCohort(options?: GetCohortOptions): Promise<Cohort>;
 }
 export class SdkCohortApi implements CohortApi {
-  private readonly key;
+  private readonly cohortApiKey;
   private readonly serverUrl;
   private readonly httpClient;
 
-  constructor(key: string, serverUrl: string, httpClient: HttpClient) {
-    this.key = key;
+  constructor(cohortApiKey: string, serverUrl: string, httpClient: HttpClient) {
+    this.cohortApiKey = cohortApiKey;
     this.serverUrl = serverUrl;
     this.httpClient = httpClient;
   }
@@ -36,7 +36,7 @@ export class SdkCohortApi implements CohortApi {
     options?: GetCohortOptions,
   ): Promise<Cohort | undefined> {
     const headers: Record<string, string> = {
-      Authorization: `Basic ${this.key}`,
+      Authorization: `Basic ${this.cohortApiKey}`,
     };
     if (options?.libraryName && options?.libraryVersion) {
       headers[

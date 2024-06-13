@@ -170,16 +170,7 @@ export type LocalEvaluationConfig = {
    */
   streamFlagConnTimeoutMillis?: number;
 
-  /**
-   * The cohort server endpoint from which to fetch cohort data.
-   */
-  cohortServerUrl?: string;
-
-  /**
-   * The max cohort size to be able to download. Any cohort larger than this
-   * size will be skipped.
-   */
-  maxCohortSize?: number;
+  cohortConfig?: CohortConfig;
 };
 
 export type AssignmentConfig = {
@@ -194,6 +185,22 @@ export type AssignmentConfig = {
    */
   cacheCapacity?: number;
 } & NodeOptions;
+
+export type CohortConfig = {
+  apiKey: string;
+  secretKey: string;
+
+  /**
+   * The cohort server endpoint from which to fetch cohort data.
+   */
+  cohortServerUrl?: string;
+
+  /**
+   * The max cohort size to be able to download. Any cohort larger than this
+   * size will be skipped.
+   */
+  maxCohortSize?: number;
+};
 
 /**
  Defaults for {@link LocalEvaluationConfig} options.
@@ -216,10 +223,16 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   streamUpdates: false,
   streamServerUrl: 'https://stream.lab.amplitude.com',
   streamFlagConnTimeoutMillis: 1500,
-  cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
-  maxCohortSize: 10_000_000,
 };
 
 export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
   cacheCapacity: 65536,
+};
+
+export const CohortConfigDefaults: Omit<
+  Omit<CohortConfig, 'apiKey'>,
+  'secretKey'
+> = {
+  cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
+  maxCohortSize: 10_000_000,
 };
