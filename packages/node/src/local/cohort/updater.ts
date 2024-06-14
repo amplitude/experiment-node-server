@@ -7,6 +7,7 @@ export interface CohortUpdater {
    *
    * @param onChange optional callback which will get called if the cohorts
    * in the storage have changed.
+   * @throws error if update failed.
    */
   update(
     cohortIds: Set<string>,

@@ -85,20 +85,24 @@ export class LocalEvaluationClient {
     );
     this.logger = new ConsoleLogger(this.config.debug);
 
-    const cohortFetcher = new CohortFetcher(
-      this.config.cohortConfig.apiKey,
-      this.config.cohortConfig.secretKey,
-      httpClient,
-      this.config.cohortConfig?.cohortServerUrl,
-      this.config.debug,
-    );
-    const cohortPoller = new CohortPoller(
-      cohortFetcher,
-      this.cohortStorage,
-      this.config.cohortConfig?.maxCohortSize,
-      this.config.debug,
-    );
-    const cohortUpdater = cohortPoller;
+    let cohortUpdater = undefined;
+    if (this.config.cohortConfig) {
+      this.cohortStorage = new InMemoryCohortStorage();
+      const cohortFetcher = new CohortFetcher(
+        this.config.cohortConfig.apiKey,
+        this.config.cohortConfig.secretKey,
+        httpClient,
+        this.config.cohortConfig?.cohortServerUrl,
+        this.config.debug,
+      );
+      const cohortPoller = new CohortPoller(
+        cohortFetcher,
+        this.cohortStorage,
+        this.config.cohortConfig?.maxCohortSize,
+        this.config.debug,
+      );
+      cohortUpdater = cohortPoller;
+    }
 
     const flagsPoller = new FlagConfigPoller(
       fetcher,
@@ -187,10 +191,9 @@ export class LocalEvaluationClient {
 
     // Enrich cohorts with user group type.
     const userCohortIds = cohortIdsByGroup[USER_GROUP_TYPE];
-    if (user.user_id && userCohortIds && userCohortIds.size == 0) {
-      user.cohort_ids = this.cohortStorage.getCohortsForUser(
-        user.user_id,
-        userCohortIds,
+    if (user.user_id && userCohortIds && userCohortIds.size != 0) {
+      user.cohort_ids = Array.from(
+        this.cohortStorage.getCohortsForUser(user.user_id, userCohortIds),
       );
     }
 
@@ -208,15 +211,19 @@ export class LocalEvaluationClient {
           continue;
         }
 
+        if (!user.group_cohort_ids) {
+          user.group_cohort_ids = {};
+        }
         if (!(groupType in user.group_cohort_ids)) {
           user.group_cohort_ids[groupType] = {};
         }
-        user.group_cohort_ids[groupType][groupName] =
+        user.group_cohort_ids[groupType][groupName] = Array.from(
           this.cohortStorage.getCohortsForGroup(
             groupType,
             groupName,
             cohortIds,
-          );
+          ),
+        );
       }
     }
   }

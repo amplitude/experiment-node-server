@@ -66,7 +66,15 @@ export class FlagConfigPoller implements FlagConfigUpdater {
 
       // Fetch initial flag configs and await the result.
       await doWithBackoff<void>(async () => {
-        await this.update(onChange);
+        try {
+          await this.update(onChange);
+        } catch (e) {
+          this.logger.error(
+            '[Experiment] flag config initial poll failed, stopping',
+            e,
+          );
+          this.stop();
+        }
       }, BACKOFF_POLICY);
     }
   }
@@ -103,18 +111,11 @@ export class FlagConfigPoller implements FlagConfigUpdater {
         changed = true;
       }
     }
-    try {
-      await this.cohortUpdater?.update(
-        CohortUtils.extractCohortIds(flagConfigs),
-      );
-    } catch {
-      this.logger.debug('[Experiment] cohort update failed');
-    } finally {
-      await this.cache.clear();
-      await this.cache.putAll(flagConfigs);
-      if (changed) {
-        await onChange(this.cache);
-      }
+    await this.cohortUpdater?.update(CohortUtils.extractCohortIds(flagConfigs)); // Throws error if cohort update failed.
+    await this.cache.clear();
+    await this.cache.putAll(flagConfigs);
+    if (changed) {
+      await onChange(this.cache);
     }
   }
 }

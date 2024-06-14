@@ -33,10 +33,10 @@ export class CohortPoller implements CohortUpdater {
     cohortIds: Set<string>,
     onChange?: (storage: CohortStorage) => Promise<void>,
   ): Promise<void> {
-    this.logger.debug(`[Experiment] updating cohorts ${cohortIds}`);
-
     let changed = false;
     for (const cohortId of cohortIds) {
+      this.logger.debug(`[Experiment] updating cohort ${cohortId}`);
+
       // Get existing lastModified.
       const existingCohort = this.storage.getCohort(cohortId);
       let lastModified = undefined;
@@ -44,21 +44,17 @@ export class CohortPoller implements CohortUpdater {
         lastModified = existingCohort.lastModified;
       }
 
-      try {
-        // Download.
-        const cohort = await this.fetcher.fetch(
-          cohortId,
-          this.maxCohortSize,
-          lastModified,
-        );
+      // Download.
+      const cohort = await this.fetcher.fetch(
+        cohortId,
+        this.maxCohortSize,
+        lastModified,
+      );
 
-        // Set.
-        if (cohort) {
-          this.storage.put(cohort);
-          changed = true;
-        }
-      } catch (e) {
-        this.logger.error(`[Experiment] cohort ${cohortId} download failed`, e);
+      // Set.
+      if (cohort) {
+        this.storage.put(cohort);
+        changed = true;
       }
     }
 

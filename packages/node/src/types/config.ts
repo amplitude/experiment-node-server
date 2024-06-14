@@ -229,10 +229,8 @@ export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
   cacheCapacity: 65536,
 };
 
-export const CohortConfigDefaults: Omit<
-  Omit<CohortConfig, 'apiKey'>,
-  'secretKey'
-> = {
-  cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
-  maxCohortSize: 10_000_000,
-};
+export const CohortConfigDefaults: Omit<CohortConfig, 'apiKey' | 'secretKey'> =
+  {
+    cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
+    maxCohortSize: 10_000_000,
+  };

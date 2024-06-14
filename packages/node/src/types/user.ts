@@ -113,11 +113,11 @@ export type ExperimentUser = {
     };
   };
 
-  cohort_ids: Set<string>;
+  cohort_ids?: Array<string>;
 
-  group_cohort_ids: {
+  group_cohort_ids?: {
     [groupType: string]: {
-      [groupName: string]: Set<string>;
+      [groupName: string]: Array<string>;
     };
   };
 };
