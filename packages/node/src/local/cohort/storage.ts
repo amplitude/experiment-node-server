@@ -28,7 +28,8 @@ export class InMemoryCohortStorage implements CohortStorage {
     return validCohortIds;
   }
 
-  put(cohort: Cohort): void {
-    this.store[cohort.cohortId] = cohort;
+  replaceAll(cohorts: Record<string, Cohort>): void {
+    // Assignments are atomic.
+    this.store = { ...cohorts };
   }
 }

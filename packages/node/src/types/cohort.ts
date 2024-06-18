@@ -6,7 +6,7 @@ export interface CohortStorage {
     groupName: string,
     cohortIds: Set<string>,
   ): Set<string>;
-  put(cohort: Cohort): void;
+  replaceAll(cohorts: Record<string, Cohort>): void;
 }
 
 export const USER_GROUP_TYPE = 'User';
