@@ -85,9 +85,9 @@ export class LocalEvaluationClient {
     );
     this.logger = new ConsoleLogger(this.config.debug);
 
+    this.cohortStorage = new InMemoryCohortStorage();
     let cohortUpdater = undefined;
     if (this.config.cohortConfig) {
-      this.cohortStorage = new InMemoryCohortStorage();
       const cohortFetcher = new CohortFetcher(
         this.config.cohortConfig.apiKey,
         this.config.cohortConfig.secretKey,
@@ -183,7 +183,7 @@ export class LocalEvaluationClient {
     return evaluationVariantsToVariants(results);
   }
 
-  private enrichUserWithCohorts(
+  protected enrichUserWithCohorts(
     user: ExperimentUser,
     flags: Record<string, EvaluationFlag>,
   ): void {

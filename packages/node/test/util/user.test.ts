@@ -1,3 +1,4 @@
+import { USER_GROUP_TYPE } from 'src/types/cohort';
 import { ExperimentUser } from 'src/types/user';
 import { convertUserToEvaluationContext } from 'src/util/user';
 
@@ -84,6 +85,32 @@ describe('userToEvaluationContext', () => {
       groups: {
         type: {
           group_name: 'name',
+        },
+      },
+    });
+  });
+  test('cohorts', () => {
+    const user: ExperimentUser = {
+      user_id: 'userId',
+      groups: { grouptype: ['groupname'] },
+      cohort_ids: ['cohort1'],
+      group_cohort_ids: {
+        grouptype: {
+          groupname: ['cohort1'],
+        },
+      },
+    };
+
+    const context = convertUserToEvaluationContext(user);
+    expect(context).toEqual({
+      user: {
+        user_id: 'userId',
+        cohort_ids: ['cohort1'],
+      },
+      groups: {
+        grouptype: {
+          group_name: 'groupname',
+          cohort_ids: ['cohort1'],
         },
       },
     });

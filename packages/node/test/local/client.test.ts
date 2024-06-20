@@ -1,4 +1,11 @@
+import { EvaluationFlag } from '@amplitude/experiment-core';
 import { Experiment } from 'src/factory';
+import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
+import { USER_GROUP_TYPE } from 'src/types/cohort';
+import {
+  AssignmentConfigDefaults,
+  LocalEvaluationDefaults,
+} from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
 
 const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
@@ -146,4 +153,95 @@ test('ExperimentClient.evaluateV2 with dependencies, variant held out', async ()
   expect(
     await client.cache.get('sdk-ci-local-dependencies-test-holdout'),
   ).toBeDefined();
+});
+
+class TestLocalEvaluationClient extends LocalEvaluationClient {
+  public enrichUserWithCohorts(
+    user: ExperimentUser,
+    flags: Record<string, EvaluationFlag>,
+  ) {
+    super.enrichUserWithCohorts(user, flags);
+  }
+}
+
+test('ExperimentClient.enrichUserWithCohorts', async () => {
+  const client = new TestLocalEvaluationClient(
+    apiKey,
+    LocalEvaluationDefaults,
+    new InMemoryFlagConfigCache(),
+  );
+  client.cohortStorage.replaceAll({
+    cohort1: {
+      cohortId: 'cohort1',
+      groupType: USER_GROUP_TYPE,
+      groupTypeId: 0,
+      lastComputed: 0,
+      lastModified: 0,
+      size: 1,
+      memberIds: new Set<string>(['userId']),
+    },
+    groupcohort1: {
+      cohortId: 'groupcohort1',
+      groupType: 'groupname',
+      groupTypeId: 1,
+      lastComputed: 0,
+      lastModified: 0,
+      size: 1,
+      memberIds: new Set<string>(['amplitude', 'experiment']),
+    },
+  });
+  const user = {
+    user_id: 'userId',
+    groups: {
+      groupname: ['amplitude'],
+    },
+  };
+  client.enrichUserWithCohorts(user, {
+    flag1: {
+      key: 'flag1',
+      variants: {},
+      segments: [
+        {
+          conditions: [
+            [
+              {
+                op: 'set contains any',
+                selector: ['context', 'user', 'cohort_ids'],
+                values: ['cohort1'],
+              },
+            ],
+          ],
+        },
+      ],
+    },
+    flag2: {
+      key: 'flag2',
+      variants: {},
+      segments: [
+        {
+          conditions: [
+            [
+              {
+                op: 'set contains any',
+                selector: ['context', 'groups', 'groupname', 'cohort_ids'],
+                values: ['groupcohort1', 'groupcohortnotinstorage'],
+              },
+            ],
+          ],
+        },
+      ],
+    },
+  });
+  expect(user).toStrictEqual({
+    user_id: 'userId',
+    cohort_ids: ['cohort1'],
+    groups: {
+      groupname: ['amplitude'],
+    },
+    group_cohort_ids: {
+      groupname: {
+        amplitude: ['groupcohort1'],
+      },
+    },
+  });
 });

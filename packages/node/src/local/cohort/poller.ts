@@ -75,7 +75,9 @@ export class CohortPoller implements CohortUpdater {
         changed = true;
       }
     }
-    this.storage.replaceAll(updatedCohorts);
+    if (changed) {
+      this.storage.replaceAll(updatedCohorts);
+    }
 
     if (onChange && changed) {
       await onChange(this.storage);
