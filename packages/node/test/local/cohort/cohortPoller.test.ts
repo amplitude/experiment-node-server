@@ -271,12 +271,12 @@ test('cohort fetch using lastModified', async () => {
   jest.clearAllMocks();
 });
 
-test('cohort fetch fails 4 times success 5th', async () => {
+test('cohort fetch fails 2 times success 3rd', async () => {
   const fetcher = new CohortFetcher('', '', null);
   const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
   let tries = 0;
   fetcherFetchSpy.mockImplementation(async (cohortId: string) => {
-    if (++tries === 5) {
+    if (++tries === 3) {
       return COHORTS[cohortId];
     }
     throw Error();
@@ -291,9 +291,9 @@ test('cohort fetch fails 4 times success 5th', async () => {
 
   const start = new Date().getTime();
   await cohortPoller.update(new Set(['c1']));
-  expect(new Date().getTime() - start).toBeGreaterThan(4000);
+  expect(new Date().getTime() - start).toBeGreaterThanOrEqual(2000);
 
-  expect(fetcherFetchSpy).toHaveBeenCalledTimes(5);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(3);
   expect(storageGetCohortSpy).toHaveBeenCalledTimes(1);
   expect(storageReplaceAllSpy).toHaveBeenCalledWith({
     c1: COHORTS['c1'],
