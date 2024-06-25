@@ -2,17 +2,22 @@ import { EvaluationFlag } from '@amplitude/experiment-core';
 import { Experiment } from 'src/factory';
 import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
 import { USER_GROUP_TYPE } from 'src/types/cohort';
-import {
-  AssignmentConfigDefaults,
-  LocalEvaluationDefaults,
-} from 'src/types/config';
+import { LocalEvaluationDefaults } from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
 
 const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
 const testUser: ExperimentUser = { user_id: 'test_user' };
 
-const client = Experiment.initializeLocal(apiKey);
+const cohortConfig = process.env['API_KEY']
+  ? {
+      apiKey: process.env['API_KEY'],
+      secretKey: process.env['SECRET_KEY'],
+    }
+  : undefined;
+const client = Experiment.initializeLocal(apiKey, {
+  cohortConfig: cohortConfig,
+});
 
 beforeAll(async () => {
   await client.start();
@@ -152,6 +157,19 @@ test('ExperimentClient.evaluateV2 with dependencies, variant held out', async ()
   expect(variant.value).toBeUndefined();
   expect(
     await client.cache.get('sdk-ci-local-dependencies-test-holdout'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with cohort', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '12345',
+    device_id: 'device_id',
+  });
+  const variant = variants['sdk-local-evaluation-user-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
   ).toBeDefined();
 });
 

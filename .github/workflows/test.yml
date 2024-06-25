@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    environment: ci
     strategy:
       fail-fast: false
       matrix:
@@ -38,3 +39,6 @@ jobs:
 
     - name: Test
       run: yarn test --testPathIgnorePatterns "benchmark.test.ts"
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}

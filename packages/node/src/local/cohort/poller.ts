@@ -1,8 +1,5 @@
 import { Cohort, CohortStorage } from 'src/types/cohort';
-import {
-  CohortConfigDefaults,
-  LocalEvaluationDefaults,
-} from 'src/types/config';
+import { CohortConfigDefaults } from 'src/types/config';
 import { BackoffPolicy, doWithBackoffFailLoudly } from 'src/util/backoff';
 
 import { ConsoleLogger } from '../../util/logger';
