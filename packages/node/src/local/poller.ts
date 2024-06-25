@@ -111,7 +111,13 @@ export class FlagConfigPoller implements FlagConfigUpdater {
         changed = true;
       }
     }
-    await this.cohortUpdater?.update(CohortUtils.extractCohortIds(flagConfigs)); // Throws error if cohort update failed.
+    const cohortIds = CohortUtils.extractCohortIds(flagConfigs);
+    if (cohortIds && cohortIds.size > 0 && !this.cohortUpdater) {
+      this.logger.warn(
+        '[Experiment] cohort found in flag configs but no cohort download configured',
+      );
+    }
+    await this.cohortUpdater?.update(cohortIds); // Throws error if cohort update failed.
     await this.cache.clear();
     await this.cache.putAll(flagConfigs);
     if (changed) {

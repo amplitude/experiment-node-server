@@ -1,13 +1,24 @@
+import path from 'path';
+
 import { EvaluationFlag } from '@amplitude/experiment-core';
+import * as dotenv from 'dotenv';
 import { Experiment } from 'src/factory';
 import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
 import { USER_GROUP_TYPE } from 'src/types/cohort';
 import { LocalEvaluationDefaults } from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
 
+dotenv.config({ path: path.join(__dirname, '../../', '.env') });
+
 const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
 const testUser: ExperimentUser = { user_id: 'test_user' };
+
+if (!process.env['API_KEY'] && !process.env['SECRET_KEY']) {
+  throw new Error(
+    'No env vars found. If running on local, have you created .env file correct environment variables? Checkout README.md',
+  );
+}
 
 const cohortConfig = process.env['API_KEY']
   ? {
@@ -160,7 +171,26 @@ test('ExperimentClient.evaluateV2 with dependencies, variant held out', async ()
   ).toBeDefined();
 });
 
-test('ExperimentClient.evaluateV2 with cohort', async () => {
+test('ExperimentClient.evaluateV2 with user or group cohort not targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '2333',
+    device_id: 'device_id',
+  });
+  const userVariant = variants['sdk-local-evaluation-user-cohort-ci-test'];
+  expect(userVariant.key).toEqual('off');
+  expect(userVariant.value).toBeUndefined();
+  expect(
+    await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
+  ).toBeDefined();
+  const groupVariant = variants['sdk-local-evaluation-group-cohort-ci-test'];
+  expect(groupVariant.key).toEqual('off');
+  expect(groupVariant.value).toBeUndefined();
+  expect(
+    await client.cache.get('sdk-local-evaluation-group-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with user cohort segment targeted', async () => {
   const variants = await client.evaluateV2({
     user_id: '12345',
     device_id: 'device_id',
@@ -170,6 +200,51 @@ test('ExperimentClient.evaluateV2 with cohort', async () => {
   expect(variant.value).toEqual('on');
   expect(
     await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with user cohort tester targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '1',
+    device_id: 'device_id',
+  });
+  const variant = variants['sdk-local-evaluation-user-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with group cohort segment targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '12345',
+    device_id: 'device_id',
+    groups: {
+      'org id': ['1'],
+    },
+  });
+  const variant = variants['sdk-local-evaluation-group-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-group-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with group cohort test targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '2333',
+    device_id: 'device_id',
+    groups: {
+      'org name': ['Amplitude Website (Portfolio)'],
+    },
+  });
+  const variant = variants['sdk-local-evaluation-group-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-group-cohort-ci-test'),
   ).toBeDefined();
 });
 

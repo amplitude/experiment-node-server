@@ -204,7 +204,7 @@ export class LocalEvaluationClient {
         if (groupNames.length == 0) {
           continue;
         }
-        const groupName = groupNames[0]; // TODO: Only get the first one?
+        const groupName = groupNames[0];
 
         const cohortIds = cohortIdsByGroup[groupType];
         if (!cohortIds || cohortIds.size == 0) {
