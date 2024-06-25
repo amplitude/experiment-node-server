@@ -12,9 +12,9 @@ import { CohortFetcher } from './fetcher';
 import { CohortUpdater } from './updater';
 
 const BACKOFF_POLICY: BackoffPolicy = {
-  attempts: 5,
-  min: 1,
-  max: 1,
+  attempts: 3,
+  min: 1000,
+  max: 1000,
   scalar: 1,
 };
 

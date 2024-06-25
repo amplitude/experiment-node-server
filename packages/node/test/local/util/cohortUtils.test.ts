@@ -1,11 +1,8 @@
-import { assert } from 'console';
-
-import { EvaluationFlag } from '@amplitude/experiment-core';
 import { CohortUtils } from 'src/util/cohort';
 
 test('test extract cohortIds from flags', async () => {
   // Flag definition is not complete, only those useful for thest is included.
-  const rawFlags = [
+  const flags = [
     {
       key: 'flag1',
       segments: [
@@ -79,6 +76,18 @@ test('test extract cohortIds from flags', async () => {
           variant: 'off',
         },
         {
+          conditions: [
+            [
+              {
+                op: 'set contains any',
+                selector: ['context', 'user', 'cocoids'],
+                values: ['nohaha'],
+              },
+            ],
+          ],
+          variant: 'off',
+        },
+        {
           metadata: {
             segmentName: 'All Other Users',
           },
@@ -115,19 +124,39 @@ test('test extract cohortIds from flags', async () => {
             segmentName: 'Segment 1',
           },
         },
+        {
+          conditions: [
+            [
+              {
+                op: 'set contains any',
+                selector: ['context', 'gg', 'org name', 'cohort_ids'],
+                values: ['nohahaorgname'],
+              },
+            ],
+          ],
+          metadata: {
+            segmentName: 'Segment 1',
+          },
+        },
       ],
       variants: {},
     },
-  ];
+  ].reduce((acc, flag) => {
+    acc[flag.key] = flag;
+    return acc;
+  }, {});
 
-  const flags: Record<string, EvaluationFlag> = {};
-  for (const f of rawFlags) {
-    flags[f.key] = f;
-  }
-  const expected: Record<string, Set<string>> = {
+  expect(CohortUtils.extractCohortIdsByGroup(flags)).toStrictEqual({
     User: new Set(['hahahaha1', 'hahahaha2', 'hahahaha3', 'hahahaha4']),
     'org name': new Set(['hahaorgname1']),
-  };
-  const actual = CohortUtils.extractCohortIdsByGroup(flags);
-  expect(actual).toStrictEqual(expected);
+  });
+  expect(CohortUtils.extractCohortIds(flags)).toStrictEqual(
+    new Set([
+      'hahahaha1',
+      'hahahaha2',
+      'hahahaha3',
+      'hahahaha4',
+      'hahaorgname1',
+    ]),
+  );
 });
