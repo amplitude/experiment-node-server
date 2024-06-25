@@ -1,4 +1,3 @@
-import { USER_GROUP_TYPE } from 'src/types/cohort';
 import { ExperimentUser } from 'src/types/user';
 import { convertUserToEvaluationContext } from 'src/util/user';
 
