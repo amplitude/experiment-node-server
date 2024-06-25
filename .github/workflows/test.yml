@@ -8,7 +8,6 @@ on:
 
 jobs:
   test:
-    environment: ci
     strategy:
       fail-fast: false
       matrix:
