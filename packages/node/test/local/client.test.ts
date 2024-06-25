@@ -20,12 +20,10 @@ if (!process.env['API_KEY'] && !process.env['SECRET_KEY']) {
   );
 }
 
-const cohortConfig = process.env['API_KEY']
-  ? {
-      apiKey: process.env['API_KEY'],
-      secretKey: process.env['SECRET_KEY'],
-    }
-  : undefined;
+const cohortConfig = {
+  apiKey: process.env['API_KEY'],
+  secretKey: process.env['SECRET_KEY'],
+};
 const client = Experiment.initializeLocal(apiKey, {
   cohortConfig: cohortConfig,
 });
