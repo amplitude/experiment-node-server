@@ -87,7 +87,7 @@ export type ExperimentConfig = RemoteEvaluationConfig;
  */
 export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
   debug: false,
-  serverZone: 'US',
+  serverZone: 'us',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
   fetchRetries: 8,
@@ -103,7 +103,7 @@ export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
  */
 export const Defaults: ExperimentConfig = {
   debug: false,
-  serverZone: 'US',
+  serverZone: 'us',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
   fetchRetries: 8,
@@ -257,42 +257,4 @@ export const EU_SERVER_URLS = {
   flags: 'https://flag.lab.eu.amplitude.com',
   stream: 'https://stream.lab.eu.amplitude.com',
   cohort: 'https://cohort-v2.lab.eu.amplitude.com',
-};
-
-export const populateRemoteConfigDefaults = (
-  customConfig: RemoteEvaluationConfig,
-): RemoteEvaluationConfig => {
-  const config = { ...RemoteEvaluationDefaults, ...customConfig };
-  const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
-
-  if (!customConfig.serverUrl) {
-    config.serverUrl = isEu
-      ? EU_SERVER_URLS.remote
-      : RemoteEvaluationDefaults.serverUrl;
-  }
-  return config;
-};
-
-export const populateLocalConfigDefaults = (
-  customConfig: LocalEvaluationConfig,
-): LocalEvaluationConfig => {
-  const config = { ...LocalEvaluationDefaults, ...customConfig };
-  const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
-
-  if (!customConfig.serverUrl) {
-    config.serverUrl = isEu
-      ? EU_SERVER_URLS.flags
-      : LocalEvaluationDefaults.serverUrl;
-  }
-  if (!customConfig.streamServerUrl) {
-    config.streamServerUrl = isEu
-      ? EU_SERVER_URLS.stream
-      : LocalEvaluationDefaults.streamServerUrl;
-  }
-  if (customConfig.cohortConfig && !customConfig.cohortConfig.cohortServerUrl) {
-    config.cohortConfig.cohortServerUrl = isEu
-      ? EU_SERVER_URLS.cohort
-      : CohortConfigDefaults.cohortServerUrl;
-  }
-  return config;
 };

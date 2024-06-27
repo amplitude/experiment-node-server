@@ -5,12 +5,7 @@ import * as dotenv from 'dotenv';
 import { Experiment } from 'src/factory';
 import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
 import { USER_GROUP_TYPE } from 'src/types/cohort';
-import {
-  CohortConfigDefaults,
-  EU_SERVER_URLS,
-  LocalEvaluationConfig,
-  LocalEvaluationDefaults,
-} from 'src/types/config';
+import { LocalEvaluationDefaults } from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
 
 dotenv.config({ path: path.join(__dirname, '../../', '.env') });
@@ -256,9 +251,6 @@ test('ExperimentClient.evaluateV2 with group cohort tester targeted', async () =
 
 // Unit tests
 class TestLocalEvaluationClient extends LocalEvaluationClient {
-  public getConfig() {
-    return this.config;
-  }
   public enrichUserWithCohorts(
     user: ExperimentUser,
     flags: Record<string, EvaluationFlag>,
@@ -266,58 +258,6 @@ class TestLocalEvaluationClient extends LocalEvaluationClient {
     super.enrichUserWithCohorts(user, flags);
   }
 }
-
-it.each([
-  [
-    {},
-    [
-      'us',
-      LocalEvaluationDefaults.serverUrl,
-      LocalEvaluationDefaults.streamServerUrl,
-      CohortConfigDefaults.cohortServerUrl,
-    ],
-  ],
-  [
-    { zone: 'EU' },
-    ['EU', EU_SERVER_URLS.flags, EU_SERVER_URLS.stream, EU_SERVER_URLS.cohort],
-  ],
-  [
-    { url: 'urlurl', stream: 'streamurl', cohort: 'cohorturl' },
-    ['us', 'urlurl', 'streamurl', 'cohorturl'],
-  ],
-  [
-    { zone: 'eu', url: 'urlurl', stream: 'streamurl', cohort: 'cohorturl' },
-    ['eu', 'urlurl', 'streamurl', 'cohorturl'],
-  ],
-  [
-    { zone: 'eu', url: 'urlurl' },
-    ['eu', 'urlurl', EU_SERVER_URLS.stream, EU_SERVER_URLS.cohort],
-  ],
-])("'%s'", (testcase, expected) => {
-  const config: LocalEvaluationConfig = {
-    cohortConfig: {
-      apiKey: '',
-      secretKey: '',
-    },
-  };
-  if ('zone' in testcase) {
-    config.serverZone = testcase.zone;
-  }
-  if ('url' in testcase) {
-    config.serverUrl = testcase.url;
-  }
-  if ('stream' in testcase) {
-    config.streamServerUrl = testcase.stream;
-  }
-  if ('cohort' in testcase) {
-    config.cohortConfig.cohortServerUrl = testcase.cohort;
-  }
-  const client = new TestLocalEvaluationClient(apiKey, config);
-  expect(client.getConfig().serverZone).toBe(expected[0]);
-  expect(client.getConfig().serverUrl).toBe(expected[1]);
-  expect(client.getConfig().streamServerUrl).toBe(expected[2]);
-  expect(client.getConfig().cohortConfig.cohortServerUrl).toBe(expected[3]);
-});
 
 test('ExperimentClient.enrichUserWithCohorts', async () => {
   const client = new TestLocalEvaluationClient(

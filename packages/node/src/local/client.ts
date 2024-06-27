@@ -7,6 +7,7 @@ import {
 import EventSource from 'eventsource';
 import { USER_GROUP_TYPE } from 'src/types/cohort';
 import { CohortUtils } from 'src/util/cohort';
+import { populateLocalConfigDefaults } from 'src/util/config';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
@@ -17,7 +18,6 @@ import {
   AssignmentConfig,
   AssignmentConfigDefaults,
   LocalEvaluationConfig,
-  populateLocalConfigDefaults,
 } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
