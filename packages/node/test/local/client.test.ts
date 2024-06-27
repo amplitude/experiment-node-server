@@ -173,6 +173,9 @@ test('ExperimentClient.evaluateV2 with user or group cohort not targeted', async
   const variants = await client.evaluateV2({
     user_id: '2333',
     device_id: 'device_id',
+    groups: {
+      'org name': ['Amplitude Inc sth sth sth'],
+    },
   });
   const userVariant = variants['sdk-local-evaluation-user-cohort-ci-test'];
   expect(userVariant.key).toEqual('off');
@@ -230,7 +233,7 @@ test('ExperimentClient.evaluateV2 with group cohort segment targeted', async () 
   ).toBeDefined();
 });
 
-test('ExperimentClient.evaluateV2 with group cohort test targeted', async () => {
+test('ExperimentClient.evaluateV2 with group cohort tester targeted', async () => {
   const variants = await client.evaluateV2({
     user_id: '2333',
     device_id: 'device_id',

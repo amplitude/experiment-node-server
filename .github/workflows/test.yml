@@ -12,8 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         node-version: ['14', '16', '18']
-        os: [macos-latest, ubuntu-latest]
-        exclude: # no node14 darwin arm64 https://github.com/actions/node-versions/blob/main/versions-manifest.json
+        os: [macos-latest, macos-13, ubuntu-latest]
+        exclude: # macos-latest is m1, no node14 darwin arm64 https://github.com/actions/node-versions/blob/main/versions-manifest.json
           - os: macos-latest
             node-version: 14
     runs-on: ${{ matrix.os }}
