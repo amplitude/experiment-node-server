@@ -8,8 +8,8 @@ import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
 import {
   ExperimentConfig,
-  RemoteEvaluationDefaults,
   RemoteEvaluationConfig,
+  populateRemoteConfigDefaults,
 } from '../types/config';
 import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
@@ -37,7 +37,7 @@ export class RemoteEvaluationClient {
    */
   public constructor(apiKey: string, config: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
-    this.config = { ...RemoteEvaluationDefaults, ...config };
+    this.config = populateRemoteConfigDefaults(config);
     this.evaluationApi = new SdkEvaluationApi(
       apiKey,
       this.config.serverUrl,

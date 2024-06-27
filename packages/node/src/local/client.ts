@@ -17,7 +17,7 @@ import {
   AssignmentConfig,
   AssignmentConfigDefaults,
   LocalEvaluationConfig,
-  LocalEvaluationDefaults,
+  populateLocalConfigDefaults,
 } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
@@ -51,7 +51,7 @@ const STREAM_TRY_DELAY_MILLIS = 1000; // The delay between attempts.
  */
 export class LocalEvaluationClient {
   private readonly logger: Logger;
-  private readonly config: LocalEvaluationConfig;
+  protected readonly config: LocalEvaluationConfig;
   private readonly updater: FlagConfigUpdater;
   private readonly assignmentService: AssignmentService;
   private readonly evaluation: EvaluationEngine;
@@ -72,7 +72,7 @@ export class LocalEvaluationClient {
     streamEventSourceFactory: StreamEventSourceFactory = (url, params) =>
       new EventSource(url, params),
   ) {
-    this.config = { ...LocalEvaluationDefaults, ...config };
+    this.config = populateLocalConfigDefaults(config);
     const fetcher = new FlagConfigFetcher(
       apiKey,
       httpClient,

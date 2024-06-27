@@ -5,7 +5,11 @@ import * as dotenv from 'dotenv';
 import { Experiment } from 'src/factory';
 import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
 import { USER_GROUP_TYPE } from 'src/types/cohort';
-import { LocalEvaluationDefaults } from 'src/types/config';
+import {
+  CohortConfigDefaults,
+  EU_SERVER_URLS,
+  LocalEvaluationDefaults,
+} from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
 
 dotenv.config({ path: path.join(__dirname, '../../', '.env') });
@@ -249,7 +253,11 @@ test('ExperimentClient.evaluateV2 with group cohort tester targeted', async () =
   ).toBeDefined();
 });
 
+// Unit tests
 class TestLocalEvaluationClient extends LocalEvaluationClient {
+  public getConfig() {
+    return this.config;
+  }
   public enrichUserWithCohorts(
     user: ExperimentUser,
     flags: Record<string, EvaluationFlag>,
@@ -257,6 +265,68 @@ class TestLocalEvaluationClient extends LocalEvaluationClient {
     super.enrichUserWithCohorts(user, flags);
   }
 }
+
+test('LocalEvaluationClient config, default to US server urls', async () => {
+  const client = new TestLocalEvaluationClient(apiKey, {
+    cohortConfig: { apiKey: '', secretKey: '' },
+  });
+  expect(client.getConfig().serverZone).toBe('us');
+  expect(client.getConfig().serverUrl).toBe(LocalEvaluationDefaults.serverUrl);
+  expect(client.getConfig().streamServerUrl).toBe(
+    LocalEvaluationDefaults.streamServerUrl,
+  );
+  expect(client.getConfig().cohortConfig.cohortServerUrl).toBe(
+    CohortConfigDefaults.cohortServerUrl,
+  );
+});
+test('LocalEvaluationClient config, EU server zone sets to EU server urls', async () => {
+  const client = new TestLocalEvaluationClient(apiKey, {
+    serverZone: 'EU',
+    cohortConfig: { apiKey: '', secretKey: '' },
+  });
+  expect(client.getConfig().serverZone).toBe('EU');
+  expect(client.getConfig().serverUrl).toBe(EU_SERVER_URLS.flags);
+  expect(client.getConfig().streamServerUrl).toBe(EU_SERVER_URLS.stream);
+  expect(client.getConfig().cohortConfig.cohortServerUrl).toBe(
+    EU_SERVER_URLS.cohort,
+  );
+});
+test('LocalEvaluationClient config, US server zone but serverUrl overrides', async () => {
+  const client = new TestLocalEvaluationClient(apiKey, {
+    serverUrl: 'urlurl',
+    streamServerUrl: 'streamurl',
+    cohortConfig: { apiKey: '', secretKey: '', cohortServerUrl: 'cohorturl' },
+  });
+  expect(client.getConfig().serverZone).toBe('us');
+  expect(client.getConfig().serverUrl).toBe('urlurl');
+  expect(client.getConfig().streamServerUrl).toBe('streamurl');
+  expect(client.getConfig().cohortConfig.cohortServerUrl).toBe('cohorturl');
+});
+test('LocalEvaluationClient config, EU server zone but serverUrl overrides', async () => {
+  const client = new TestLocalEvaluationClient(apiKey, {
+    serverZone: 'eu',
+    serverUrl: 'urlurl',
+    streamServerUrl: 'streamurl',
+    cohortConfig: { apiKey: '', secretKey: '', cohortServerUrl: 'cohorturl' },
+  });
+  expect(client.getConfig().serverZone).toBe('eu');
+  expect(client.getConfig().serverUrl).toBe('urlurl');
+  expect(client.getConfig().streamServerUrl).toBe('streamurl');
+  expect(client.getConfig().cohortConfig.cohortServerUrl).toBe('cohorturl');
+});
+test('LocalEvaluationClient config, EU server zone but partial serverUrl overrides', async () => {
+  const client = new TestLocalEvaluationClient(apiKey, {
+    serverZone: 'eu',
+    serverUrl: 'urlurl',
+    cohortConfig: { apiKey: '', secretKey: '' },
+  });
+  expect(client.getConfig().serverZone).toBe('eu');
+  expect(client.getConfig().serverUrl).toBe('urlurl');
+  expect(client.getConfig().streamServerUrl).toBe(EU_SERVER_URLS.stream);
+  expect(client.getConfig().cohortConfig.cohortServerUrl).toBe(
+    EU_SERVER_URLS.cohort,
+  );
+});
 
 test('ExperimentClient.enrichUserWithCohorts', async () => {
   const client = new TestLocalEvaluationClient(

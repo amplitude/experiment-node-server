@@ -14,7 +14,13 @@ export type RemoteEvaluationConfig = {
   debug?: boolean;
 
   /**
-   * The server endpoint from which to request variants.
+   * Select the Amplitude data center to get flags and variants from, `us` or `eu`.
+   */
+  serverZone?: string;
+
+  /**
+   * The server endpoint from which to request variants. For hitting the EU data center, use serverZone.
+   * Setting this value will override serverZone defaults.
    */
   serverUrl?: string;
 
@@ -81,6 +87,7 @@ export type ExperimentConfig = RemoteEvaluationConfig;
  */
 export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
   debug: false,
+  serverZone: 'US',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
   fetchRetries: 8,
@@ -96,6 +103,7 @@ export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
  */
 export const Defaults: ExperimentConfig = {
   debug: false,
+  serverZone: 'US',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
   fetchRetries: 8,
@@ -118,7 +126,13 @@ export type LocalEvaluationConfig = {
   debug?: boolean;
 
   /**
-   * The server endpoint from which to request variants.
+   * Select the Amplitude data center to get flags and variants from, `us` or `eu`.
+   */
+  serverZone?: string;
+
+  /**
+   * The server endpoint from which to request flags. For hitting the EU data center, use serverZone.
+   * Setting this value will override serverZone defaults.
    */
   serverUrl?: string;
 
@@ -191,7 +205,8 @@ export type CohortConfig = {
   secretKey: string;
 
   /**
-   * The cohort server endpoint from which to fetch cohort data.
+   * The cohort server endpoint from which to fetch cohort data. For hitting the EU data center, use serverZone.
+   * Setting this value will override serverZone defaults.
    */
   cohortServerUrl?: string;
 
@@ -216,6 +231,7 @@ export type CohortConfig = {
  */
 export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   debug: false,
+  serverZone: 'us',
   serverUrl: 'https://api.lab.amplitude.com',
   bootstrap: {},
   flagConfigPollingIntervalMillis: 30000,
@@ -234,3 +250,49 @@ export const CohortConfigDefaults: Omit<CohortConfig, 'apiKey' | 'secretKey'> =
     cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
     maxCohortSize: 10_000_000,
   };
+
+export const EU_SERVER_URLS = {
+  name: 'eu',
+  remote: 'https://api.lab.eu.amplitude.com',
+  flags: 'https://flag.lab.eu.amplitude.com',
+  stream: 'https://stream.lab.eu.amplitude.com',
+  cohort: 'https://cohort-v2.lab.eu.amplitude.com',
+};
+
+export const populateRemoteConfigDefaults = (
+  customConfig: RemoteEvaluationConfig,
+): RemoteEvaluationConfig => {
+  const config = { ...RemoteEvaluationDefaults, ...customConfig };
+  const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
+
+  if (!customConfig.serverUrl) {
+    config.serverUrl = isEu
+      ? EU_SERVER_URLS.remote
+      : RemoteEvaluationDefaults.serverUrl;
+  }
+  return config;
+};
+
+export const populateLocalConfigDefaults = (
+  customConfig: LocalEvaluationConfig,
+): LocalEvaluationConfig => {
+  const config = { ...LocalEvaluationDefaults, ...customConfig };
+  const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
+
+  if (!customConfig.serverUrl) {
+    config.serverUrl = isEu
+      ? EU_SERVER_URLS.flags
+      : LocalEvaluationDefaults.serverUrl;
+  }
+  if (!customConfig.streamServerUrl) {
+    config.streamServerUrl = isEu
+      ? EU_SERVER_URLS.stream
+      : LocalEvaluationDefaults.streamServerUrl;
+  }
+  if (customConfig.cohortConfig && !customConfig.cohortConfig.cohortServerUrl) {
+    config.cohortConfig.cohortServerUrl = isEu
+      ? EU_SERVER_URLS.cohort
+      : CohortConfigDefaults.cohortServerUrl;
+  }
+  return config;
+};
