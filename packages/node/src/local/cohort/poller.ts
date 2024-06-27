@@ -74,6 +74,7 @@ export class CohortPoller implements CohortUpdater {
     }
     if (changed) {
       this.storage.replaceAll(updatedCohorts);
+      this.logger.debug('[Experiment] cohort updated');
     }
 
     if (onChange && changed) {
