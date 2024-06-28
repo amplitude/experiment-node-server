@@ -7,7 +7,7 @@ import { version as PACKAGE_VERSION } from '../../../gen/version';
 
 import { SdkCohortApi } from './cohort-api';
 
-const COHORT_CONFIG_TIMEOUT = 5000;
+const COHORT_CONFIG_TIMEOUT = 20000;
 
 export class CohortFetcher {
   readonly cohortApi: SdkCohortApi;
