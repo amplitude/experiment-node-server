@@ -3,14 +3,11 @@ import {
   FetchError,
   SdkEvaluationApi,
 } from '@amplitude/experiment-core';
+import { populateRemoteConfigDefaults } from 'src/util/config';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
-import {
-  ExperimentConfig,
-  RemoteEvaluationDefaults,
-  RemoteEvaluationConfig,
-} from '../types/config';
+import { ExperimentConfig, RemoteEvaluationConfig } from '../types/config';
 import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
@@ -37,7 +34,7 @@ export class RemoteEvaluationClient {
    */
   public constructor(apiKey: string, config: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
-    this.config = { ...RemoteEvaluationDefaults, ...config };
+    this.config = populateRemoteConfigDefaults(config);
     this.evaluationApi = new SdkEvaluationApi(
       apiKey,
       this.config.serverUrl,

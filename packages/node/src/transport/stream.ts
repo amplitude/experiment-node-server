@@ -112,7 +112,7 @@ export class SdkStream implements Stream {
     this.streamConnTimeoutMillis = streamConnTimeoutMillis;
   }
 
-  public async connect(options?: StreamOptions) {
+  public async connect(options?: StreamOptions): Promise<void> {
     if (this.eventSource) {
       return;
     }
@@ -171,7 +171,7 @@ export class SdkStream implements Stream {
     }, this.streamConnTimeoutMillis);
   }
 
-  public close() {
+  public close(): void {
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = undefined;
@@ -192,7 +192,7 @@ export class SdkStream implements Stream {
     }
   }
 
-  private async error(err: StreamErrorEvent) {
+  private async error(err: StreamErrorEvent): Promise<void> {
     this.close();
     if (this.onError) {
       try {

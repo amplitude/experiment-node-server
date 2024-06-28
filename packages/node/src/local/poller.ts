@@ -1,9 +1,12 @@
+import { CohortUtils } from 'src/util/cohort';
+
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { doWithBackoff, BackoffPolicy } from '../util/backoff';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
+import { CohortUpdater } from './cohort/updater';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigUpdater } from './updater';
 
@@ -23,15 +26,19 @@ export class FlagConfigPoller implements FlagConfigUpdater {
   public readonly fetcher: FlagConfigFetcher;
   public readonly cache: FlagConfigCache;
 
+  public readonly cohortUpdater?: CohortUpdater;
+
   constructor(
     fetcher: FlagConfigFetcher,
     cache: FlagConfigCache,
     pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
+    cohortUpdater?: CohortUpdater,
     debug = false,
   ) {
     this.fetcher = fetcher;
     this.cache = cache;
     this.pollingIntervalMillis = pollingIntervalMillis;
+    this.cohortUpdater = cohortUpdater;
     this.logger = new ConsoleLogger(debug);
   }
 
@@ -59,7 +66,15 @@ export class FlagConfigPoller implements FlagConfigUpdater {
 
       // Fetch initial flag configs and await the result.
       await doWithBackoff<void>(async () => {
-        await this.update(onChange);
+        try {
+          await this.update(onChange);
+        } catch (e) {
+          this.logger.error(
+            '[Experiment] flag config initial poll failed, stopping',
+            e,
+          );
+          this.stop();
+        }
       }, BACKOFF_POLICY);
     }
   }
@@ -96,6 +111,13 @@ export class FlagConfigPoller implements FlagConfigUpdater {
         changed = true;
       }
     }
+    const cohortIds = CohortUtils.extractCohortIds(flagConfigs);
+    if (cohortIds && cohortIds.size > 0 && !this.cohortUpdater) {
+      this.logger.warn(
+        '[Experiment] cohort found in flag configs but no cohort download configured',
+      );
+    }
+    await this.cohortUpdater?.update(cohortIds); // Throws error if cohort update failed.
     await this.cache.clear();
     await this.cache.putAll(flagConfigs);
     if (changed) {

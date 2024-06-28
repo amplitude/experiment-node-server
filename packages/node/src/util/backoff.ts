@@ -22,4 +22,22 @@ async function doWithBackoff<Result>(
   }
 }
 
-export { doWithBackoff, BackoffPolicy };
+async function doWithBackoffFailLoudly<Result>(
+  action: () => Promise<Result>,
+  backoffPolicy: BackoffPolicy,
+): Promise<Result> {
+  let delay = backoffPolicy.min;
+  for (let i = 0; i < backoffPolicy.attempts; i++) {
+    try {
+      return await action();
+    } catch (e) {
+      if (i === backoffPolicy.attempts - 1) {
+        throw e;
+      }
+      await sleep(delay);
+      delay = Math.min(delay * backoffPolicy.scalar, backoffPolicy.max);
+    }
+  }
+}
+
+export { doWithBackoff, doWithBackoffFailLoudly, BackoffPolicy };

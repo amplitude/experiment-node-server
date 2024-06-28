@@ -1,3 +1,5 @@
+import { CohortUtils } from 'src/util/cohort';
+
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import {
   StreamErrorEvent,
@@ -8,7 +10,7 @@ import { FlagConfigCache } from '../types/flag';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 
-import { FlagConfigFetcher } from './fetcher';
+import { CohortUpdater } from './cohort/updater';
 import { FlagConfigPoller } from './poller';
 import { SdkStreamFlagApi } from './stream-flag-api';
 import { FlagConfigUpdater } from './updater';
@@ -24,28 +26,25 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
 
   public readonly cache: FlagConfigCache;
 
+  public readonly cohortUpdater?: CohortUpdater;
+
   constructor(
     apiKey: string,
-    fetcher: FlagConfigFetcher,
+    poller: FlagConfigPoller,
     cache: FlagConfigCache,
     streamEventSourceFactory: StreamEventSourceFactory,
-    pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
     streamFlagConnTimeoutMillis = LocalEvaluationDefaults.streamFlagConnTimeoutMillis,
     streamFlagTryAttempts: number,
     streamFlagTryDelayMillis: number,
     streamFlagRetryDelayMillis: number,
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
+    cohortUpdater?: CohortUpdater,
     debug = false,
   ) {
     this.logger = new ConsoleLogger(debug);
     this.logger.debug('[Experiment] streamer - init');
     this.cache = cache;
-    this.poller = new FlagConfigPoller(
-      fetcher,
-      cache,
-      pollingIntervalMillis,
-      debug,
-    );
+    this.poller = poller;
     this.stream = new SdkStreamFlagApi(
       apiKey,
       serverUrl,
@@ -56,6 +55,7 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
       streamFlagTryDelayMillis,
     );
     this.streamFlagRetryDelayMillis = streamFlagRetryDelayMillis;
+    this.cohortUpdater = cohortUpdater;
   }
 
   /**
@@ -88,10 +88,18 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
           changed = true;
         }
       }
-      await this.cache.clear();
-      await this.cache.putAll(flagConfigs);
-      if (changed) {
-        await onChange(this.cache);
+      try {
+        await this.cohortUpdater?.update(
+          CohortUtils.extractCohortIds(flagConfigs),
+        );
+      } catch {
+        this.logger.debug('[Experiment] cohort update failed');
+      } finally {
+        await this.cache.clear();
+        await this.cache.putAll(flagConfigs);
+        if (changed) {
+          await onChange(this.cache);
+        }
       }
     };
 

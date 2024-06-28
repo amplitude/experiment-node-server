@@ -1,11 +1,32 @@
+import path from 'path';
+
+import { EvaluationFlag } from '@amplitude/experiment-core';
+import * as dotenv from 'dotenv';
 import { Experiment } from 'src/factory';
+import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
+import { USER_GROUP_TYPE } from 'src/types/cohort';
+import { LocalEvaluationDefaults } from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
+
+dotenv.config({ path: path.join(__dirname, '../../', '.env') });
 
 const apiKey = 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 
 const testUser: ExperimentUser = { user_id: 'test_user' };
 
-const client = Experiment.initializeLocal(apiKey);
+if (!process.env['API_KEY'] && !process.env['SECRET_KEY']) {
+  throw new Error(
+    'No env vars found. If running on local, have you created .env file correct environment variables? Checkout README.md',
+  );
+}
+
+const cohortConfig = {
+  apiKey: process.env['API_KEY'],
+  secretKey: process.env['SECRET_KEY'],
+};
+const client = Experiment.initializeLocal(apiKey, {
+  cohortConfig: cohortConfig,
+});
 
 beforeAll(async () => {
   await client.start();
@@ -146,4 +167,176 @@ test('ExperimentClient.evaluateV2 with dependencies, variant held out', async ()
   expect(
     await client.cache.get('sdk-ci-local-dependencies-test-holdout'),
   ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with user or group cohort not targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '2333',
+    device_id: 'device_id',
+    groups: {
+      'org name': ['Amplitude Inc sth sth sth'],
+    },
+  });
+  const userVariant = variants['sdk-local-evaluation-user-cohort-ci-test'];
+  expect(userVariant.key).toEqual('off');
+  expect(userVariant.value).toBeUndefined();
+  expect(
+    await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
+  ).toBeDefined();
+  const groupVariant = variants['sdk-local-evaluation-group-cohort-ci-test'];
+  expect(groupVariant.key).toEqual('off');
+  expect(groupVariant.value).toBeUndefined();
+  expect(
+    await client.cache.get('sdk-local-evaluation-group-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with user cohort segment targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '12345',
+    device_id: 'device_id',
+  });
+  const variant = variants['sdk-local-evaluation-user-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with user cohort tester targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '1',
+    device_id: 'device_id',
+  });
+  const variant = variants['sdk-local-evaluation-user-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-user-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with group cohort segment targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '12345',
+    device_id: 'device_id',
+    groups: {
+      'org id': ['1'],
+    },
+  });
+  const variant = variants['sdk-local-evaluation-group-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-group-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+test('ExperimentClient.evaluateV2 with group cohort tester targeted', async () => {
+  const variants = await client.evaluateV2({
+    user_id: '2333',
+    device_id: 'device_id',
+    groups: {
+      'org name': ['Amplitude Website (Portfolio)'],
+    },
+  });
+  const variant = variants['sdk-local-evaluation-group-cohort-ci-test'];
+  expect(variant.key).toEqual('on');
+  expect(variant.value).toEqual('on');
+  expect(
+    await client.cache.get('sdk-local-evaluation-group-cohort-ci-test'),
+  ).toBeDefined();
+});
+
+// Unit tests
+class TestLocalEvaluationClient extends LocalEvaluationClient {
+  public enrichUserWithCohorts(
+    user: ExperimentUser,
+    flags: Record<string, EvaluationFlag>,
+  ) {
+    super.enrichUserWithCohorts(user, flags);
+  }
+}
+
+test('ExperimentClient.enrichUserWithCohorts', async () => {
+  const client = new TestLocalEvaluationClient(
+    apiKey,
+    LocalEvaluationDefaults,
+    new InMemoryFlagConfigCache(),
+  );
+  client.cohortStorage.replaceAll({
+    cohort1: {
+      cohortId: 'cohort1',
+      groupType: USER_GROUP_TYPE,
+      groupTypeId: 0,
+      lastComputed: 0,
+      lastModified: 0,
+      size: 1,
+      memberIds: new Set<string>(['userId']),
+    },
+    groupcohort1: {
+      cohortId: 'groupcohort1',
+      groupType: 'groupname',
+      groupTypeId: 1,
+      lastComputed: 0,
+      lastModified: 0,
+      size: 1,
+      memberIds: new Set<string>(['amplitude', 'experiment']),
+    },
+  });
+  const user = {
+    user_id: 'userId',
+    groups: {
+      groupname: ['amplitude'],
+    },
+  };
+  client.enrichUserWithCohorts(user, {
+    flag1: {
+      key: 'flag1',
+      variants: {},
+      segments: [
+        {
+          conditions: [
+            [
+              {
+                op: 'set contains any',
+                selector: ['context', 'user', 'cohort_ids'],
+                values: ['cohort1'],
+              },
+            ],
+          ],
+        },
+      ],
+    },
+    flag2: {
+      key: 'flag2',
+      variants: {},
+      segments: [
+        {
+          conditions: [
+            [
+              {
+                op: 'set contains any',
+                selector: ['context', 'groups', 'groupname', 'cohort_ids'],
+                values: ['groupcohort1', 'groupcohortnotinstorage'],
+              },
+            ],
+          ],
+        },
+      ],
+    },
+  });
+  expect(user).toStrictEqual({
+    user_id: 'userId',
+    cohort_ids: ['cohort1'],
+    groups: {
+      groupname: ['amplitude'],
+    },
+    group_cohort_ids: {
+      groupname: {
+        amplitude: ['groupcohort1'],
+      },
+    },
+  });
 });

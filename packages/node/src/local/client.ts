@@ -5,6 +5,9 @@ import {
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
+import { USER_GROUP_TYPE } from 'src/types/cohort';
+import { CohortUtils } from 'src/util/cohort';
+import { populateLocalConfigDefaults } from 'src/util/config';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
@@ -15,7 +18,6 @@ import {
   AssignmentConfig,
   AssignmentConfigDefaults,
   LocalEvaluationConfig,
-  LocalEvaluationDefaults,
 } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
@@ -30,6 +32,9 @@ import {
 } from '../util/variant';
 
 import { InMemoryFlagConfigCache } from './cache';
+import { CohortFetcher } from './cohort/fetcher';
+import { CohortPoller } from './cohort/poller';
+import { InMemoryCohortStorage } from './cohort/storage';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 import { FlagConfigStreamer } from './streamer';
@@ -46,7 +51,7 @@ const STREAM_TRY_DELAY_MILLIS = 1000; // The delay between attempts.
  */
 export class LocalEvaluationClient {
   private readonly logger: Logger;
-  private readonly config: LocalEvaluationConfig;
+  protected readonly config: LocalEvaluationConfig;
   private readonly updater: FlagConfigUpdater;
   private readonly assignmentService: AssignmentService;
   private readonly evaluation: EvaluationEngine;
@@ -57,6 +62,7 @@ export class LocalEvaluationClient {
    * Used for directly manipulating the flag configs used for evaluation.
    */
   public readonly cache: InMemoryFlagConfigCache;
+  public readonly cohortStorage: InMemoryCohortStorage;
 
   constructor(
     apiKey: string,
@@ -66,7 +72,7 @@ export class LocalEvaluationClient {
     streamEventSourceFactory: StreamEventSourceFactory = (url, params) =>
       new EventSource(url, params),
   ) {
-    this.config = { ...LocalEvaluationDefaults, ...config };
+    this.config = populateLocalConfigDefaults(config);
     const fetcher = new FlagConfigFetcher(
       apiKey,
       httpClient,
@@ -78,27 +84,50 @@ export class LocalEvaluationClient {
       this.config.bootstrap,
     );
     this.logger = new ConsoleLogger(this.config.debug);
+
+    this.cohortStorage = new InMemoryCohortStorage();
+    let cohortUpdater = undefined;
+    if (this.config.cohortConfig) {
+      const cohortFetcher = new CohortFetcher(
+        this.config.cohortConfig.apiKey,
+        this.config.cohortConfig.secretKey,
+        httpClient,
+        this.config.cohortConfig?.cohortServerUrl,
+        this.config.debug,
+      );
+      const cohortPoller = new CohortPoller(
+        cohortFetcher,
+        this.cohortStorage,
+        this.config.cohortConfig?.maxCohortSize,
+        this.config.debug,
+      );
+      cohortUpdater = cohortPoller;
+    }
+
+    const flagsPoller = new FlagConfigPoller(
+      fetcher,
+      this.cache,
+      this.config.flagConfigPollingIntervalMillis,
+      cohortUpdater,
+      this.config.debug,
+    );
     this.updater = this.config.streamUpdates
       ? new FlagConfigStreamer(
           apiKey,
-          fetcher,
+          flagsPoller,
           this.cache,
           streamEventSourceFactory,
-          this.config.flagConfigPollingIntervalMillis,
           this.config.streamFlagConnTimeoutMillis,
           STREAM_ATTEMPTS,
           STREAM_TRY_DELAY_MILLIS,
           STREAM_RETRY_DELAY_MILLIS +
             Math.floor(Math.random() * STREAM_RETRY_JITTER_MAX_MILLIS),
           this.config.streamServerUrl,
+          cohortUpdater,
           this.config.debug,
         )
-      : new FlagConfigPoller(
-          fetcher,
-          this.cache,
-          this.config.flagConfigPollingIntervalMillis,
-          this.config.debug,
-        );
+      : flagsPoller;
+
     if (this.config.assignmentConfig) {
       this.config.assignmentConfig = {
         ...AssignmentConfigDefaults,
@@ -144,6 +173,7 @@ export class LocalEvaluationClient {
     flagKeys?: string[],
   ): Record<string, Variant> {
     const flags = this.cache.getAllCached() as Record<string, EvaluationFlag>;
+    this.enrichUserWithCohorts(user, flags);
     this.logger.debug('[Experiment] evaluate - user:', user, 'flags:', flags);
     const context = convertUserToEvaluationContext(user);
     const sortedFlags = topologicalSort(flags, flagKeys);
@@ -151,6 +181,51 @@ export class LocalEvaluationClient {
     void this.assignmentService?.track(new Assignment(user, results));
     this.logger.debug('[Experiment] evaluate - variants: ', results);
     return evaluationVariantsToVariants(results);
+  }
+
+  protected enrichUserWithCohorts(
+    user: ExperimentUser,
+    flags: Record<string, EvaluationFlag>,
+  ): void {
+    const cohortIdsByGroup = CohortUtils.extractCohortIdsByGroup(flags);
+
+    // Enrich cohorts with user group type.
+    const userCohortIds = cohortIdsByGroup[USER_GROUP_TYPE];
+    if (user.user_id && userCohortIds && userCohortIds.size != 0) {
+      user.cohort_ids = Array.from(
+        this.cohortStorage.getCohortsForUser(user.user_id, userCohortIds),
+      );
+    }
+
+    // Enrich other group types for this user.
+    if (user.groups) {
+      for (const groupType in user.groups) {
+        const groupNames = user.groups[groupType];
+        if (groupNames.length == 0) {
+          continue;
+        }
+        const groupName = groupNames[0];
+
+        const cohortIds = cohortIdsByGroup[groupType];
+        if (!cohortIds || cohortIds.size == 0) {
+          continue;
+        }
+
+        if (!user.group_cohort_ids) {
+          user.group_cohort_ids = {};
+        }
+        if (!(groupType in user.group_cohort_ids)) {
+          user.group_cohort_ids[groupType] = {};
+        }
+        user.group_cohort_ids[groupType][groupName] = Array.from(
+          this.cohortStorage.getCohortsForGroup(
+            groupType,
+            groupName,
+            cohortIds,
+          ),
+        );
+      }
+    }
   }
 
   /**

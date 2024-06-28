@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { InMemoryFlagConfigCache } from 'src/index';
+import { FlagConfigPoller, InMemoryFlagConfigCache } from 'src/index';
 import { FlagConfigFetcher } from 'src/local/fetcher';
 import { FlagConfigStreamer } from 'src/local/streamer';
 
@@ -37,15 +37,21 @@ const getTestObjs = ({
   const mockClient = getNewClient();
   const updater = new FlagConfigStreamer(
     apiKey,
-    fetchObj.fetcher,
+    new FlagConfigPoller(
+      fetchObj.fetcher,
+      cache,
+      pollingIntervalMillis,
+      null,
+      debug,
+    ),
     cache,
     mockClient.clientFactory,
-    pollingIntervalMillis,
     streamFlagConnTimeoutMillis,
     streamFlagTryAttempts,
     streamFlagTryDelayMillis,
     streamFlagRetryDelayMillis,
     serverUrl,
+    null,
     debug,
   );
   return {
