@@ -35,6 +35,7 @@ import { InMemoryFlagConfigCache } from './cache';
 import { CohortFetcher } from './cohort/fetcher';
 import { CohortPoller } from './cohort/poller';
 import { InMemoryCohortStorage } from './cohort/storage';
+import { CohortUpdater } from './cohort/updater';
 import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 import { FlagConfigStreamer } from './streamer';
@@ -55,6 +56,7 @@ export class LocalEvaluationClient {
   private readonly updater: FlagConfigUpdater;
   private readonly assignmentService: AssignmentService;
   private readonly evaluation: EvaluationEngine;
+  private readonly cohortUpdater: CohortUpdater;
 
   /**
    * Directly access the client's flag config cache.
@@ -86,29 +88,30 @@ export class LocalEvaluationClient {
     this.logger = new ConsoleLogger(this.config.debug);
 
     this.cohortStorage = new InMemoryCohortStorage();
-    let cohortUpdater = undefined;
+    let cohortFetcher = undefined;
     if (this.config.cohortConfig) {
-      const cohortFetcher = new CohortFetcher(
+      cohortFetcher = new CohortFetcher(
         this.config.cohortConfig.apiKey,
         this.config.cohortConfig.secretKey,
         httpClient,
         this.config.cohortConfig?.cohortServerUrl,
-        this.config.debug,
-      );
-      const cohortPoller = new CohortPoller(
-        cohortFetcher,
-        this.cohortStorage,
         this.config.cohortConfig?.maxCohortSize,
         this.config.debug,
       );
-      cohortUpdater = cohortPoller;
+      new CohortPoller(
+        cohortFetcher,
+        this.cohortStorage,
+        60000, // this.config.cohortConfig?.cohortPollingIntervalMillis,
+        this.config.debug,
+      );
     }
 
     const flagsPoller = new FlagConfigPoller(
       fetcher,
       this.cache,
+      this.cohortStorage,
+      cohortFetcher,
       this.config.flagConfigPollingIntervalMillis,
-      cohortUpdater,
       this.config.debug,
     );
     this.updater = this.config.streamUpdates
@@ -123,7 +126,8 @@ export class LocalEvaluationClient {
           STREAM_RETRY_DELAY_MILLIS +
             Math.floor(Math.random() * STREAM_RETRY_JITTER_MAX_MILLIS),
           this.config.streamServerUrl,
-          cohortUpdater,
+          this.cohortStorage,
+          cohortFetcher,
           this.config.debug,
         )
       : flagsPoller;

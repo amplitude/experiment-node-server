@@ -3,6 +3,10 @@ import { Cohort, CohortStorage, USER_GROUP_TYPE } from 'src/types/cohort';
 export class InMemoryCohortStorage implements CohortStorage {
   store: Record<string, Cohort> = {};
 
+  getAllCohortIds(): Set<string> {
+    return new Set<string>(Object.keys(this.store));
+  }
+
   getCohort(cohortId: string): Cohort | undefined {
     return cohortId in this.store ? this.store[cohortId] : undefined;
   }
@@ -28,8 +32,18 @@ export class InMemoryCohortStorage implements CohortStorage {
     return validCohortIds;
   }
 
-  replaceAll(cohorts: Record<string, Cohort>): void {
+  put(cohort: Cohort): void {
+    this.store[cohort.cohortId] = cohort;
+  }
+
+  putAll(cohorts: Record<string, Cohort>): void {
     // Assignments are atomic.
-    this.store = { ...cohorts };
+    this.store = { ...this.store, ...cohorts };
+  }
+
+  removeAll(cohortIds: Set<string>): void {
+    cohortIds.forEach((id) => {
+      delete this.store[id];
+    });
   }
 }

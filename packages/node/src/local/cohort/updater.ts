@@ -9,8 +9,5 @@ export interface CohortUpdater {
    * in the storage have changed.
    * @throws error if update failed.
    */
-  update(
-    cohortIds: Set<string>,
-    onChange?: (storage: CohortStorage) => Promise<void>,
-  ): Promise<void>;
+  update(onChange?: (storage: CohortStorage) => Promise<void>): Promise<void>;
 }

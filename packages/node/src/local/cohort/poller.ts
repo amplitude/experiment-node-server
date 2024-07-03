@@ -1,6 +1,4 @@
-import { Cohort, CohortStorage } from 'src/types/cohort';
-import { CohortConfigDefaults } from 'src/types/config';
-import { BackoffPolicy, doWithBackoffFailLoudly } from 'src/util/backoff';
+import { CohortStorage } from 'src/types/cohort';
 
 import { ConsoleLogger } from '../../util/logger';
 import { Logger } from '../../util/logger';
@@ -8,39 +6,68 @@ import { Logger } from '../../util/logger';
 import { CohortFetcher } from './fetcher';
 import { CohortUpdater } from './updater';
 
-const BACKOFF_POLICY: BackoffPolicy = {
-  attempts: 3,
-  min: 1000,
-  max: 1000,
-  scalar: 1,
-};
-
 export class CohortPoller implements CohortUpdater {
   private readonly logger: Logger;
 
   public readonly fetcher: CohortFetcher;
   public readonly storage: CohortStorage;
-  private readonly maxCohortSize: number;
+
+  private poller: NodeJS.Timeout;
+  private pollingIntervalMillis: number;
 
   constructor(
     fetcher: CohortFetcher,
     storage: CohortStorage,
-    maxCohortSize = CohortConfigDefaults.maxCohortSize,
+    pollingIntervalMillis = 60,
     debug = false,
   ) {
     this.fetcher = fetcher;
     this.storage = storage;
-    this.maxCohortSize = maxCohortSize;
+    this.pollingIntervalMillis = pollingIntervalMillis;
     this.logger = new ConsoleLogger(debug);
+  }
+  /**
+   * You must call this function to begin polling for flag config updates.
+   * The promise returned by this function is resolved when the initial call
+   * to fetch the flag configuration completes.
+   *
+   * Calling this function while the poller is already running does nothing.
+   */
+  public async start(
+    onChange?: (storage: CohortStorage) => Promise<void>,
+  ): Promise<void> {
+    if (!this.poller) {
+      this.logger.debug('[Experiment] cohort poller - start');
+      this.poller = setInterval(async () => {
+        try {
+          await this.update(onChange);
+        } catch (e) {
+          this.logger.debug('[Experiment] flag config update failed', e);
+        }
+      }, this.pollingIntervalMillis);
+    }
+  }
+
+  /**
+   * Stop polling for flag configurations.
+   *
+   * Calling this function while the poller is not running will do nothing.
+   */
+  public stop(): void {
+    if (this.poller) {
+      this.logger.debug('[Experiment] cohort poller - stop');
+      clearTimeout(this.poller);
+      this.poller = undefined;
+    }
   }
 
   public async update(
-    cohortIds: Set<string>,
     onChange?: (storage: CohortStorage) => Promise<void>,
   ): Promise<void> {
     let changed = false;
-    const updatedCohorts: Record<string, Cohort> = {};
-    for (const cohortId of cohortIds) {
+    const promises = [];
+
+    for (const cohortId of this.storage.getAllCohortIds()) {
       this.logger.debug(`[Experiment] updating cohort ${cohortId}`);
 
       // Get existing cohort and lastModified.
@@ -48,34 +75,27 @@ export class CohortPoller implements CohortUpdater {
       let lastModified = undefined;
       if (existingCohort) {
         lastModified = existingCohort.lastModified;
-        updatedCohorts[cohortId] = existingCohort;
       }
 
-      // Download.
-      let cohort = undefined;
-      try {
-        cohort = await doWithBackoffFailLoudly<Cohort>(async () => {
-          return await this.fetcher.fetch(
-            cohortId,
-            this.maxCohortSize,
-            lastModified,
-          );
-        }, BACKOFF_POLICY);
-      } catch (e) {
-        this.logger.error('[Experiment] cohort poll failed', e);
-        throw e;
-      }
+      promises.push(
+        this.fetcher
+          .fetch(cohortId, lastModified)
+          .then((cohort) => {
+            // Set.
+            if (cohort) {
+              this.storage.put(cohort);
+              changed = true;
+            }
+          })
+          .catch((err) => {
+            this.logger.error('[Experiment] cohort poll failed', err);
+          }),
+      );
+    }
 
-      // Set.
-      if (cohort) {
-        updatedCohorts[cohortId] = cohort;
-        changed = true;
-      }
-    }
-    if (changed) {
-      this.storage.replaceAll(updatedCohorts);
-      this.logger.debug('[Experiment] cohort updated');
-    }
+    await Promise.all(promises);
+
+    this.logger.debug(`[Experiment] cohort polled, changed: ${changed}`);
 
     if (onChange && changed) {
       await onChange(this.storage);

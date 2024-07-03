@@ -1,4 +1,4 @@
-import { CohortUtils } from 'src/util/cohort';
+import { CohortStorage } from 'src/types/cohort';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import {
@@ -7,26 +7,21 @@ import {
 } from '../transport/stream';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
-import { ConsoleLogger } from '../util/logger';
-import { Logger } from '../util/logger';
 
-import { CohortUpdater } from './cohort/updater';
+import { CohortFetcher } from './cohort/fetcher';
 import { FlagConfigPoller } from './poller';
 import { SdkStreamFlagApi } from './stream-flag-api';
-import { FlagConfigUpdater } from './updater';
+import { FlagConfigUpdater, FlagConfigUpdaterBase } from './updater';
 
-export class FlagConfigStreamer implements FlagConfigUpdater {
-  private readonly logger: Logger;
-
+export class FlagConfigStreamer
+  extends FlagConfigUpdaterBase
+  implements FlagConfigUpdater
+{
   private readonly poller: FlagConfigPoller;
   private readonly stream: SdkStreamFlagApi;
   private readonly streamFlagRetryDelayMillis: number;
 
   private streamRetryInterval?: NodeJS.Timeout;
-
-  public readonly cache: FlagConfigCache;
-
-  public readonly cohortUpdater?: CohortUpdater;
 
   constructor(
     apiKey: string,
@@ -38,12 +33,12 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
     streamFlagTryDelayMillis: number,
     streamFlagRetryDelayMillis: number,
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
-    cohortUpdater?: CohortUpdater,
+    cohortStorage: CohortStorage,
+    cohortFetcher?: CohortFetcher,
     debug = false,
   ) {
-    this.logger = new ConsoleLogger(debug);
+    super(cache, cohortStorage, cohortFetcher, debug);
     this.logger.debug('[Experiment] streamer - init');
-    this.cache = cache;
     this.poller = poller;
     this.stream = new SdkStreamFlagApi(
       apiKey,
@@ -55,7 +50,6 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
       streamFlagTryDelayMillis,
     );
     this.streamFlagRetryDelayMillis = streamFlagRetryDelayMillis;
-    this.cohortUpdater = cohortUpdater;
   }
 
   /**
@@ -79,27 +73,20 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
       this.startRetryStreamInterval();
     };
 
+    let isInitUpdate = true;
     this.stream.onUpdate = async (flagConfigs) => {
       this.logger.debug('[Experiment] streamer - receives updates');
-      let changed = false;
-      if (onChange) {
-        const current = await this.cache.getAll();
-        if (!Object.is(current, flagConfigs)) {
-          changed = true;
+      if (isInitUpdate) {
+        isInitUpdate = false;
+        try {
+          super._update(flagConfigs, true, onChange);
+        } catch {
+          // Flag update failed on init, stop, fallback to poller.
+          await this.poller.start(onChange);
+          this.startRetryStreamInterval();
         }
-      }
-      try {
-        await this.cohortUpdater?.update(
-          CohortUtils.extractCohortIds(flagConfigs),
-        );
-      } catch {
-        this.logger.debug('[Experiment] cohort update failed');
-      } finally {
-        await this.cache.clear();
-        await this.cache.putAll(flagConfigs);
-        if (changed) {
-          await onChange(this.cache);
-        }
+      } else {
+        super._update(flagConfigs, false, onChange);
       }
     };
 

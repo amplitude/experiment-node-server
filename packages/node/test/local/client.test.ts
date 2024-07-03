@@ -265,7 +265,7 @@ test('ExperimentClient.enrichUserWithCohorts', async () => {
     LocalEvaluationDefaults,
     new InMemoryFlagConfigCache(),
   );
-  client.cohortStorage.replaceAll({
+  client.cohortStorage.putAll({
     cohort1: {
       cohortId: 'cohort1',
       groupType: USER_GROUP_TYPE,

@@ -9,6 +9,7 @@ export type GetCohortOptions = {
   lastModified?: number;
   timeoutMillis?: number;
 };
+
 export interface CohortApi {
   /**
    * Calls /sdk/v1/cohort/<cohortId> with query params maxCohortSize and lastModified if specified.
@@ -21,6 +22,7 @@ export interface CohortApi {
    */
   getCohort(options?: GetCohortOptions): Promise<Cohort>;
 }
+
 export class SdkCohortApi implements CohortApi {
   private readonly cohortApiKey;
   private readonly serverUrl;

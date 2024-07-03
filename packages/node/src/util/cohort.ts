@@ -20,12 +20,9 @@ export class CohortUtils {
   public static extractCohortIds(
     flagConfigs: Record<string, FlagConfig>,
   ): Set<string> {
-    const cohorts = this.extractCohortIdsByGroup(flagConfigs);
-    const cohortIds = new Set<string>();
-    for (const groupType in cohorts) {
-      cohorts[groupType].forEach(cohortIds.add, cohortIds);
-    }
-    return cohortIds;
+    return CohortUtils.mergeAllValues(
+      CohortUtils.extractCohortIdsByGroup(flagConfigs),
+    );
   }
 
   public static extractCohortIdsByGroup(
@@ -33,38 +30,52 @@ export class CohortUtils {
   ): Record<string, Set<string>> {
     const cohortIdsByGroup = {};
     for (const key in flagConfigs) {
-      if (
-        flagConfigs[key].segments &&
-        Array.isArray(flagConfigs[key].segments)
-      ) {
-        const segments = flagConfigs[key].segments as EvaluationSegment[];
-        for (const segment of segments) {
-          if (!segment || !segment.conditions) {
-            continue;
-          }
+      CohortUtils.mergeBIntoA(
+        cohortIdsByGroup,
+        CohortUtils.extractCohortIdsByGroupFromFlag(flagConfigs[key]),
+      );
+    }
+    return cohortIdsByGroup;
+  }
 
-          for (const outer of segment.conditions) {
-            for (const condition of outer) {
-              if (CohortUtils.isCohortFilter(condition)) {
-                // User cohort selector is [context, user, cohort_ids]
-                // Groups cohort selector is [context, groups, {group_type}, cohort_ids]
-                let groupType;
-                if (condition.selector.length > 2) {
-                  if (condition.selector[1] == 'user') {
-                    groupType = USER_GROUP_TYPE;
-                  } else if (condition.selector.includes('groups')) {
-                    groupType = condition.selector[2];
-                  } else {
-                    continue;
-                  }
-                  if (!(groupType in cohortIdsByGroup)) {
-                    cohortIdsByGroup[groupType] = new Set<string>();
-                  }
-                  condition.values.forEach(
-                    cohortIdsByGroup[groupType].add,
-                    cohortIdsByGroup[groupType],
-                  );
+  public static extractCohortIdsFromFlag(flag: FlagConfig): Set<string> {
+    return CohortUtils.mergeAllValues(
+      CohortUtils.extractCohortIdsByGroupFromFlag(flag),
+    );
+  }
+
+  public static extractCohortIdsByGroupFromFlag(
+    flag: FlagConfig,
+  ): Record<string, Set<string>> {
+    const cohortIdsByGroup = {};
+    if (flag.segments && Array.isArray(flag.segments)) {
+      const segments = flag.segments as EvaluationSegment[];
+      for (const segment of segments) {
+        if (!segment || !segment.conditions) {
+          continue;
+        }
+
+        for (const outer of segment.conditions) {
+          for (const condition of outer) {
+            if (CohortUtils.isCohortFilter(condition)) {
+              // User cohort selector is [context, user, cohort_ids]
+              // Groups cohort selector is [context, groups, {group_type}, cohort_ids]
+              let groupType;
+              if (condition.selector.length > 2) {
+                if (condition.selector[1] == 'user') {
+                  groupType = USER_GROUP_TYPE;
+                } else if (condition.selector.includes('groups')) {
+                  groupType = condition.selector[2];
+                } else {
+                  continue;
                 }
+                if (!(groupType in cohortIdsByGroup)) {
+                  cohortIdsByGroup[groupType] = new Set<string>();
+                }
+                condition.values.forEach(
+                  cohortIdsByGroup[groupType].add,
+                  cohortIdsByGroup[groupType],
+                );
               }
             }
           }
@@ -72,5 +83,26 @@ export class CohortUtils {
       }
     }
     return cohortIdsByGroup;
+  }
+
+  private static mergeBIntoA(
+    a: Record<string, Set<string>>,
+    b: Record<string, Set<string>>,
+  ) {
+    for (const groupType in b) {
+      if (!(groupType in a)) {
+        a[groupType] = new Set<string>();
+      }
+
+      b[groupType].forEach(a[groupType].add, a[groupType]);
+    }
+  }
+
+  private static mergeAllValues(a: Record<string, Set<string>>) {
+    const merged = new Set<string>();
+    for (const key in a) {
+      a[key].forEach(merged.add, merged);
+    }
+    return merged;
   }
 }
