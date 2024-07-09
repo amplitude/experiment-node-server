@@ -3,13 +3,14 @@ import { Cohort } from 'src/types/cohort';
 import { CohortConfigDefaults } from 'src/types/config';
 import { HttpClient } from 'src/types/transport';
 import { BackoffPolicy, doWithBackoffFailLoudly } from 'src/util/backoff';
-import { Mutex, Executor } from 'src/util/mutex';
+import { ConsoleLogger, Logger } from 'src/util/logger';
+import { Mutex, Executor } from 'src/util/threading';
 
 import { version as PACKAGE_VERSION } from '../../../gen/version';
 
 import { SdkCohortApi } from './cohort-api';
 
-const COHORT_CONFIG_TIMEOUT = 20000;
+export const COHORT_CONFIG_TIMEOUT = 20000;
 
 const BACKOFF_POLICY: BackoffPolicy = {
   attempts: 3,
@@ -19,9 +20,10 @@ const BACKOFF_POLICY: BackoffPolicy = {
 };
 
 export class CohortFetcher {
+  private readonly logger: Logger;
+
   readonly cohortApi: SdkCohortApi;
   readonly maxCohortSize: number;
-  readonly debug: boolean;
 
   private readonly inProgressCohorts: Record<
     string,
@@ -44,7 +46,7 @@ export class CohortFetcher {
       new WrapperClient(httpClient),
     );
     this.maxCohortSize = maxCohortSize;
-    this.debug = debug;
+    this.logger = new ConsoleLogger(debug);
   }
 
   async fetch(
@@ -52,12 +54,11 @@ export class CohortFetcher {
     lastModified?: number,
   ): Promise<Cohort | undefined> {
     // This block may have async and awaits. No guarantee that executions are not interleaved.
-    // TODO: Add download concurrency limit.
     const unlock = await this.mutex.lock();
 
     if (!this.inProgressCohorts[cohortId]) {
       this.inProgressCohorts[cohortId] = this.executor.run(async () => {
-        console.log('Start downloading', cohortId);
+        this.logger.debug('Start downloading', cohortId);
         const cohort = await doWithBackoffFailLoudly<Cohort>(
           async () =>
             this.cohortApi.getCohort({
@@ -82,55 +83,13 @@ export class CohortFetcher {
             unlock();
             throw err;
           });
-        console.log('Stop downloading', cohortId, cohort['cohortId']);
+        this.logger.debug('Stop downloading', cohortId, cohort['cohortId']);
         return cohort;
       });
     }
 
+    const cohortPromise = this.inProgressCohorts[cohortId];
     unlock();
-    return this.inProgressCohorts[cohortId];
+    return cohortPromise;
   }
-
-  // queueMutex = new Mutex();
-  // queue = [];
-  // running = 0;
-
-  // private startNextTask() {
-  //   const unlock = this.queueMutex.lock();
-  //   if (this.running >= 10) {
-  //     unlock();
-  //     return;
-  //   }
-
-  //   const nextTask = this.queue[0];
-  //   delete this.queue[0];
-
-  //   this.running++;
-  //   new Promise((resolve, reject) => {
-  //     nextTask()
-  //       .then((v) => {
-  //         const unlock = this.queueMutex.lock();
-  //         this.running--;
-  //         unlock();
-  //         this.startNextTask();
-  //         return v;
-  //       })
-  //       .catch((err) => {
-  //         const unlock = this.queueMutex.lock();
-  //         this.running--;
-  //         unlock();
-  //         this.startNextTask();
-  //         throw err;
-  //       });
-  //   });
-
-  //   unlock();
-  // }
-
-  // private queueTask<T>(task: () => Promise<T>): Promise<T> {
-  //   const unlock = this.queueMutex.lock();
-  //   this.queue.push(task);
-  //   unlock();
-  //   this.startNextTask();
-  // }
 }

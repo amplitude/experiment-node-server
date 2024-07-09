@@ -10,4 +10,8 @@ export interface CohortUpdater {
    * @throws error if update failed.
    */
   update(onChange?: (storage: CohortStorage) => Promise<void>): Promise<void>;
+
+  start(onChange?: (storage: CohortStorage) => Promise<void>): Promise<void>;
+
+  stop(): void;
 }

@@ -119,12 +119,12 @@ test('getCohort success', async () => {
       body: JSON.stringify({ ...C_A, memberIds: Array.from(C_A.memberIds) }),
     };
   });
-  const fetcher = new SdkCohortApi(
+  const api = new SdkCohortApi(
     encodedKey,
     serverUrl,
     new WrapperClient(httpClient),
   );
-  const cohort = await fetcher.getCohort({
+  const cohort = await api.getCohort({
     cohortId,
     maxCohortSize,
     libraryName: 'experiment-node-server',
@@ -142,13 +142,13 @@ test('getCohort 413', async () => {
     expect(params.headers).toStrictEqual(expectedHeaders);
     return { status: 413, body: '' };
   });
-  const fetcher = new SdkCohortApi(
+  const api = new SdkCohortApi(
     encodedKey,
     serverUrl,
     new WrapperClient(httpClient),
   );
   await expect(
-    fetcher.getCohort({
+    api.getCohort({
       cohortId,
       maxCohortSize,
       libraryName: 'experiment-node-server',
@@ -167,13 +167,13 @@ test('getCohort no modification 204', async () => {
     expect(params.headers).toStrictEqual(expectedHeaders);
     return { status: 204, body: '' };
   });
-  const fetcher = new SdkCohortApi(
+  const api = new SdkCohortApi(
     encodedKey,
     serverUrl,
     new WrapperClient(httpClient),
   );
   expect(
-    await fetcher.getCohort({
+    await api.getCohort({
       cohortId,
       maxCohortSize,
       lastModified,
@@ -196,13 +196,13 @@ test('getCohort no modification but still return cohort due to cache miss', asyn
       body: JSON.stringify({ ...C_A, memberIds: Array.from(C_A.memberIds) }),
     };
   });
-  const fetcher = new SdkCohortApi(
+  const api = new SdkCohortApi(
     encodedKey,
     serverUrl,
     new WrapperClient(httpClient),
   );
   expect(
-    await fetcher.getCohort({
+    await api.getCohort({
       cohortId,
       maxCohortSize,
       lastModified,
@@ -225,13 +225,13 @@ test('getCohort other errors', async () => {
       body: JSON.stringify({ ...C_A, memberIds: Array.from(C_A.memberIds) }),
     };
   });
-  const fetcher = new SdkCohortApi(
+  const api = new SdkCohortApi(
     encodedKey,
     serverUrl,
     new WrapperClient(httpClient),
   );
   await expect(
-    fetcher.getCohort({
+    api.getCohort({
       cohortId,
       maxCohortSize,
       lastModified,

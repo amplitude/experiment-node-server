@@ -265,25 +265,23 @@ test('ExperimentClient.enrichUserWithCohorts', async () => {
     LocalEvaluationDefaults,
     new InMemoryFlagConfigCache(),
   );
-  client.cohortStorage.putAll({
-    cohort1: {
-      cohortId: 'cohort1',
-      groupType: USER_GROUP_TYPE,
-      groupTypeId: 0,
-      lastComputed: 0,
-      lastModified: 0,
-      size: 1,
-      memberIds: new Set<string>(['userId']),
-    },
-    groupcohort1: {
-      cohortId: 'groupcohort1',
-      groupType: 'groupname',
-      groupTypeId: 1,
-      lastComputed: 0,
-      lastModified: 0,
-      size: 1,
-      memberIds: new Set<string>(['amplitude', 'experiment']),
-    },
+  client.cohortStorage.put({
+    cohortId: 'cohort1',
+    groupType: USER_GROUP_TYPE,
+    groupTypeId: 0,
+    lastComputed: 0,
+    lastModified: 0,
+    size: 1,
+    memberIds: new Set<string>(['userId']),
+  });
+  client.cohortStorage.put({
+    cohortId: 'groupcohort1',
+    groupType: 'groupname',
+    groupTypeId: 1,
+    lastComputed: 0,
+    lastModified: 0,
+    size: 1,
+    memberIds: new Set<string>(['amplitude', 'experiment']),
   });
   const user = {
     user_id: 'userId',

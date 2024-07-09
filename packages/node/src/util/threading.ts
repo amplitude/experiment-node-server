@@ -1,13 +1,13 @@
-// https://news.ycombinator.com/item?id=11823816
-
 export class Mutex {
+  // https://news.ycombinator.com/item?id=11823816
+
   _locking;
 
   constructor() {
     this._locking = Promise.resolve();
   }
 
-  lock() {
+  lock(): Promise<() => void> {
     let unlockNext;
     const willLock = new Promise((resolve) => (unlockNext = resolve));
     const willUnlock = this._locking.then(() => unlockNext);
@@ -40,7 +40,7 @@ export class Semaphore {
     return promise;
   }
 
-  tryRunNext(): void {
+  private tryRunNext(): void {
     if (this.running >= this.limit || this.queue.length == 0) {
       return;
     }

@@ -98,7 +98,7 @@ export class LocalEvaluationClient {
         this.config.cohortConfig?.maxCohortSize,
         this.config.debug,
       );
-      new CohortPoller(
+      this.cohortUpdater = new CohortPoller(
         cohortFetcher,
         this.cohortStorage,
         60000, // this.config.cohortConfig?.cohortPollingIntervalMillis,
@@ -263,7 +263,8 @@ export class LocalEvaluationClient {
    * Calling this function while the poller is already running does nothing.
    */
   public async start(): Promise<void> {
-    return await this.updater.start();
+    await this.updater.start();
+    await this.cohortUpdater.start();
   }
 
   /**
@@ -272,6 +273,7 @@ export class LocalEvaluationClient {
    * Calling this function while the poller is not running will do nothing.
    */
   public stop(): void {
-    return this.updater.stop();
+    this.updater.stop();
+    this.cohortUpdater.stop();
   }
 }

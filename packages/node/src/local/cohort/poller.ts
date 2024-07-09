@@ -26,6 +26,7 @@ export class CohortPoller implements CohortUpdater {
     this.pollingIntervalMillis = pollingIntervalMillis;
     this.logger = new ConsoleLogger(debug);
   }
+
   /**
    * You must call this function to begin polling for flag config updates.
    * The promise returned by this function is resolved when the initial call

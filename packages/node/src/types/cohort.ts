@@ -8,8 +8,7 @@ export interface CohortStorage {
     cohortIds: Set<string>,
   ): Set<string>;
   put(cohort: Cohort): void;
-  putAll(cohorts: Record<string, Cohort>): void;
-  removeAll(cohortIds: Set<string>): void;
+  delete(cohortIds: string): void;
 }
 
 export const USER_GROUP_TYPE = 'User';

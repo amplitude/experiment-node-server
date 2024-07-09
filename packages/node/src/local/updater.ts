@@ -132,15 +132,15 @@ export class FlagConfigUpdaterBase {
     const newFlagConfigs = {};
     for (const flagKey in flagConfigs) {
       // Get cohorts for this flag.
-      const cohortIdsForFlag = CohortUtils.extractCohortIdsFromFlag(
+      const cohortIds = CohortUtils.extractCohortIdsFromFlag(
         flagConfigs[flagKey],
       );
 
       // Check if all cohorts for this flag has downloaded.
       // If any cohort failed, don't use the new flag.
       const updateFlag =
-        cohortIdsForFlag.size === 0 ||
-        [...cohortIdsForFlag]
+        cohortIds.size === 0 ||
+        [...cohortIds]
           .map((id) => this.cohortStorage.getCohort(id))
           .reduce((acc, cur) => acc && cur);
 
@@ -165,7 +165,9 @@ export class FlagConfigUpdaterBase {
       this.cohortStorage.getAllCohortIds(),
       validCohortIds,
     );
-    this.cohortStorage.removeAll(cohortIdsToBeRemoved);
+    cohortIdsToBeRemoved.forEach((id) => {
+      this.cohortStorage.delete(id);
+    });
   }
 
   private static setSubtract(one: Set<string>, other: Set<string>) {

@@ -56,13 +56,49 @@ const C_U3 = {
   memberIds: new Set<string>(['user1']),
 };
 
-test('cohort storage replaceAll and getCohort', async () => {
+test('cohort storage put, delete, getAllCohortIds, getCohort', async () => {
   const storage = new InMemoryCohortStorage();
-  storage.replaceAll({
-    [C_A.cohortId]: C_A,
-  });
+
+  // {C_A}
+  storage.put(C_A);
+  expect(storage.getAllCohortIds()).toStrictEqual(
+    new Set<string>([C_A.cohortId]),
+  );
   expect(storage.getCohort(C_A.cohortId)).toBe(C_A);
   expect(storage.getCohort(C_B.cohortId)).toBeUndefined();
+
+  // {C_B}
+  storage.delete(C_A.cohortId);
+  storage.put(C_B);
+  expect(storage.getAllCohortIds()).toStrictEqual(
+    new Set<string>([C_B.cohortId]),
+  );
+  expect(storage.getCohort(C_A.cohortId)).toBeUndefined();
+  expect(storage.getCohort(C_B.cohortId)).toBe(C_B);
+
+  // {C_A, C_B, C_B2}
+  storage.put(C_A);
+  storage.put(C_B);
+  storage.put(C_B2);
+  expect(storage.getAllCohortIds()).toStrictEqual(
+    new Set<string>([C_A.cohortId, C_B.cohortId, C_B2.cohortId]),
+  );
+  expect(storage.getCohort(C_A.cohortId)).toBe(C_A);
+  expect(storage.getCohort(C_B.cohortId)).toBe(C_B);
+  expect(storage.getCohort(C_B2.cohortId)).toBe(C_B2);
+
+  // {C_B, C_B2}
+  storage.delete(C_A.cohortId);
+  expect(storage.getAllCohortIds()).toStrictEqual(
+    new Set<string>([C_B.cohortId, C_B2.cohortId]),
+  );
+});
+
+test('cohort storage getCohortsForGroup', async () => {
+  const storage = new InMemoryCohortStorage();
+
+  // {C_A}
+  storage.put(C_A);
 
   expect(
     storage.getCohortsForGroup(
@@ -86,29 +122,9 @@ test('cohort storage replaceAll and getCohort', async () => {
     ),
   ).toStrictEqual(new Set<string>());
 
-  storage.replaceAll({
-    c_b: C_B,
-  });
-  expect(storage.getCohort(C_A.cohortId)).toBeUndefined();
-  expect(storage.getCohort(C_B.cohortId)).toBe(C_B);
-
-  storage.replaceAll({
-    [C_A.cohortId]: C_A,
-    [C_B.cohortId]: C_B,
-    [C_B2.cohortId]: C_B2,
-  });
-  expect(storage.getCohort(C_A.cohortId)).toBe(C_A);
-  expect(storage.getCohort(C_B.cohortId)).toBe(C_B);
-  expect(storage.getCohort(C_B2.cohortId)).toBe(C_B2);
-});
-
-test('cohort storage getCohortsForGroup', async () => {
-  const storage = new InMemoryCohortStorage();
-  storage.replaceAll({
-    [C_A.cohortId]: C_A,
-    [C_B.cohortId]: C_B,
-    [C_B2.cohortId]: C_B2,
-  });
+  // {C_A, C_B, C_B2}
+  storage.put(C_B);
+  storage.put(C_B2);
 
   expect(
     storage.getCohortsForGroup(
@@ -135,11 +151,9 @@ test('cohort storage getCohortsForGroup', async () => {
 
 test('cohort storage getCohortsForUser', async () => {
   const storage = new InMemoryCohortStorage();
-  storage.replaceAll({
-    [C_U1.cohortId]: C_U1,
-    [C_U2.cohortId]: C_U2,
-    [C_U3.cohortId]: C_U3,
-  });
+  storage.put(C_U1);
+  storage.put(C_U2);
+  storage.put(C_U3);
 
   expect(
     storage.getCohortsForUser(

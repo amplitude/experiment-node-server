@@ -36,14 +36,7 @@ export class InMemoryCohortStorage implements CohortStorage {
     this.store[cohort.cohortId] = cohort;
   }
 
-  putAll(cohorts: Record<string, Cohort>): void {
-    // Assignments are atomic.
-    this.store = { ...this.store, ...cohorts };
-  }
-
-  removeAll(cohortIds: Set<string>): void {
-    cohortIds.forEach((id) => {
-      delete this.store[id];
-    });
+  delete(cohortId: string): void {
+    delete this.store[cohortId];
   }
 }
