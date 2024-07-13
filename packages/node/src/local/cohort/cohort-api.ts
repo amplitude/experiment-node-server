@@ -73,7 +73,9 @@ export class SdkCohortApi implements CohortApi {
     } else if (response.status == 413) {
       throw Error(`Cohort error response: size > ${options.maxCohortSize}`);
     } else {
-      throw Error(`Cohort error resposne: status=${response.status}`);
+      throw Error(
+        `Cohort error response: status ${response.status}, body ${response.body}`,
+      );
     }
   }
 }

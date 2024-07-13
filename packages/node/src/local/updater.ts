@@ -116,7 +116,7 @@ export class FlagConfigUpdaterBase {
         })
         .catch((err) => {
           this.logger.warn(
-            `[Experiment] Cohort download failed ${cohortId}, using existing cohort`,
+            `[Experiment] Cohort download failed ${cohortId}, using existing cohort if exist`,
             err,
           );
           failedCohortIds.add(cohortId);

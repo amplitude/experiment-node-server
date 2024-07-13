@@ -5,7 +5,7 @@ import { Experiment } from 'src/factory';
 
 dotenv.config({ path: path.join(__dirname, '../../', '.env') });
 
-if (!process.env['API_KEY'] && !process.env['SECRET_KEY']) {
+if (!process.env['EU_API_KEY'] && !process.env['EU_SECRET_KEY']) {
   throw new Error(
     'No env vars found. If running on local, have you created .env file correct environment variables? Checkout README.md',
   );
