@@ -49,15 +49,20 @@ export class CohortFetcher {
     this.logger = new ConsoleLogger(debug);
   }
 
+  static getKey(cohortId: string, lastModified?: number): string {
+    return `${cohortId}_${lastModified ? lastModified : ''}`;
+  }
+
   async fetch(
     cohortId: string,
     lastModified?: number,
   ): Promise<Cohort | undefined> {
     // This block may have async and awaits. No guarantee that executions are not interleaved.
     const unlock = await this.mutex.lock();
+    const key = CohortFetcher.getKey(cohortId, lastModified);
 
-    if (!this.inProgressCohorts[cohortId]) {
-      this.inProgressCohorts[cohortId] = this.executor.run(async () => {
+    if (!this.inProgressCohorts[key]) {
+      this.inProgressCohorts[key] = this.executor.run(async () => {
         this.logger.debug('Start downloading', cohortId);
         const cohort = await doWithBackoffFailLoudly<Cohort>(
           async () =>
@@ -73,22 +78,23 @@ export class CohortFetcher {
         )
           .then(async (cohort) => {
             const unlock = await this.mutex.lock();
-            delete this.inProgressCohorts[cohortId];
+            delete this.inProgressCohorts[key];
             unlock();
             return cohort;
           })
           .catch(async (err) => {
             const unlock = await this.mutex.lock();
-            delete this.inProgressCohorts[cohortId];
+            delete this.inProgressCohorts[key];
             unlock();
             throw err;
           });
-        this.logger.debug('Stop downloading', cohortId, cohort['cohortId']);
+        this.logger.debug('Stop downloading', cohortId);
         return cohort;
       });
     }
 
-    const cohortPromise = this.inProgressCohorts[cohortId];
+    const cohortPromise: Promise<Cohort | undefined> =
+      this.inProgressCohorts[key];
     unlock();
     return cohortPromise;
   }

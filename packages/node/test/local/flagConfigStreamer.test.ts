@@ -1,6 +1,8 @@
 import assert from 'assert';
 
 import { FlagConfigPoller, InMemoryFlagConfigCache } from 'src/index';
+import { CohortFetcher } from 'src/local/cohort/fetcher';
+import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { FlagConfigFetcher } from 'src/local/fetcher';
 import { FlagConfigStreamer } from 'src/local/streamer';
 
@@ -17,7 +19,16 @@ const getTestObjs = ({
   serverUrl = 'http://localhostxxxx:00000000',
   debug = false,
 }) => {
-  const fetchObj = { fetchCalls: 0, fetcher: undefined };
+  const fetchObj = {
+    fetchCalls: 0,
+    fetcher: undefined,
+    cohortStorage: new InMemoryCohortStorage(),
+    cohortFetcher: new CohortFetcher(
+      'apikey',
+      'secretkey',
+      new MockHttpClient(async () => ({ status: 200, body: '' })),
+    ),
+  };
   let dataI = 0;
   const data = [
     '[{"key": "fetcher-a", "variants": {}, "segments": []}]',
@@ -40,8 +51,9 @@ const getTestObjs = ({
     new FlagConfigPoller(
       fetchObj.fetcher,
       cache,
+      fetchObj.cohortStorage,
+      fetchObj.cohortFetcher,
       pollingIntervalMillis,
-      null,
       debug,
     ),
     cache,
@@ -51,7 +63,8 @@ const getTestObjs = ({
     streamFlagTryDelayMillis,
     streamFlagRetryDelayMillis,
     serverUrl,
-    null,
+    fetchObj.cohortStorage,
+    fetchObj.cohortFetcher,
     debug,
   );
   return {

@@ -3,8 +3,8 @@ import {
   FlagConfigPoller,
   InMemoryFlagConfigCache,
 } from 'src/index';
+import { SdkCohortApi } from 'src/local/cohort/cohort-api';
 import { CohortFetcher } from 'src/local/cohort/fetcher';
-import { CohortPoller } from 'src/local/cohort/poller';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 
 import { MockHttpClient } from './util/mockHttpClient';
@@ -153,6 +153,27 @@ const FLAG = [
   return acc;
 }, {});
 
+const NEW_FLAGS = {
+  ...FLAG,
+  flag6: {
+    key: 'flag6',
+    segments: [
+      {
+        conditions: [
+          [
+            {
+              op: 'set contains any',
+              selector: ['context', 'user', 'cohort_ids'],
+              values: ['anewcohortid'],
+            },
+          ],
+        ],
+      },
+    ],
+    variants: {},
+  },
+};
+
 afterEach(() => {
   // Note that if a test failed, and the poller has not stopped,
   // the test will hang and this won't be called.
@@ -168,29 +189,29 @@ test('flagConfig poller success', async () => {
       new MockHttpClient(async () => ({ status: 200, body: '' })),
     ),
     new InMemoryFlagConfigCache(),
-    2000,
-    new CohortPoller(
-      new CohortFetcher(
-        'apikey',
-        'secretkey',
-        new MockHttpClient(async () => ({ status: 200, body: '' })),
-      ),
-      cohortStorage,
+    cohortStorage,
+    new CohortFetcher(
+      'apikey',
+      'secretkey',
+      new MockHttpClient(async () => ({ status: 200, body: '' })),
     ),
+    2000,
   );
   let flagPolled = 0;
   // Return FLAG for flag polls.
   jest
     .spyOn(FlagConfigFetcher.prototype, 'fetch')
     .mockImplementation(async () => {
-      return { ...FLAG, flagPolled: { key: flagPolled++ } };
+      ++flagPolled;
+      if (flagPolled == 1) return { ...FLAG, flagPolled: { key: flagPolled } };
+      return { ...NEW_FLAGS, flagPolled: { key: flagPolled } };
     });
   // Return cohort with their own cohortId.
   jest
-    .spyOn(CohortFetcher.prototype, 'fetch')
-    .mockImplementation(async (cohortId) => {
+    .spyOn(SdkCohortApi.prototype, 'getCohort')
+    .mockImplementation(async (options) => {
       return {
-        cohortId: cohortId,
+        cohortId: options.cohortId,
         groupType: '',
         groupTypeId: 0,
         lastComputed: 0,
@@ -204,36 +225,39 @@ test('flagConfig poller success', async () => {
   expect(flagPolled).toBe(1);
   expect(await poller.cache.getAll()).toStrictEqual({
     ...FLAG,
-    flagPolled: { key: 0 },
+    flagPolled: { key: flagPolled },
   });
   expect(cohortStorage.getCohort('hahahaha1').cohortId).toBe('hahahaha1');
   expect(cohortStorage.getCohort('hahahaha2').cohortId).toBe('hahahaha2');
   expect(cohortStorage.getCohort('hahahaha3').cohortId).toBe('hahahaha3');
   expect(cohortStorage.getCohort('hahahaha4').cohortId).toBe('hahahaha4');
   expect(cohortStorage.getCohort('hahaorgname1').cohortId).toBe('hahaorgname1');
+  expect(cohortStorage.getCohort('newcohortid')).toBeUndefined();
   expect(cohortStorage.getCohort('hahahaha1').lastModified).toBe(1);
   expect(cohortStorage.getCohort('hahahaha2').lastModified).toBe(1);
   expect(cohortStorage.getCohort('hahahaha3').lastModified).toBe(1);
   expect(cohortStorage.getCohort('hahahaha4').lastModified).toBe(1);
   expect(cohortStorage.getCohort('hahaorgname1').lastModified).toBe(1);
 
-  // On update, flag and cohort should both be updated.
+  // On update, flag, existing cohort doesn't update.
   await new Promise((f) => setTimeout(f, 2000));
   expect(flagPolled).toBe(2);
   expect(await poller.cache.getAll()).toStrictEqual({
-    ...FLAG,
-    flagPolled: { key: 1 },
+    ...NEW_FLAGS,
+    flagPolled: { key: flagPolled },
   });
   expect(cohortStorage.getCohort('hahahaha1').cohortId).toBe('hahahaha1');
   expect(cohortStorage.getCohort('hahahaha2').cohortId).toBe('hahahaha2');
   expect(cohortStorage.getCohort('hahahaha3').cohortId).toBe('hahahaha3');
   expect(cohortStorage.getCohort('hahahaha4').cohortId).toBe('hahahaha4');
   expect(cohortStorage.getCohort('hahaorgname1').cohortId).toBe('hahaorgname1');
-  expect(cohortStorage.getCohort('hahahaha1').lastModified).toBe(2);
-  expect(cohortStorage.getCohort('hahahaha2').lastModified).toBe(2);
-  expect(cohortStorage.getCohort('hahahaha3').lastModified).toBe(2);
-  expect(cohortStorage.getCohort('hahahaha4').lastModified).toBe(2);
-  expect(cohortStorage.getCohort('hahaorgname1').lastModified).toBe(2);
+  expect(cohortStorage.getCohort('anewcohortid').cohortId).toBe('anewcohortid');
+  expect(cohortStorage.getCohort('hahahaha1').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('hahahaha2').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('hahahaha3').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('hahahaha4').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('hahaorgname1').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('anewcohortid').lastModified).toBe(2);
   poller.stop();
 });
 
@@ -244,15 +268,13 @@ test('flagConfig poller initial error', async () => {
       new MockHttpClient(async () => ({ status: 200, body: '' })),
     ),
     new InMemoryFlagConfigCache(),
-    10,
-    new CohortPoller(
-      new CohortFetcher(
-        'apikey',
-        'secretkey',
-        new MockHttpClient(async () => ({ status: 200, body: '' })),
-      ),
-      new InMemoryCohortStorage(),
+    new InMemoryCohortStorage(),
+    new CohortFetcher(
+      'apikey',
+      'secretkey',
+      new MockHttpClient(async () => ({ status: 200, body: '' })),
     ),
+    10,
   );
   // Fetch returns FLAG, but cohort fails.
   jest
@@ -260,9 +282,11 @@ test('flagConfig poller initial error', async () => {
     .mockImplementation(async () => {
       return FLAG;
     });
-  jest.spyOn(CohortPoller.prototype, 'update').mockImplementation(async () => {
-    throw new Error();
-  });
+  jest
+    .spyOn(SdkCohortApi.prototype, 'getCohort')
+    .mockImplementation(async () => {
+      throw new Error();
+    });
   // FLAG should be empty, as cohort failed. Poller should be stopped immediately and test exists cleanly.
   await poller.start();
   expect(await poller.cache.getAll()).toStrictEqual({});
@@ -275,39 +299,50 @@ test('flagConfig poller initial success, polling error and use old flags', async
       new MockHttpClient(async () => ({ status: 200, body: '' })),
     ),
     new InMemoryFlagConfigCache(),
-    2000,
-    new CohortPoller(
-      new CohortFetcher(
-        'apikey',
-        'secretkey',
-        new MockHttpClient(async () => ({ status: 200, body: '' })),
-      ),
-      new InMemoryCohortStorage(),
+    new InMemoryCohortStorage(),
+    new CohortFetcher(
+      'apikey',
+      'secretkey',
+      new MockHttpClient(async () => ({ status: 200, body: '' })),
     ),
+    2000,
   );
 
   // Only return the flag on first poll, return a different one on future polls where cohort would fail.
-  let cohortPolled = 0;
+  let flagPolled = 0;
   jest
     .spyOn(FlagConfigFetcher.prototype, 'fetch')
     .mockImplementation(async () => {
-      if (cohortPolled === 0) return FLAG;
-      return {};
+      if (++flagPolled === 1) return FLAG;
+      return NEW_FLAGS;
     });
   // Only success on first poll and fail on all later ones.
-  jest.spyOn(CohortPoller.prototype, 'update').mockImplementation(async () => {
-    if (cohortPolled++ === 0) return;
-    throw new Error();
-  });
+  jest
+    .spyOn(SdkCohortApi.prototype, 'getCohort')
+    .mockImplementation(async (options) => {
+      if (options.cohortId !== 'anewcohortid') {
+        return {
+          cohortId: options.cohortId,
+          groupType: '',
+          groupTypeId: 0,
+          lastComputed: 0,
+          lastModified: 10,
+          size: 0,
+          memberIds: new Set<string>([]),
+        };
+      }
+      throw new Error();
+    });
 
   // First poll should return FLAG.
   await poller.start();
   expect(await poller.cache.getAll()).toStrictEqual(FLAG);
-  expect(cohortPolled).toBe(1);
+  expect(flagPolled).toBe(1);
 
-  // Second poll should fail. The different flag should not be updated.
+  // Second poll flags with new cohort should fail when new cohort download failed.
+  // The different flag should not be updated.
   await new Promise((f) => setTimeout(f, 2000));
-  expect(cohortPolled).toBe(2);
+  expect(flagPolled).toBeGreaterThanOrEqual(2);
   expect(await poller.cache.getAll()).toStrictEqual(FLAG);
 
   poller.stop();

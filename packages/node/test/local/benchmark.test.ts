@@ -1,3 +1,6 @@
+import path from 'path';
+
+import * as dotenv from 'dotenv';
 import { Experiment } from 'src/factory';
 import { ExperimentUser } from 'src/types/user';
 
@@ -5,7 +8,23 @@ import { measure } from './util/performance';
 
 const apiKey = 'server-Ed2doNl5YOblB5lRavQ9toj02arvHpMj';
 
-const client = Experiment.initializeLocal(apiKey, { debug: false });
+dotenv.config({ path: path.join(__dirname, '../../', '.env') });
+
+if (!process.env['API_KEY'] && !process.env['SECRET_KEY']) {
+  throw new Error(
+    'No env vars found. If running on local, have you created .env file correct environment variables? Checkout README.md',
+  );
+}
+
+const cohortConfig = {
+  apiKey: process.env['API_KEY'],
+  secretKey: process.env['SECRET_KEY'],
+};
+
+const client = Experiment.initializeLocal(apiKey, {
+  debug: false,
+  cohortConfig: cohortConfig,
+});
 
 beforeAll(async () => {
   await client.start();

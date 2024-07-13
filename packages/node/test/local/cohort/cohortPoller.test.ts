@@ -1,9 +1,10 @@
+import { SdkCohortApi } from 'src/local/cohort/cohort-api';
 import { CohortFetcher } from 'src/local/cohort/fetcher';
 import { CohortPoller } from 'src/local/cohort/poller';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
-import { CohortConfigDefaults } from 'src/types/config';
+import { CohortStorage } from 'src/types/cohort';
 
-const COHORTS = {
+const OLD_COHORTS = {
   c1: {
     cohortId: 'c1',
     groupType: 'a',
@@ -33,269 +34,288 @@ const COHORTS = {
   },
 };
 
+const NEW_COHORTS = {
+  c1: {
+    cohortId: 'c1',
+    groupType: 'a',
+    groupTypeId: 0,
+    lastComputed: 1,
+    lastModified: 2,
+    size: 2,
+    memberIds: new Set<string>(['membera1', 'membera2']),
+  },
+  c2: {
+    cohortId: 'c2',
+    groupType: 'a',
+    groupTypeId: 0,
+    lastComputed: 0,
+    lastModified: 20,
+    size: 3,
+    memberIds: new Set<string>(['membera1', 'membera2', 'membera3']),
+  },
+  c3: {
+    cohortId: 'c3',
+    groupType: 'a',
+    groupTypeId: 0,
+    lastComputed: 0,
+    lastModified: 20,
+    size: 3,
+    memberIds: new Set<string>(['membera1', 'membera2', 'membera3']),
+  },
+};
+
+const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const POLL_MILLIS = 500;
+let storage: CohortStorage;
+let fetcher: CohortFetcher;
+let poller: CohortPoller;
+let storageGetAllCohortIdsSpy: jest.SpyInstance;
+let storageGetCohortSpy: jest.SpyInstance;
+let storagePutSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  storage = new InMemoryCohortStorage();
+  fetcher = new CohortFetcher('', '', null);
+  poller = new CohortPoller(fetcher, storage, POLL_MILLIS);
+
+  storageGetAllCohortIdsSpy = jest.spyOn(storage, 'getAllCohortIds');
+  storageGetAllCohortIdsSpy.mockImplementation(
+    () => new Set<string>(['c1', 'c2']),
+  );
+  storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
+  storageGetCohortSpy.mockImplementation(
+    (cohortId: string) => OLD_COHORTS[cohortId],
+  );
+  storagePutSpy = jest.spyOn(storage, 'put');
+});
+
 afterEach(() => {
+  poller.stop();
   jest.clearAllMocks();
 });
 
-test('', async () => {
-  const fetcher = new CohortFetcher('', '', null);
+test('CohortPoller update success', async () => {
   const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
   fetcherFetchSpy.mockImplementation(
-    async (cohortId: string) => COHORTS[cohortId],
+    async (cohortId: string) => NEW_COHORTS[cohortId],
   );
 
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
+  await poller.update();
 
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  await cohortPoller.update(new Set(['c1', 'c2']));
-
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c1',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c2',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageReplaceAllSpy).toHaveBeenCalledWith({
-    c1: COHORTS['c1'],
-    c2: COHORTS['c2'],
-  });
+  for (const cohortId of storage.getAllCohortIds()) {
+    expect(storageGetCohortSpy).toHaveBeenCalledWith(cohortId);
+    expect(fetcherFetchSpy).toHaveBeenCalledWith(
+      cohortId,
+      OLD_COHORTS[cohortId].lastModified,
+    );
+  }
+  expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS['c1']);
+  expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS['c2']);
 });
 
-test('cohort fetch all failed', async () => {
-  const fetcher = new CohortFetcher('', '', null);
+test("CohortPoller update don't update unchanged cohort", async () => {
   const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
+  fetcherFetchSpy.mockImplementation(async (cohortId) => {
+    if (cohortId === 'c1') {
+      return NEW_COHORTS['c1'];
+    }
+    return undefined;
+  });
+
+  await poller.update();
+
+  for (const cohortId of storage.getAllCohortIds()) {
+    expect(storageGetCohortSpy).toHaveBeenCalledWith(cohortId);
+    expect(fetcherFetchSpy).toHaveBeenCalledWith(
+      cohortId,
+      OLD_COHORTS[cohortId].lastModified,
+    );
+  }
+  expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS['c1']);
+  expect(storagePutSpy).toHaveBeenCalledTimes(1);
+});
+
+test("CohortPoller update error don't update cohort", async () => {
+  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
+  fetcherFetchSpy.mockImplementation(async (cohortId) => {
+    if (cohortId === 'c1') {
+      return NEW_COHORTS['c1'];
+    }
+    throw Error();
+  });
+
+  await poller.update();
+
+  for (const cohortId of storage.getAllCohortIds()) {
+    expect(storageGetCohortSpy).toHaveBeenCalledWith(cohortId);
+    expect(fetcherFetchSpy).toHaveBeenCalledWith(
+      cohortId,
+      OLD_COHORTS[cohortId].lastModified,
+    );
+  }
+  expect(storagePutSpy).toHaveBeenCalledTimes(1);
+  expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS['c1']);
+});
+
+test('CohortPoller update no lastModified still fetches cohort', async () => {
+  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
+  fetcherFetchSpy.mockImplementation(async (cohortId) => NEW_COHORTS[cohortId]);
+  storageGetCohortSpy.mockImplementation((cohortId: string) => {
+    const cohort = OLD_COHORTS[cohortId];
+    if (cohortId === 'c2') {
+      delete cohort['lastModified'];
+    }
+    return cohort;
+  });
+
+  await poller.update();
+
+  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
+  expect(fetcherFetchSpy).toHaveBeenCalledWith(
+    'c1',
+    OLD_COHORTS['c1'].lastModified,
+  );
+  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
+  expect(fetcherFetchSpy).toHaveBeenCalledWith('c2', undefined);
+  expect(storagePutSpy).toHaveBeenCalledTimes(2);
+  expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS['c1']);
+  expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS['c2']);
+});
+
+test('CohortPoller polls every defined ms', async () => {
+  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
+  fetcherFetchSpy.mockImplementation(async (cohortId) => {
+    return NEW_COHORTS[cohortId];
+  });
+
+  const pollerUpdateSpy = jest.spyOn(poller, 'update');
+
+  await poller.start();
+
+  await sleep(100);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(0);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(0);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(0);
+  expect(storagePutSpy).toHaveBeenCalledTimes(0);
+
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(1);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(2);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(2);
+  expect(storagePutSpy).toHaveBeenCalledTimes(2);
+
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(2);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(4);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(4);
+  expect(storagePutSpy).toHaveBeenCalledTimes(4);
+
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(3);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(6);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(6);
+  expect(storagePutSpy).toHaveBeenCalledTimes(6);
+
+  for (const cohortId of storage.getAllCohortIds()) {
+    expect(storageGetCohortSpy).toHaveBeenCalledWith(cohortId);
+    expect(fetcherFetchSpy).toHaveBeenCalledWith(
+      cohortId,
+      OLD_COHORTS[cohortId].lastModified,
+    );
+  }
+});
+
+test('CohortPoller polls takes long time but only makes necessary requests', async () => {
+  const cohortApiGetCohortSpy = jest.spyOn(SdkCohortApi.prototype, 'getCohort');
+  cohortApiGetCohortSpy.mockImplementation(async (options) => {
+    await new Promise((resolve) => setTimeout(resolve, POLL_MILLIS * 2.25));
+    return NEW_COHORTS[options.cohortId];
+  });
+
+  const pollerUpdateSpy = jest.spyOn(poller, 'update');
+
+  await poller.start();
+
+  await sleep(100);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(0);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(0);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(0);
+
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(1);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(2);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(2);
+
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(2);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(4);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(2);
+
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(3);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(6);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(2);
+
+  for (const cohortId of storage.getAllCohortIds()) {
+    expect(storageGetCohortSpy).toHaveBeenCalledWith(cohortId);
+  }
+  expect(storagePutSpy).toHaveBeenCalledTimes(0);
+
+  await sleep(POLL_MILLIS / 2);
+
+  expect(storagePutSpy).toHaveBeenCalledTimes(6);
+});
+
+test('CohortPoller polls every defined ms with failures', async () => {
+  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
+
+  const pollerUpdateSpy = jest.spyOn(poller, 'update');
+
+  await poller.start();
+
+  await sleep(100);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(0);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(0);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(0);
+  expect(storagePutSpy).toHaveBeenCalledTimes(0);
+
+  // Error case.
   fetcherFetchSpy.mockImplementation(async () => {
     throw Error();
   });
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(1);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(2);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(2);
+  expect(storagePutSpy).toHaveBeenCalledTimes(0);
 
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(0);
-
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  await expect(
-    cohortPoller.update(new Set(['c1', 'c2', 'c3'])),
-  ).rejects.toThrow();
-
-  expect(fetcherFetchSpy).toHaveBeenCalled();
-  expect(storageGetCohortSpy).toHaveBeenCalled();
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(0);
-});
-
-test('cohort fetch partial failed', async () => {
-  const fetcher = new CohortFetcher('', '', null);
-  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
-  fetcherFetchSpy.mockImplementation(async (cohortId: string) => {
-    if (cohortId === 'c3') {
-      throw Error();
-    }
-    return COHORTS[cohortId];
+  // No update.
+  fetcherFetchSpy.mockImplementation(async () => {
+    return undefined;
   });
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(2);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(4);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(4);
+  expect(storagePutSpy).toHaveBeenCalledTimes(0);
 
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  await expect(
-    cohortPoller.update(new Set(['c1', 'c2', 'c3'])),
-  ).rejects.toThrow();
-
-  expect(fetcherFetchSpy).toHaveBeenCalled();
-  expect(storageGetCohortSpy).toHaveBeenCalled();
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(0);
-});
-
-test('cohort fetch no change', async () => {
-  const fetcher = new CohortFetcher('', '', null);
-  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
-  fetcherFetchSpy.mockImplementation(async () => undefined);
-
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  await cohortPoller.update(new Set(['c1', 'c2']));
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c1',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c2',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(0);
-});
-
-test('cohort fetch partial changed', async () => {
-  const fetcher = new CohortFetcher('', '', null);
-  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
-  fetcherFetchSpy.mockImplementation(async (cohortId: string) => {
-    if (cohortId === 'c1') {
-      return undefined;
-    }
-    return COHORTS[cohortId];
+  // Success case.
+  fetcherFetchSpy.mockImplementation(async (cohortId) => {
+    return NEW_COHORTS[cohortId];
   });
+  await sleep(POLL_MILLIS);
+  expect(pollerUpdateSpy).toHaveBeenCalledTimes(3);
+  expect(storageGetCohortSpy).toHaveBeenCalledTimes(6);
+  expect(fetcherFetchSpy).toHaveBeenCalledTimes(6);
+  expect(storagePutSpy).toHaveBeenCalledTimes(2);
 
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  await cohortPoller.update(new Set(['c1', 'c2']));
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c1',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c2',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(1);
-});
-
-test('cohort fetch using maxCohortSize', async () => {
-  const fetcher = new CohortFetcher('', '', null);
-  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
-  fetcherFetchSpy.mockImplementation(
-    async (cohortId: string) => COHORTS[cohortId],
-  );
-
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-
-  const cohortPoller = new CohortPoller(fetcher, storage, 100);
-
-  await cohortPoller.update(new Set(['c1', 'c2']));
-  expect(fetcherFetchSpy).toHaveBeenCalledWith('c1', 100, undefined);
-  expect(fetcherFetchSpy).toHaveBeenCalledWith('c2', 100, undefined);
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(1);
-});
-
-test('cohort fetch using lastModified', async () => {
-  const fetcher = new CohortFetcher('', '', null);
-  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
-  fetcherFetchSpy.mockImplementation(
-    async (cohortId: string, maxCohortSize: number, lastModified?) => {
-      if (lastModified === COHORTS[cohortId].lastModified) {
-        return undefined;
-      }
-      return COHORTS[cohortId];
-    },
-  );
-
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  await cohortPoller.update(new Set(['c1', 'c2']));
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c1',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c2',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(1);
-  jest.clearAllMocks();
-
-  await cohortPoller.update(new Set(['c1', 'c2']));
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c1',
-    CohortConfigDefaults.maxCohortSize,
-    COHORTS['c1'].lastModified,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c2',
-    CohortConfigDefaults.maxCohortSize,
-    COHORTS['c2'].lastModified,
-  );
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(0);
-  jest.clearAllMocks();
-
-  await cohortPoller.update(new Set(['c1', 'c2', 'c3']));
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c1',
-    CohortConfigDefaults.maxCohortSize,
-    COHORTS['c1'].lastModified,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c2',
-    CohortConfigDefaults.maxCohortSize,
-    COHORTS['c2'].lastModified,
-  );
-  expect(fetcherFetchSpy).toHaveBeenCalledWith(
-    'c3',
-    CohortConfigDefaults.maxCohortSize,
-    undefined,
-  );
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c1');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c2');
-  expect(storageGetCohortSpy).toHaveBeenCalledWith('c3');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(1);
-  jest.clearAllMocks();
-});
-
-test('cohort fetch fails 2 times success 3rd', async () => {
-  const fetcher = new CohortFetcher('', '', null);
-  const fetcherFetchSpy = jest.spyOn(fetcher, 'fetch');
-  let tries = 0;
-  fetcherFetchSpy.mockImplementation(async (cohortId: string) => {
-    if (++tries === 3) {
-      return COHORTS[cohortId];
-    }
-    throw Error();
-  });
-
-  const storage = new InMemoryCohortStorage();
-  const storageReplaceAllSpy = jest.spyOn(storage, 'replaceAll');
-  const storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
-  expect(storageReplaceAllSpy).toHaveBeenCalledTimes(0);
-
-  const cohortPoller = new CohortPoller(fetcher, storage);
-
-  const start = new Date().getTime();
-  await cohortPoller.update(new Set(['c1']));
-  expect(new Date().getTime() - start).toBeGreaterThanOrEqual(2000);
-
-  expect(fetcherFetchSpy).toHaveBeenCalledTimes(3);
-  expect(storageGetCohortSpy).toHaveBeenCalledTimes(1);
-  expect(storageReplaceAllSpy).toHaveBeenCalledWith({
-    c1: COHORTS['c1'],
-  });
+  for (const cohortId of storage.getAllCohortIds()) {
+    expect(storageGetCohortSpy).toHaveBeenCalledWith(cohortId);
+    expect(fetcherFetchSpy).toHaveBeenCalledWith(
+      cohortId,
+      OLD_COHORTS[cohortId].lastModified,
+    );
+    expect(storagePutSpy).toHaveBeenCalledWith(NEW_COHORTS[cohortId]);
+  }
 });
