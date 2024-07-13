@@ -2,7 +2,7 @@ import { CohortStorage } from 'src/types/cohort';
 
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
-import { doWithBackoff, BackoffPolicy } from '../util/backoff';
+import { BackoffPolicy, doWithBackoffFailLoudly } from '../util/backoff';
 
 import { CohortFetcher } from './cohort/fetcher';
 import { FlagConfigFetcher } from './fetcher';
@@ -61,18 +61,20 @@ export class FlagConfigPoller
       }, this.pollingIntervalMillis);
 
       // Fetch initial flag configs and await the result.
-      await doWithBackoff<void>(async () => {
-        try {
-          const flagConfigs = await this.fetcher.fetch();
-          await super._update(flagConfigs, true, onChange);
-        } catch (e) {
-          this.logger.error(
-            '[Experiment] flag config initial poll failed, stopping',
-            e,
-          );
-          this.stop();
-        }
-      }, BACKOFF_POLICY);
+      try {
+        const flagConfigs = await doWithBackoffFailLoudly(
+          async () => await this.fetcher.fetch(),
+          BACKOFF_POLICY,
+        );
+        await super._update(flagConfigs, true, onChange);
+      } catch (e) {
+        this.logger.error(
+          '[Experiment] flag config initial poll failed, stopping',
+          e,
+        );
+        this.stop();
+        throw e;
+      }
     }
   }
 

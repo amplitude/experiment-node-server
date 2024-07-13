@@ -32,7 +32,7 @@ export class RemoteEvaluationClient {
    * @param apiKey The environment API Key
    * @param config See {@link ExperimentConfig} for config options
    */
-  public constructor(apiKey: string, config: RemoteEvaluationConfig) {
+  public constructor(apiKey: string, config?: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
     this.config = populateRemoteConfigDefaults(config);
     this.evaluationApi = new SdkEvaluationApi(

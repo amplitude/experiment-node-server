@@ -288,7 +288,12 @@ test('flagConfig poller initial error', async () => {
       throw new Error();
     });
   // FLAG should be empty, as cohort failed. Poller should be stopped immediately and test exists cleanly.
-  await poller.start();
+  try {
+    // Should throw when init failed.
+    await poller.start();
+    fail();
+    // eslint-disable-next-line no-empty
+  } catch {}
   expect(await poller.cache.getAll()).toStrictEqual({});
 });
 

@@ -68,7 +68,7 @@ export class LocalEvaluationClient {
 
   constructor(
     apiKey: string,
-    config: LocalEvaluationConfig,
+    config?: LocalEvaluationConfig,
     flagConfigCache?: FlagConfigCache,
     httpClient: HttpClient = new FetchHttpClient(config?.httpAgent),
     streamEventSourceFactory: StreamEventSourceFactory = (url, params) =>

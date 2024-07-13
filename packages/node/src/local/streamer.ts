@@ -67,27 +67,19 @@ export class FlagConfigStreamer
     this.stream.onError = (e) => {
       const err = e as StreamErrorEvent;
       this.logger.debug(
-        `[Experiment] streamer - onError, fallback to poller, err status: ${err.status}, err message: ${err.message}`,
+        `[Experiment] streamer - onError, fallback to poller, err status: ${err?.status}, err message: ${err?.message}, err ${err}`,
       );
       this.poller.start(onChange);
       this.startRetryStreamInterval();
     };
 
-    let isInitUpdate = true;
+    this.stream.onInitUpdate = async (flagConfigs) => {
+      this.logger.debug('[Experiment] streamer - receives updates');
+      await super._update(flagConfigs, true, onChange);
+    };
     this.stream.onUpdate = async (flagConfigs) => {
       this.logger.debug('[Experiment] streamer - receives updates');
-      if (isInitUpdate) {
-        isInitUpdate = false;
-        try {
-          super._update(flagConfigs, true, onChange);
-        } catch {
-          // Flag update failed on init, stop, fallback to poller.
-          await this.poller.start(onChange);
-          this.startRetryStreamInterval();
-        }
-      } else {
-        super._update(flagConfigs, false, onChange);
-      }
+      await super._update(flagConfigs, false, onChange);
     };
 
     try {
@@ -102,11 +94,11 @@ export class FlagConfigStreamer
         libraryVersion: PACKAGE_VERSION,
       });
       this.poller.stop();
-      this.logger.debug('[Experiment] streamer - start stream success');
+      this.logger.debug('[Experiment] streamer - start flags stream success');
     } catch (e) {
       const err = e as StreamErrorEvent;
       this.logger.debug(
-        `[Experiment] streamer - start stream failed, fallback to poller, err status: ${err.status}, err message: ${err.message}`,
+        `[Experiment] streamer - start stream failed, fallback to poller, err status: ${err?.status}, err message: ${err?.message}, err ${err}`,
       );
       await this.poller.start(onChange);
       this.startRetryStreamInterval();
