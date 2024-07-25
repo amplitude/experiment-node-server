@@ -97,14 +97,11 @@ export class FlagConfigUpdaterBase {
     }
   }
 
-  private async downloadNewCohorts(
+  protected async downloadNewCohorts(
     cohortIds: Set<string>,
   ): Promise<Set<string>> {
     const oldCohortIds = this.cohortStorage?.getAllCohortIds();
-    const newCohortIds = FlagConfigUpdaterBase.setSubtract(
-      cohortIds,
-      oldCohortIds,
-    );
+    const newCohortIds = CohortUtils.setSubtract(cohortIds, oldCohortIds);
     const failedCohortIds = new Set<string>();
     const cohortDownloadPromises = [...newCohortIds].map((cohortId) =>
       this.cohortFetcher
@@ -126,10 +123,11 @@ export class FlagConfigUpdaterBase {
     return failedCohortIds;
   }
 
-  private async filterFlagConfigsWithFullCohorts(
+  protected async filterFlagConfigsWithFullCohorts(
     flagConfigs: Record<string, FlagConfig>,
-  ) {
+  ): Promise<Record<string, FlagConfig>> {
     const newFlagConfigs = {};
+    const availableCohortIds = this.cohortStorage.getAllCohortIds();
     for (const flagKey in flagConfigs) {
       // Get cohorts for this flag.
       const cohortIds = CohortUtils.extractCohortIdsFromFlag(
@@ -140,9 +138,7 @@ export class FlagConfigUpdaterBase {
       // If any cohort failed, don't use the new flag.
       const updateFlag =
         cohortIds.size === 0 ||
-        [...cohortIds]
-          .map((id) => this.cohortStorage.getCohort(id))
-          .reduce((acc, cur) => acc && cur);
+        CohortUtils.setSubtract(cohortIds, availableCohortIds).size === 0;
 
       if (updateFlag) {
         newFlagConfigs[flagKey] = flagConfigs[flagKey];
@@ -160,20 +156,15 @@ export class FlagConfigUpdaterBase {
     return newFlagConfigs;
   }
 
-  private async removeUnusedCohorts(validCohortIds: Set<string>) {
-    const cohortIdsToBeRemoved = FlagConfigUpdaterBase.setSubtract(
+  protected async removeUnusedCohorts(
+    validCohortIds: Set<string>,
+  ): Promise<void> {
+    const cohortIdsToBeRemoved = CohortUtils.setSubtract(
       this.cohortStorage.getAllCohortIds(),
       validCohortIds,
     );
     cohortIdsToBeRemoved.forEach((id) => {
       this.cohortStorage.delete(id);
     });
-  }
-
-  private static setSubtract(one: Set<string>, other: Set<string>) {
-    const result = new Set<string>(one);
-    other.forEach((v) => result.delete(v));
-
-    return result;
   }
 }

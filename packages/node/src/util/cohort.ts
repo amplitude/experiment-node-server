@@ -85,10 +85,10 @@ export class CohortUtils {
     return cohortIdsByGroup;
   }
 
-  private static mergeBIntoA(
+  public static mergeBIntoA(
     a: Record<string, Set<string>>,
     b: Record<string, Set<string>>,
-  ) {
+  ): void {
     for (const groupType in b) {
       if (!(groupType in a)) {
         a[groupType] = new Set<string>();
@@ -98,11 +98,20 @@ export class CohortUtils {
     }
   }
 
-  private static mergeAllValues(a: Record<string, Set<string>>) {
+  public static mergeAllValues(a: Record<string, Set<string>>): Set<string> {
     const merged = new Set<string>();
     for (const key in a) {
       a[key].forEach(merged.add, merged);
     }
     return merged;
+  }
+
+  public static setSubtract(one: Set<string>, other: Set<string>): Set<string> {
+    const result = new Set<string>();
+    one.forEach((v) => {
+      if (!other.has(v)) result.add(v);
+    });
+
+    return result;
   }
 }

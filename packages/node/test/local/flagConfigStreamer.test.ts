@@ -10,8 +10,10 @@ import { FlagConfigStreamer } from 'src/local/streamer';
 import { MockHttpClient } from './util/mockHttpClient';
 import { getNewClient } from './util/mockStreamEventSource';
 
-const FLAG_WITH_COHORT = `[{"key":"flag2","segments":[{
-      "conditions":[[{"op":"set contains any","selector":["context","user","cohort_ids"],"values":["hahahaha2"]}]],
+const getFlagWithCohort = (
+  cohortId,
+) => `[{"key":"flag_${cohortId}","segments":[{
+      "conditions":[[{"op":"set contains any","selector":["context","user","cohort_ids"],"values":["${cohortId}"]}]],
       "metadata":{"segmentName": "Segment 1"},"variant": "off"
       }],"variants": {}}]`;
 
@@ -584,7 +586,7 @@ test.todo(
 );
 
 test('FlagConfigUpdater.connect, flag success, cohort success', async () => {
-  const { fetchObj, mockClient, updater } = getTestObjs({
+  const { fetchObj, mockClient, updater, cache } = getTestObjs({
     pollingIntervalMillis: 100,
   });
   // Return cohort with their own cohortId.
@@ -604,14 +606,59 @@ test('FlagConfigUpdater.connect, flag success, cohort success', async () => {
   updater.start();
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: `[{"key":"flag2","segments":[{
-      "conditions":[[{"op":"set contains any","selector":["context","user","cohort_ids"],"values":["hahahaha2"]}]],
-      "metadata":{"segmentName": "Segment 1"},"variant": "off"
-      }],"variants": {}}]`,
+    data: getFlagWithCohort('cohort1'),
   });
   await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
   expect(fetchObj.fetchCalls).toBe(0);
   expect(mockClient.numCreated).toBe(1);
+  expect(await cache.get('flag_cohort1')).toBeDefined();
+  updater.stop();
+});
+
+test('FlagConfigUpdater.connect, flag success, success, flag update success, cohort fail, wont fallback to poller as flag stream is ok', async () => {
+  jest.setTimeout(20000);
+  jest
+    .spyOn(SdkCohortApi.prototype, 'getCohort')
+    .mockImplementation(async (options) => {
+      if (options.cohortId != 'cohort1') throw Error();
+      return {
+        cohortId: options.cohortId,
+        groupType: '',
+        groupTypeId: 0,
+        lastComputed: 0,
+        lastModified: 0,
+        size: 0,
+        memberIds: new Set<string>([]),
+      };
+    });
+  const { fetchObj, mockClient, updater, cache } = getTestObjs({
+    pollingIntervalMillis: 100,
+    streamFlagTryAttempts: 2,
+    streamFlagTryDelayMillis: 1000,
+    streamFlagRetryDelayMillis: 100000,
+  });
+
+  updater.start();
+  await mockClient.client.doOpen({ type: 'open' });
+  await mockClient.client.doMsg({
+    data: getFlagWithCohort('cohort1'),
+  });
+  await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
+  expect(fetchObj.fetchCalls).toBe(0); // No poller poll.
+  expect(mockClient.numCreated).toBe(1);
+  expect(await cache.get('flag_cohort1')).toBeDefined();
+
+  // Return cohort with their own cohortId.
+  // Now update the flags with a new cohort that will fail to download.
+  await mockClient.client.doMsg({
+    data: getFlagWithCohort('cohort2'),
+  });
+  await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
+
+  expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(0); // No poller poll.
+  expect(mockClient.numCreated).toBe(1);
+  expect(await cache.get('flag_cohort1')).toBeUndefined(); // Old flag removed.
+  expect(await cache.get('flag_cohort2')).toBeUndefined(); // Won't add flag to cache if new cohort fails.
   updater.stop();
 });
 
@@ -632,12 +679,12 @@ test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initiali
   updater.start();
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: FLAG_WITH_COHORT,
+    data: getFlagWithCohort('cohort1'),
   });
   // Second try
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: FLAG_WITH_COHORT,
+    data: getFlagWithCohort('cohort1'),
   });
 
   expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(1);
@@ -658,18 +705,18 @@ test('FlagConfigUpdater.connect, flag success, cohort fail, initialization fails
     streamFlagTryDelayMillis: 1000,
     streamFlagRetryDelayMillis: 100000,
     fetcherData: [
-      FLAG_WITH_COHORT,
-      FLAG_WITH_COHORT,
-      FLAG_WITH_COHORT,
-      FLAG_WITH_COHORT,
-      FLAG_WITH_COHORT,
+      getFlagWithCohort('cohort1'),
+      getFlagWithCohort('cohort1'),
+      getFlagWithCohort('cohort1'),
+      getFlagWithCohort('cohort1'),
+      getFlagWithCohort('cohort1'),
     ],
   });
   // Return cohort with their own cohortId.
   const startPromise = updater.start();
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: FLAG_WITH_COHORT,
+    data: getFlagWithCohort('cohort1'),
   });
   // Stream failed, poller should fail as well given the flags and cohort mock.
   expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(1);
