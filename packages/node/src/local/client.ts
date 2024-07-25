@@ -56,7 +56,7 @@ export class LocalEvaluationClient {
   private readonly updater: FlagConfigUpdater;
   private readonly assignmentService: AssignmentService;
   private readonly evaluation: EvaluationEngine;
-  private readonly cohortUpdater: CohortUpdater;
+  private readonly cohortUpdater?: CohortUpdater;
 
   /**
    * Directly access the client's flag config cache.
@@ -264,7 +264,7 @@ export class LocalEvaluationClient {
    */
   public async start(): Promise<void> {
     await this.updater.start();
-    await this.cohortUpdater.start();
+    await this.cohortUpdater?.start();
   }
 
   /**
@@ -274,6 +274,6 @@ export class LocalEvaluationClient {
    */
   public stop(): void {
     this.updater.stop();
-    this.cohortUpdater.stop();
+    this.cohortUpdater?.stop();
   }
 }
