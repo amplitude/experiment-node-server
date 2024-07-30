@@ -3,26 +3,23 @@ import { WrapperClient } from '../../transport/http';
 import { Cohort } from '../../types/cohort';
 import { CohortConfigDefaults } from '../../types/config';
 import { HttpClient } from '../../types/transport';
-import { BackoffPolicy, doWithBackoffFailLoudly } from '../../util/backoff';
+import { BackoffPolicy } from '../../util/backoff';
 import { ConsoleLogger, Logger } from '../../util/logger';
 import { Mutex, Executor } from '../../util/threading';
+import { sleep } from '../../util/time';
 
-import { SdkCohortApi } from './cohort-api';
+import { CohortMaxSizeExceededError, SdkCohortApi } from './cohort-api';
 
 export const COHORT_CONFIG_TIMEOUT = 20000;
 
-const BACKOFF_POLICY: BackoffPolicy = {
-  attempts: 3,
-  min: 1000,
-  max: 1000,
-  scalar: 1,
-};
+const ATTEMPTS = 3;
 
 export class CohortFetcher {
   private readonly logger: Logger;
 
   readonly cohortApi: SdkCohortApi;
   readonly maxCohortSize: number;
+  readonly cohortRequestDelayMillis: number;
 
   private readonly inProgressCohorts: Record<
     string,
@@ -37,6 +34,7 @@ export class CohortFetcher {
     httpClient: HttpClient,
     serverUrl = CohortConfigDefaults.cohortServerUrl,
     maxCohortSize = CohortConfigDefaults.maxCohortSize,
+    cohortRequestDelayMillis = 100,
     debug = false,
   ) {
     this.cohortApi = new SdkCohortApi(
@@ -45,6 +43,7 @@ export class CohortFetcher {
       new WrapperClient(httpClient),
     );
     this.maxCohortSize = maxCohortSize;
+    this.cohortRequestDelayMillis = cohortRequestDelayMillis;
     this.logger = new ConsoleLogger(debug);
   }
 
@@ -63,32 +62,32 @@ export class CohortFetcher {
     if (!this.inProgressCohorts[key]) {
       this.inProgressCohorts[key] = this.executor.run(async () => {
         this.logger.debug('Start downloading', cohortId);
-        const cohort = await doWithBackoffFailLoudly<Cohort>(
-          async () =>
-            this.cohortApi.getCohort({
+        for (let i = 0; i < ATTEMPTS; i++) {
+          try {
+            const cohort = await this.cohortApi.getCohort({
               libraryName: 'experiment-node-server',
               libraryVersion: PACKAGE_VERSION,
               cohortId: cohortId,
               maxCohortSize: this.maxCohortSize,
               lastModified: lastModified,
               timeoutMillis: COHORT_CONFIG_TIMEOUT,
-            }),
-          BACKOFF_POLICY,
-        )
-          .then(async (cohort) => {
+            });
+            // Do unlock before return.
             const unlock = await this.mutex.lock();
             delete this.inProgressCohorts[key];
             unlock();
+            this.logger.debug('Stop downloading', cohortId);
             return cohort;
-          })
-          .catch(async (err) => {
-            const unlock = await this.mutex.lock();
-            delete this.inProgressCohorts[key];
-            unlock();
-            throw err;
-          });
-        this.logger.debug('Stop downloading', cohortId);
-        return cohort;
+          } catch (e) {
+            if (i === ATTEMPTS - 1 || e instanceof CohortMaxSizeExceededError) {
+              const unlock = await this.mutex.lock();
+              delete this.inProgressCohorts[key];
+              unlock();
+              throw e;
+            }
+            await sleep(this.cohortRequestDelayMillis);
+          }
+        }
       });
     }
 

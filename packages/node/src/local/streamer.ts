@@ -76,6 +76,7 @@ export class FlagConfigStreamer
     this.stream.onInitUpdate = async (flagConfigs) => {
       this.logger.debug('[Experiment] streamer - receives updates');
       await super._update(flagConfigs, true, onChange);
+      this.logger.debug('[Experiment] streamer - start flags stream success');
     };
     this.stream.onUpdate = async (flagConfigs) => {
       this.logger.debug('[Experiment] streamer - receives updates');
@@ -94,7 +95,6 @@ export class FlagConfigStreamer
         libraryVersion: PACKAGE_VERSION,
       });
       this.poller.stop();
-      this.logger.debug('[Experiment] streamer - start flags stream success');
     } catch (e) {
       const err = e as StreamErrorEvent;
       this.logger.debug(

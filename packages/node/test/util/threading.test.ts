@@ -1,8 +1,5 @@
 import { Executor, Mutex, Semaphore } from 'src/util/threading';
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { sleep } from 'src/util/time';
 
 function mutexSleepFunc(lock, ms, acc) {
   return async () => {

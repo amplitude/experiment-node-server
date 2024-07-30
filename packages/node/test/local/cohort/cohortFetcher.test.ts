@@ -1,6 +1,10 @@
-import { SdkCohortApi } from 'src/local/cohort/cohort-api';
+import {
+  CohortMaxSizeExceededError,
+  SdkCohortApi,
+} from 'src/local/cohort/cohort-api';
 import { COHORT_CONFIG_TIMEOUT, CohortFetcher } from 'src/local/cohort/fetcher';
 import { CohortConfigDefaults } from 'src/types/config';
+import { sleep } from 'src/util/time';
 
 import { version as PACKAGE_VERSION } from '../../../gen/version';
 
@@ -34,7 +38,7 @@ const COHORTS = {
   },
 };
 
-afterEach(() => {
+beforeEach(() => {
   jest.clearAllMocks();
 });
 
@@ -109,10 +113,38 @@ test('cohort fetch failed', async () => {
     throw Error();
   });
 
-  const cohortFetcher = new CohortFetcher('', '', null, 'someurl', 10);
+  const cohortFetcher = new CohortFetcher('', '', null, 'someurl', 10, 100);
+  const cohortPromise = cohortFetcher.fetch('c1', 10);
+  await sleep(10);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(1);
+  await sleep(100);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(2);
 
-  await expect(cohortFetcher.fetch('c1', 10)).rejects.toThrowError();
+  await expect(cohortPromise).rejects.toThrowError();
 
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(3);
+
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledWith({
+    cohortId: 'c1',
+    lastModified: 10,
+    libraryName: 'experiment-node-server',
+    libraryVersion: PACKAGE_VERSION,
+    maxCohortSize: 10,
+    timeoutMillis: COHORT_CONFIG_TIMEOUT,
+  });
+});
+
+test('cohort fetch maxSize exceeded, no retry', async () => {
+  const cohortApiGetCohortSpy = jest.spyOn(SdkCohortApi.prototype, 'getCohort');
+  cohortApiGetCohortSpy.mockImplementation(async () => {
+    throw new CohortMaxSizeExceededError();
+  });
+
+  const cohortFetcher = new CohortFetcher('', '', null, 'someurl', 10, 100);
+  const cohortPromise = cohortFetcher.fetch('c1', 10);
+
+  await expect(cohortPromise).rejects.toThrowError();
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(1);
   expect(cohortApiGetCohortSpy).toHaveBeenCalledWith({
     cohortId: 'c1',
     lastModified: 10,

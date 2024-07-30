@@ -3,6 +3,7 @@ import { CohortFetcher } from 'src/local/cohort/fetcher';
 import { CohortPoller } from 'src/local/cohort/poller';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { CohortStorage } from 'src/types/cohort';
+import { sleep } from 'src/util/time';
 
 const OLD_COHORTS = {
   c1: {
@@ -63,8 +64,6 @@ const NEW_COHORTS = {
     memberIds: new Set<string>(['membera1', 'membera2', 'membera3']),
   },
 };
-
-const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const POLL_MILLIS = 500;
 let storage: CohortStorage;

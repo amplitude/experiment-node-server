@@ -30,6 +30,7 @@ const getTestObjs = ({
   streamFlagRetryDelayMillis = 15000,
   apiKey = 'client-xxxx',
   serverUrl = 'http://localhostxxxx:00000000',
+  cohortFetcherDelayMillis = 100,
   fetcherData = [
     '[{"key": "fetcher-a", "variants": {}, "segments": []}]',
     '[{"key": "fetcher-b", "variants": {}, "segments": []}]',
@@ -44,6 +45,8 @@ const getTestObjs = ({
       'apikey',
       'secretkey',
       new MockHttpClient(async () => ({ status: 200, body: '' })),
+      serverUrl,
+      cohortFetcherDelayMillis,
     ),
   };
   let dataI = 0;
@@ -674,6 +677,7 @@ test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initiali
     streamFlagTryAttempts: 2,
     streamFlagTryDelayMillis: 1000,
     streamFlagRetryDelayMillis: 100000,
+    debug: true,
   });
   // Return cohort with their own cohortId.
   updater.start();
@@ -681,11 +685,14 @@ test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initiali
   await mockClient.client.doMsg({
     data: getFlagWithCohort('cohort1'),
   });
+  await new Promise((resolve) => setTimeout(resolve, 250)); // Wait for cohort download done retries and fails.
+  await new Promise((resolve) => setTimeout(resolve, 1050)); // Wait for retry stream.
   // Second try
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
     data: getFlagWithCohort('cohort1'),
   });
+  await new Promise((resolve) => setTimeout(resolve, 250)); // Wait for cohort download done retries and fails.
 
   expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(1);
   expect(mockClient.numCreated).toBe(2);

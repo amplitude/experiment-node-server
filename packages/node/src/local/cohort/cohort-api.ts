@@ -24,6 +24,10 @@ export interface CohortApi {
   getCohort(options?: GetCohortOptions): Promise<Cohort>;
 }
 
+export class CohortMaxSizeExceededError extends Error {}
+
+export class CohortDownloadError extends Error {}
+
 export class SdkCohortApi implements CohortApi {
   private readonly cohortApiKey;
   private readonly serverUrl;
@@ -72,9 +76,11 @@ export class SdkCohortApi implements CohortApi {
     } else if (response.status == 204) {
       return undefined;
     } else if (response.status == 413) {
-      throw Error(`Cohort error response: size > ${options.maxCohortSize}`);
+      throw new CohortMaxSizeExceededError(
+        `Cohort error response: size > ${options.maxCohortSize}`,
+      );
     } else {
-      throw Error(
+      throw new CohortDownloadError(
         `Cohort error response: status ${response.status}, body ${response.body}`,
       );
     }

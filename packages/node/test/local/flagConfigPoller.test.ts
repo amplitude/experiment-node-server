@@ -6,6 +6,7 @@ import {
 import { SdkCohortApi } from 'src/local/cohort/cohort-api';
 import { CohortFetcher } from 'src/local/cohort/fetcher';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
+import { sleep } from 'src/util/time';
 
 import { FLAGS, NEW_FLAGS } from './util/flags';
 import { MockHttpClient } from './util/mockHttpClient';
@@ -76,7 +77,7 @@ test('flagConfig poller success', async () => {
   expect(cohortStorage.getCohort('hahaorgname1').lastModified).toBe(1);
 
   // On update, flag, existing cohort doesn't update.
-  await new Promise((f) => setTimeout(f, 2000));
+  await sleep(2000);
   expect(flagPolled).toBe(2);
   expect(await poller.cache.getAll()).toStrictEqual({
     ...NEW_FLAGS,
@@ -182,7 +183,7 @@ test('flagConfig poller initial success, polling error and use old flags', async
 
   // Second poll flags with new cohort should fail when new cohort download failed.
   // The different flag should not be updated.
-  await new Promise((f) => setTimeout(f, 2000));
+  await sleep(2000);
   expect(flagPolled).toBeGreaterThanOrEqual(2);
   expect(await poller.cache.getAll()).toStrictEqual(FLAGS);
 

@@ -215,6 +215,8 @@ export type CohortConfig = {
    * size will be skipped.
    */
   maxCohortSize?: number;
+
+  cohortRequestDelayMillis?: number;
 };
 
 /**
@@ -249,6 +251,7 @@ export const CohortConfigDefaults: Omit<CohortConfig, 'apiKey' | 'secretKey'> =
   {
     cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
     maxCohortSize: 10_000_000,
+    cohortRequestDelayMillis: 100,
   };
 
 export const EU_SERVER_URLS = {

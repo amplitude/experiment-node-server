@@ -96,6 +96,7 @@ export class LocalEvaluationClient {
         httpClient,
         this.config.cohortConfig?.cohortServerUrl,
         this.config.cohortConfig?.maxCohortSize,
+        this.config.cohortConfig?.cohortRequestDelayMillis,
         this.config.debug,
       );
       this.cohortUpdater = new CohortPoller(
