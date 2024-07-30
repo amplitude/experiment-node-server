@@ -1,6 +1,4 @@
 export class Mutex {
-  // https://news.ycombinator.com/item?id=11823816
-
   _locking;
 
   constructor() {

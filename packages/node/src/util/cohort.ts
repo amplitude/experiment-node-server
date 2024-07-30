@@ -3,9 +3,9 @@ import {
   EvaluationOperator,
   EvaluationSegment,
 } from '@amplitude/experiment-core';
-import { USER_GROUP_TYPE } from 'src/types/cohort';
 
 import { FlagConfig } from '..';
+import { USER_GROUP_TYPE } from '../types/cohort';
 
 export class CohortUtils {
   public static isCohortFilter(condition: EvaluationCondition): boolean {

@@ -1,14 +1,13 @@
 import {
-  EU_SERVER_URLS,
-  LocalEvaluationDefaults,
-  CohortConfigDefaults,
-} from 'src/types/config';
-
-import {
   RemoteEvaluationConfig,
   RemoteEvaluationDefaults,
   LocalEvaluationConfig,
 } from '..';
+import {
+  EU_SERVER_URLS,
+  LocalEvaluationDefaults,
+  CohortConfigDefaults,
+} from '../types/config';
 
 export const populateRemoteConfigDefaults = (
   customConfig?: RemoteEvaluationConfig,

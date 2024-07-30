@@ -1,10 +1,9 @@
-import { CohortStorage } from 'src/types/cohort';
-
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import {
   StreamErrorEvent,
   StreamEventSourceFactory,
 } from '../transport/stream';
+import { CohortStorage } from '../types/cohort';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 

@@ -3,7 +3,6 @@ import {
   FetchError,
   SdkEvaluationApi,
 } from '@amplitude/experiment-core';
-import { populateRemoteConfigDefaults } from 'src/util/config';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
@@ -11,6 +10,7 @@ import { ExperimentConfig, RemoteEvaluationConfig } from '../types/config';
 import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
+import { populateRemoteConfigDefaults } from '../util/config';
 import { sleep } from '../util/time';
 import {
   evaluationVariantsToVariants,
