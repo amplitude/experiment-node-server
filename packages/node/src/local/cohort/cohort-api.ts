@@ -1,5 +1,6 @@
 import { HttpClient } from '@amplitude/experiment-core';
-import { Cohort } from 'src/types/cohort';
+
+import { Cohort } from '../../types/cohort';
 
 export type GetCohortOptions = {
   libraryName: string;

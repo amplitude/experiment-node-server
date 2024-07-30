@@ -5,15 +5,13 @@ import {
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
-import { USER_GROUP_TYPE } from 'src/types/cohort';
-import { CohortUtils } from 'src/util/cohort';
-import { populateLocalConfigDefaults } from 'src/util/config';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
 import { AmplitudeAssignmentService } from '../assignment/assignment-service';
 import { FetchHttpClient } from '../transport/http';
 import { StreamEventSourceFactory } from '../transport/stream';
+import { USER_GROUP_TYPE } from '../types/cohort';
 import {
   AssignmentConfig,
   AssignmentConfigDefaults,
@@ -23,6 +21,8 @@ import { FlagConfigCache } from '../types/flag';
 import { HttpClient } from '../types/transport';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
+import { CohortUtils } from '../util/cohort';
+import { populateLocalConfigDefaults } from '../util/config';
 import { ConsoleLogger } from '../util/logger';
 import { Logger } from '../util/logger';
 import { convertUserToEvaluationContext } from '../util/user';

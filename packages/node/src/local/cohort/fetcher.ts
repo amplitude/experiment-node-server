@@ -1,12 +1,11 @@
-import { WrapperClient } from 'src/transport/http';
-import { Cohort } from 'src/types/cohort';
-import { CohortConfigDefaults } from 'src/types/config';
-import { HttpClient } from 'src/types/transport';
-import { BackoffPolicy, doWithBackoffFailLoudly } from 'src/util/backoff';
-import { ConsoleLogger, Logger } from 'src/util/logger';
-import { Mutex, Executor } from 'src/util/threading';
-
 import { version as PACKAGE_VERSION } from '../../../gen/version';
+import { WrapperClient } from '../../transport/http';
+import { Cohort } from '../../types/cohort';
+import { CohortConfigDefaults } from '../../types/config';
+import { HttpClient } from '../../types/transport';
+import { BackoffPolicy, doWithBackoffFailLoudly } from '../../util/backoff';
+import { ConsoleLogger, Logger } from '../../util/logger';
+import { Mutex, Executor } from '../../util/threading';
 
 import { SdkCohortApi } from './cohort-api';
 

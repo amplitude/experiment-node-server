@@ -1,4 +1,4 @@
-import { CohortStorage } from 'src/types/cohort';
+import { CohortStorage } from '../../types/cohort';
 
 export interface CohortUpdater {
   /**

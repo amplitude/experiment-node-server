@@ -1,8 +1,7 @@
-import { CohortStorage } from 'src/types/cohort';
-import { CohortUtils } from 'src/util/cohort';
-import { ConsoleLogger, Logger } from 'src/util/logger';
-
 import { FlagConfig, FlagConfigCache } from '..';
+import { CohortStorage } from '../types/cohort';
+import { CohortUtils } from '../util/cohort';
+import { ConsoleLogger, Logger } from '../util/logger';
 
 import { CohortFetcher } from './cohort/fetcher';
 

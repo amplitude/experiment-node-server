@@ -1,4 +1,4 @@
-import { Cohort, CohortStorage, USER_GROUP_TYPE } from 'src/types/cohort';
+import { Cohort, CohortStorage, USER_GROUP_TYPE } from '../../types/cohort';
 
 export class InMemoryCohortStorage implements CohortStorage {
   store: Record<string, Cohort> = {};

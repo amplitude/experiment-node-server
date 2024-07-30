@@ -1,5 +1,4 @@
-import { CohortStorage } from 'src/types/cohort';
-
+import { CohortStorage } from '../types/cohort';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
 import { BackoffPolicy, doWithBackoffFailLoudly } from '../util/backoff';
