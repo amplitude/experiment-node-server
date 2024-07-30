@@ -101,7 +101,7 @@ export class LocalEvaluationClient {
       this.cohortUpdater = new CohortPoller(
         cohortFetcher,
         this.cohortStorage,
-        60000, // this.config.cohortConfig?.cohortPollingIntervalMillis,
+        60000,
         this.config.debug,
       );
     }

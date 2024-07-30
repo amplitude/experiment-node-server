@@ -1,5 +1,4 @@
-import { CohortStorage } from 'src/types/cohort';
-
+import { CohortStorage } from '../../types/cohort';
 import { ConsoleLogger } from '../../util/logger';
 import { Logger } from '../../util/logger';
 
@@ -18,7 +17,7 @@ export class CohortPoller implements CohortUpdater {
   constructor(
     fetcher: CohortFetcher,
     storage: CohortStorage,
-    pollingIntervalMillis = 60,
+    pollingIntervalMillis = 60000,
     debug = false,
   ) {
     this.fetcher = fetcher;
@@ -28,9 +27,7 @@ export class CohortPoller implements CohortUpdater {
   }
 
   /**
-   * You must call this function to begin polling for flag config updates.
-   * The promise returned by this function is resolved when the initial call
-   * to fetch the flag configuration completes.
+   * You must call this function to begin polling for cohort updates.
    *
    * Calling this function while the poller is already running does nothing.
    */
@@ -43,14 +40,14 @@ export class CohortPoller implements CohortUpdater {
         try {
           await this.update(onChange);
         } catch (e) {
-          this.logger.debug('[Experiment] flag config update failed', e);
+          this.logger.debug('[Experiment] cohort update failed', e);
         }
       }, this.pollingIntervalMillis);
     }
   }
 
   /**
-   * Stop polling for flag configurations.
+   * Stop polling for cohorts.
    *
    * Calling this function while the poller is not running will do nothing.
    */
