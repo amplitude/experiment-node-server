@@ -3,7 +3,6 @@ import { WrapperClient } from '../../transport/http';
 import { Cohort } from '../../types/cohort';
 import { CohortConfigDefaults } from '../../types/config';
 import { HttpClient } from '../../types/transport';
-import { BackoffPolicy } from '../../util/backoff';
 import { ConsoleLogger, Logger } from '../../util/logger';
 import { Mutex, Executor } from '../../util/threading';
 import { sleep } from '../../util/time';
