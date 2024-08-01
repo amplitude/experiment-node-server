@@ -6,18 +6,15 @@ import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { FlagConfigUpdaterBase } from 'src/local/updater';
 import { CohortUtils } from 'src/util/cohort';
 
-import { FLAGS, NEW_FLAGS } from './util/flags';
+import { FLAGS, NEW_FLAGS } from './util/mockData';
 import { MockHttpClient } from './util/mockHttpClient';
 
 class TestFlagConfigUpdaterBase extends FlagConfigUpdaterBase {
-  public async update(flagConfigs, isInit, onChange) {
-    await super._update(flagConfigs, isInit, onChange);
+  public async update(flagConfigs, onChange) {
+    await super._update(flagConfigs, onChange);
   }
   public async downloadNewCohorts(cohortIds) {
     return await super.downloadNewCohorts(cohortIds);
-  }
-  public async filterFlagConfigsWithFullCohorts(flagConfigs) {
-    return await super.filterFlagConfigsWithFullCohorts(flagConfigs);
   }
   public async removeUnusedCohorts(validCohortIds) {
     return await super.removeUnusedCohorts(validCohortIds);
@@ -70,17 +67,13 @@ afterEach(() => {
 });
 
 test('FlagConfigUpdaterBase, update success', async () => {
-  await updater.update(FLAGS, true, () => {});
+  await updater.update(FLAGS, () => {});
   expect(await updater.cache.getAll()).toStrictEqual(FLAGS);
 });
 
-test('FlagConfigUpdaterBase, update no error if not init', async () => {
-  await updater.update(NEW_FLAGS, false, () => {});
-  expect(await updater.cache.getAll()).toStrictEqual(FLAGS);
-});
-
-test('FlagConfigUpdaterBase, update raise error if not init', async () => {
-  await expect(updater.update(NEW_FLAGS, true, () => {})).rejects.toThrow();
+test('FlagConfigUpdaterBase, update no error even if cohort download error', async () => {
+  await updater.update(NEW_FLAGS, () => {});
+  expect(await updater.cache.getAll()).toStrictEqual(NEW_FLAGS);
 });
 
 test('FlagConfigUpdaterBase.downloadNewCohorts', async () => {
@@ -91,17 +84,6 @@ test('FlagConfigUpdaterBase.downloadNewCohorts', async () => {
     CohortUtils.extractCohortIds(FLAGS),
   );
   expect(failedCohortIds).toStrictEqual(new Set<string>(['anewcohortid']));
-});
-
-test('FlagConfigUpdaterBase.filterFlagConfigsWithFullCohorts', async () => {
-  CohortUtils.extractCohortIds(FLAGS).forEach((cohortId) => {
-    updater.cohortStorage.put(createCohort(cohortId));
-  });
-
-  const filteredFlags = await updater.filterFlagConfigsWithFullCohorts(
-    NEW_FLAGS,
-  );
-  expect(filteredFlags).toStrictEqual(FLAGS);
 });
 
 test('FlagConfigUpdaterBase.removeUnusedCohorts', async () => {

@@ -1,9 +1,12 @@
+import { FlagConfigCache, InMemoryFlagConfigCache } from 'src/index';
 import { SdkCohortApi } from 'src/local/cohort/cohort-api';
 import { CohortFetcher } from 'src/local/cohort/fetcher';
 import { CohortPoller } from 'src/local/cohort/poller';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { CohortStorage } from 'src/types/cohort';
 import { sleep } from 'src/util/time';
+
+import { getFlagWithCohort } from '../util/mockData';
 
 const OLD_COHORTS = {
   c1: {
@@ -66,22 +69,24 @@ const NEW_COHORTS = {
 };
 
 const POLL_MILLIS = 500;
+let flagsCache: FlagConfigCache;
 let storage: CohortStorage;
 let fetcher: CohortFetcher;
 let poller: CohortPoller;
-let storageGetAllCohortIdsSpy: jest.SpyInstance;
 let storageGetCohortSpy: jest.SpyInstance;
 let storagePutSpy: jest.SpyInstance;
 
 beforeEach(() => {
+  flagsCache = new InMemoryFlagConfigCache();
   storage = new InMemoryCohortStorage();
   fetcher = new CohortFetcher('', '', null);
-  poller = new CohortPoller(fetcher, storage, POLL_MILLIS);
+  poller = new CohortPoller(fetcher, storage, flagsCache, POLL_MILLIS);
 
-  storageGetAllCohortIdsSpy = jest.spyOn(storage, 'getAllCohortIds');
-  storageGetAllCohortIdsSpy.mockImplementation(
-    () => new Set<string>(['c1', 'c2']),
-  );
+  const flagsCacheGetAllSpy = jest.spyOn(flagsCache, 'getAll');
+  flagsCacheGetAllSpy.mockImplementation(async () => ({
+    flag_c1: getFlagWithCohort('c1'),
+    flag_c2: getFlagWithCohort('c2'),
+  }));
   storageGetCohortSpy = jest.spyOn(storage, 'getCohort');
   storageGetCohortSpy.mockImplementation(
     (cohortId: string) => OLD_COHORTS[cohortId],

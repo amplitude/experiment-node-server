@@ -65,7 +65,7 @@ export class FlagConfigPoller
           async () => await this.fetcher.fetch(),
           BACKOFF_POLICY,
         );
-        await super._update(flagConfigs, true, onChange);
+        await super._update(flagConfigs, onChange);
       } catch (e) {
         this.logger.error(
           '[Experiment] flag config initial poll failed, stopping',
@@ -95,6 +95,6 @@ export class FlagConfigPoller
   ): Promise<void> {
     this.logger.debug('[Experiment] updating flag configs');
     const flagConfigs = await this.fetcher.fetch();
-    await super._update(flagConfigs, false, onChange);
+    await super._update(flagConfigs, onChange);
   }
 }

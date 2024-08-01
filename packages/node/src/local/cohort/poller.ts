@@ -1,4 +1,6 @@
 import { CohortStorage } from '../../types/cohort';
+import { FlagConfigCache } from '../../types/flag';
+import { CohortUtils } from '../../util/cohort';
 import { ConsoleLogger } from '../../util/logger';
 import { Logger } from '../../util/logger';
 
@@ -10,6 +12,7 @@ export class CohortPoller implements CohortUpdater {
 
   public readonly fetcher: CohortFetcher;
   public readonly storage: CohortStorage;
+  public readonly flagCache: FlagConfigCache;
 
   private poller: NodeJS.Timeout;
   private pollingIntervalMillis: number;
@@ -17,11 +20,13 @@ export class CohortPoller implements CohortUpdater {
   constructor(
     fetcher: CohortFetcher,
     storage: CohortStorage,
+    flagCache: FlagConfigCache,
     pollingIntervalMillis = 60000,
     debug = false,
   ) {
     this.fetcher = fetcher;
     this.storage = storage;
+    this.flagCache = flagCache;
     this.pollingIntervalMillis = pollingIntervalMillis;
     this.logger = new ConsoleLogger(debug);
   }
@@ -64,8 +69,11 @@ export class CohortPoller implements CohortUpdater {
   ): Promise<void> {
     let changed = false;
     const promises = [];
+    const cohortIds = CohortUtils.extractCohortIds(
+      await this.flagCache.getAll(),
+    );
 
-    for (const cohortId of this.storage.getAllCohortIds()) {
+    for (const cohortId of cohortIds) {
       this.logger.debug(`[Experiment] updating cohort ${cohortId}`);
 
       // Get existing cohort and lastModified.

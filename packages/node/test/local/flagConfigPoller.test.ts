@@ -8,7 +8,7 @@ import { CohortFetcher } from 'src/local/cohort/fetcher';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { sleep } from 'src/util/time';
 
-import { FLAGS, NEW_FLAGS } from './util/flags';
+import { FLAGS, NEW_FLAGS } from './util/mockData';
 import { MockHttpClient } from './util/mockHttpClient';
 
 afterEach(() => {
@@ -64,17 +64,19 @@ test('flagConfig poller success', async () => {
     ...FLAGS,
     flagPolled: { key: flagPolled },
   });
-  expect(cohortStorage.getCohort('hahahaha1').cohortId).toBe('hahahaha1');
-  expect(cohortStorage.getCohort('hahahaha2').cohortId).toBe('hahahaha2');
-  expect(cohortStorage.getCohort('hahahaha3').cohortId).toBe('hahahaha3');
-  expect(cohortStorage.getCohort('hahahaha4').cohortId).toBe('hahahaha4');
-  expect(cohortStorage.getCohort('hahaorgname1').cohortId).toBe('hahaorgname1');
+  expect(cohortStorage.getCohort('usercohort1').cohortId).toBe('usercohort1');
+  expect(cohortStorage.getCohort('usercohort2').cohortId).toBe('usercohort2');
+  expect(cohortStorage.getCohort('usercohort3').cohortId).toBe('usercohort3');
+  expect(cohortStorage.getCohort('usercohort4').cohortId).toBe('usercohort4');
+  expect(cohortStorage.getCohort('orgnamecohort1').cohortId).toBe(
+    'orgnamecohort1',
+  );
   expect(cohortStorage.getCohort('newcohortid')).toBeUndefined();
-  expect(cohortStorage.getCohort('hahahaha1').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahahaha2').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahahaha3').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahahaha4').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahaorgname1').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort1').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort2').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort3').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort4').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('orgnamecohort1').lastModified).toBe(1);
 
   // On update, flag, existing cohort doesn't update.
   await sleep(2000);
@@ -83,22 +85,24 @@ test('flagConfig poller success', async () => {
     ...NEW_FLAGS,
     flagPolled: { key: flagPolled },
   });
-  expect(cohortStorage.getCohort('hahahaha1').cohortId).toBe('hahahaha1');
-  expect(cohortStorage.getCohort('hahahaha2').cohortId).toBe('hahahaha2');
-  expect(cohortStorage.getCohort('hahahaha3').cohortId).toBe('hahahaha3');
-  expect(cohortStorage.getCohort('hahahaha4').cohortId).toBe('hahahaha4');
-  expect(cohortStorage.getCohort('hahaorgname1').cohortId).toBe('hahaorgname1');
+  expect(cohortStorage.getCohort('usercohort1').cohortId).toBe('usercohort1');
+  expect(cohortStorage.getCohort('usercohort2').cohortId).toBe('usercohort2');
+  expect(cohortStorage.getCohort('usercohort3').cohortId).toBe('usercohort3');
+  expect(cohortStorage.getCohort('usercohort4').cohortId).toBe('usercohort4');
+  expect(cohortStorage.getCohort('orgnamecohort1').cohortId).toBe(
+    'orgnamecohort1',
+  );
   expect(cohortStorage.getCohort('anewcohortid').cohortId).toBe('anewcohortid');
-  expect(cohortStorage.getCohort('hahahaha1').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahahaha2').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahahaha3').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahahaha4').lastModified).toBe(1);
-  expect(cohortStorage.getCohort('hahaorgname1').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort1').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort2').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort3').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('usercohort4').lastModified).toBe(1);
+  expect(cohortStorage.getCohort('orgnamecohort1').lastModified).toBe(1);
   expect(cohortStorage.getCohort('anewcohortid').lastModified).toBe(2);
   poller.stop();
 });
 
-test('flagConfig poller initial error', async () => {
+test('flagConfig poller initial cohort error, still init', async () => {
   const poller = new FlagConfigPoller(
     new FlagConfigFetcher(
       'key',
@@ -128,13 +132,18 @@ test('flagConfig poller initial error', async () => {
   try {
     // Should throw when init failed.
     await poller.start();
+  } catch {
     fail();
-    // eslint-disable-next-line no-empty
-  } catch {}
-  expect(await poller.cache.getAll()).toStrictEqual({});
+  }
+  expect(await poller.cache.getAll()).toStrictEqual(FLAGS);
+  expect(poller.cohortStorage.getAllCohortIds()).toStrictEqual(
+    new Set<string>(),
+  );
+
+  poller.stop();
 });
 
-test('flagConfig poller initial success, polling error and use old flags', async () => {
+test('flagConfig poller initial success, polling flag success, cohort failed, and still updates flags', async () => {
   const poller = new FlagConfigPoller(
     new FlagConfigFetcher(
       'key',
@@ -185,7 +194,8 @@ test('flagConfig poller initial success, polling error and use old flags', async
   // The different flag should not be updated.
   await sleep(2000);
   expect(flagPolled).toBeGreaterThanOrEqual(2);
-  expect(await poller.cache.getAll()).toStrictEqual(FLAGS);
+  await sleep(250); // Wait for cohort download retry to finish.
+  expect(await poller.cache.getAll()).toStrictEqual(NEW_FLAGS);
 
   poller.stop();
 });

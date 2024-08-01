@@ -88,7 +88,7 @@ export class LocalEvaluationClient {
     this.logger = new ConsoleLogger(this.config.debug);
 
     this.cohortStorage = new InMemoryCohortStorage();
-    let cohortFetcher = undefined;
+    let cohortFetcher: CohortFetcher = undefined;
     if (this.config.cohortConfig) {
       cohortFetcher = new CohortFetcher(
         this.config.cohortConfig.apiKey,
@@ -102,6 +102,7 @@ export class LocalEvaluationClient {
       this.cohortUpdater = new CohortPoller(
         cohortFetcher,
         this.cohortStorage,
+        this.cache,
         60000,
         this.config.debug,
       );
@@ -188,11 +189,47 @@ export class LocalEvaluationClient {
     return evaluationVariantsToVariants(results);
   }
 
+  protected checkFlagsCohortsAvailable(
+    cohortIdsByFlag: Record<string, Set<string>>,
+  ): boolean {
+    const availableCohortIds = this.cohortStorage.getAllCohortIds();
+    for (const key in cohortIdsByFlag) {
+      const flagCohortIds = cohortIdsByFlag[key];
+      const unavailableCohortIds = CohortUtils.setSubtract(
+        flagCohortIds,
+        availableCohortIds,
+      );
+      if (unavailableCohortIds.size > 0) {
+        this.logger.error(
+          `[Experiment] Flag ${key} has cohort ids ${[
+            ...unavailableCohortIds,
+          ]} unavailable, evaluation may be incorrect`,
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
   protected enrichUserWithCohorts(
     user: ExperimentUser,
     flags: Record<string, EvaluationFlag>,
   ): void {
-    const cohortIdsByGroup = CohortUtils.extractCohortIdsByGroup(flags);
+    const cohortIdsByFlag: Record<string, Set<string>> = {};
+    const cohortIdsByGroup = {};
+    for (const key in flags) {
+      const cohortIdsByGroupOfFlag =
+        CohortUtils.extractCohortIdsByGroupFromFlag(flags[key]);
+
+      CohortUtils.mergeValuesOfBIntoValuesOfA(
+        cohortIdsByGroup,
+        cohortIdsByGroupOfFlag,
+      );
+
+      cohortIdsByFlag[key] = CohortUtils.mergeAllValues(cohortIdsByGroupOfFlag);
+    }
+
+    this.checkFlagsCohortsAvailable(cohortIdsByFlag);
 
     // Enrich cohorts with user group type.
     const userCohortIds = cohortIdsByGroup[USER_GROUP_TYPE];

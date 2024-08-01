@@ -7,15 +7,9 @@ import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { FlagConfigFetcher } from 'src/local/fetcher';
 import { FlagConfigStreamer } from 'src/local/streamer';
 
+import { getFlagStrWithCohort } from './util/mockData';
 import { MockHttpClient } from './util/mockHttpClient';
 import { getNewClient } from './util/mockStreamEventSource';
-
-const getFlagWithCohort = (
-  cohortId,
-) => `[{"key":"flag_${cohortId}","segments":[{
-      "conditions":[[{"op":"set contains any","selector":["context","user","cohort_ids"],"values":["${cohortId}"]}]],
-      "metadata":{"segmentName": "Segment 1"},"variant": "off"
-      }],"variants": {}}]`;
 
 let updater;
 afterEach(() => {
@@ -609,16 +603,28 @@ test('FlagConfigUpdater.connect, flag success, cohort success', async () => {
   updater.start();
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: getFlagWithCohort('cohort1'),
+    data: `[${getFlagStrWithCohort('cohort1')}]`,
   });
   await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
   expect(fetchObj.fetchCalls).toBe(0);
   expect(mockClient.numCreated).toBe(1);
   expect(await cache.get('flag_cohort1')).toBeDefined();
+
+  // Return cohort with their own cohortId.
+  // Now update the flags with a new cohort that will fail to download.
+  await mockClient.client.doMsg({
+    data: `[${getFlagStrWithCohort('cohort2')}]`,
+  });
+  await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
+
+  expect(fetchObj.fetchCalls).toBe(0); // No poller poll.
+  expect(mockClient.numCreated).toBe(1);
+  expect(await cache.get('flag_cohort1')).toBeUndefined(); // Old flag removed.
+  expect(await cache.get('flag_cohort2')).toBeDefined(); // New flag added.
   updater.stop();
 });
 
-test('FlagConfigUpdater.connect, flag success, success, flag update success, cohort fail, wont fallback to poller as flag stream is ok', async () => {
+test('FlagConfigUpdater.connect, flag cohort and init success, flag update success, cohort fail, wont fallback to poller as flag stream is ok', async () => {
   jest.setTimeout(20000);
   jest
     .spyOn(SdkCohortApi.prototype, 'getCohort')
@@ -644,7 +650,7 @@ test('FlagConfigUpdater.connect, flag success, success, flag update success, coh
   updater.start();
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: getFlagWithCohort('cohort1'),
+    data: `[${getFlagStrWithCohort('cohort1')}]`,
   });
   await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
   expect(fetchObj.fetchCalls).toBe(0); // No poller poll.
@@ -654,18 +660,18 @@ test('FlagConfigUpdater.connect, flag success, success, flag update success, coh
   // Return cohort with their own cohortId.
   // Now update the flags with a new cohort that will fail to download.
   await mockClient.client.doMsg({
-    data: getFlagWithCohort('cohort2'),
+    data: `[${getFlagStrWithCohort('cohort2')}]`,
   });
   await new Promise((r) => setTimeout(r, 1000)); // Wait for poller to poll.
 
-  expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(0); // No poller poll.
+  expect(fetchObj.fetchCalls).toBe(0); // No poller poll.
   expect(mockClient.numCreated).toBe(1);
   expect(await cache.get('flag_cohort1')).toBeUndefined(); // Old flag removed.
-  expect(await cache.get('flag_cohort2')).toBeUndefined(); // Won't add flag to cache if new cohort fails.
+  expect(await cache.get('flag_cohort2')).toBeDefined(); // Still add flag to cache if new cohort fails.
   updater.stop();
 });
 
-test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initialization fails, fallback to poller', async () => {
+test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initialization still success, no fallback to poller', async () => {
   jest.setTimeout(20000);
   jest
     .spyOn(SdkCohortApi.prototype, 'getCohort')
@@ -683,55 +689,12 @@ test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initiali
   updater.start();
   await mockClient.client.doOpen({ type: 'open' });
   await mockClient.client.doMsg({
-    data: getFlagWithCohort('cohort1'),
+    data: `[${getFlagStrWithCohort('cohort1')}]`,
   });
   await new Promise((resolve) => setTimeout(resolve, 250)); // Wait for cohort download done retries and fails.
-  await new Promise((resolve) => setTimeout(resolve, 1050)); // Wait for retry stream.
-  // Second try
-  await mockClient.client.doOpen({ type: 'open' });
-  await mockClient.client.doMsg({
-    data: getFlagWithCohort('cohort1'),
-  });
-  await new Promise((resolve) => setTimeout(resolve, 250)); // Wait for cohort download done retries and fails.
+  await new Promise((resolve) => setTimeout(resolve, 1050)); // Wait for poller start.
 
-  expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(1);
-  expect(mockClient.numCreated).toBe(2);
-  updater.stop();
-});
-
-test('FlagConfigUpdater.connect, flag success, cohort fail, initialization fails, fallback to poller, poller fails, streamer start error', async () => {
-  jest.setTimeout(10000);
-  jest
-    .spyOn(SdkCohortApi.prototype, 'getCohort')
-    .mockImplementation(async () => {
-      throw Error();
-    });
-  const { fetchObj, mockClient, updater } = getTestObjs({
-    pollingIntervalMillis: 30000,
-    streamFlagTryAttempts: 1,
-    streamFlagTryDelayMillis: 1000,
-    streamFlagRetryDelayMillis: 100000,
-    fetcherData: [
-      getFlagWithCohort('cohort1'),
-      getFlagWithCohort('cohort1'),
-      getFlagWithCohort('cohort1'),
-      getFlagWithCohort('cohort1'),
-      getFlagWithCohort('cohort1'),
-    ],
-  });
-  // Return cohort with their own cohortId.
-  const startPromise = updater.start();
-  await mockClient.client.doOpen({ type: 'open' });
-  await mockClient.client.doMsg({
-    data: getFlagWithCohort('cohort1'),
-  });
-  // Stream failed, poller should fail as well given the flags and cohort mock.
-  expect(fetchObj.fetchCalls).toBeGreaterThanOrEqual(1);
+  expect(fetchObj.fetchCalls).toBe(0);
   expect(mockClient.numCreated).toBe(1);
-  // Test should exit cleanly as updater.start() failure should stop the streamer.
-  try {
-    await startPromise;
-    fail();
-    // eslint-disable-next-line no-empty
-  } catch {}
+  updater.stop();
 });

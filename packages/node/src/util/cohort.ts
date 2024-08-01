@@ -20,28 +20,13 @@ export class CohortUtils {
   public static extractCohortIds(
     flagConfigs: Record<string, FlagConfig>,
   ): Set<string> {
-    return CohortUtils.mergeAllValues(
-      CohortUtils.extractCohortIdsByGroup(flagConfigs),
-    );
-  }
-
-  public static extractCohortIdsByGroup(
-    flagConfigs: Record<string, FlagConfig>,
-  ): Record<string, Set<string>> {
-    const cohortIdsByGroup = {};
+    const cohortIdsByFlag = {};
     for (const key in flagConfigs) {
-      CohortUtils.mergeBIntoA(
-        cohortIdsByGroup,
+      cohortIdsByFlag[key] = CohortUtils.mergeAllValues(
         CohortUtils.extractCohortIdsByGroupFromFlag(flagConfigs[key]),
       );
     }
-    return cohortIdsByGroup;
-  }
-
-  public static extractCohortIdsFromFlag(flag: FlagConfig): Set<string> {
-    return CohortUtils.mergeAllValues(
-      CohortUtils.extractCohortIdsByGroupFromFlag(flag),
-    );
+    return CohortUtils.mergeAllValues(cohortIdsByFlag);
   }
 
   public static extractCohortIdsByGroupFromFlag(
@@ -85,7 +70,7 @@ export class CohortUtils {
     return cohortIdsByGroup;
   }
 
-  public static mergeBIntoA(
+  public static mergeValuesOfBIntoValuesOfA(
     a: Record<string, Set<string>>,
     b: Record<string, Set<string>>,
   ): void {

@@ -77,11 +77,11 @@ export class SdkCohortApi implements CohortApi {
       return undefined;
     } else if (response.status == 413) {
       throw new CohortMaxSizeExceededError(
-        `Cohort error response: size > ${options.maxCohortSize}`,
+        `Cohort size > ${options.maxCohortSize}`,
       );
     } else {
       throw new CohortDownloadError(
-        `Cohort error response: status ${response.status}, body ${response.body}`,
+        `Cohort error response status ${response.status}, body ${response.body}`,
       );
     }
   }

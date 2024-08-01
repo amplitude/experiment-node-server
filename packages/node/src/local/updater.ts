@@ -52,7 +52,6 @@ export class FlagConfigUpdaterBase {
 
   protected async _update(
     flagConfigs: Record<string, FlagConfig>,
-    isInit: boolean,
     onChange?: (cache: FlagConfigCache) => Promise<void>,
   ): Promise<void> {
     let changed = false;
@@ -66,30 +65,20 @@ export class FlagConfigUpdaterBase {
     // Get all cohort needs update.
     const cohortIds = CohortUtils.extractCohortIds(flagConfigs);
     if (cohortIds && cohortIds.size > 0 && !this.cohortFetcher) {
-      throw Error(
-        'cohort found in flag configs but no cohort download configured',
+      this.logger.error(
+        'Cohorts found in flag configs but no cohort download configured',
       );
+    } else {
+      // Download new cohorts into cohortStorage.
+      await this.downloadNewCohorts(cohortIds);
     }
-
-    // Download new cohorts into cohortStorage.
-    const failedCohortIds = await this.downloadNewCohorts(cohortIds);
-    if (isInit && failedCohortIds.size > 0) {
-      throw Error('Cohort download failed');
-    }
-
-    // Update the flags that has all cohorts successfully updated into flags cache.
-    const newFlagConfigs = await this.filterFlagConfigsWithFullCohorts(
-      flagConfigs,
-    );
 
     // Update the flags with new flags.
     await this.cache.clear();
-    await this.cache.putAll(newFlagConfigs);
+    await this.cache.putAll(flagConfigs);
 
     // Remove cohorts not used by new flags.
-    await this.removeUnusedCohorts(
-      CohortUtils.extractCohortIds(newFlagConfigs),
-    );
+    await this.removeUnusedCohorts(cohortIds);
 
     if (changed) {
       await onChange(this.cache);
@@ -111,8 +100,8 @@ export class FlagConfigUpdaterBase {
           }
         })
         .catch((err) => {
-          this.logger.warn(
-            `[Experiment] Cohort download failed ${cohortId}, using existing cohort if exist`,
+          this.logger.error(
+            `[Experiment] Cohort download failed ${cohortId}`,
             err,
           );
           failedCohortIds.add(cohortId);
@@ -120,39 +109,6 @@ export class FlagConfigUpdaterBase {
     );
     await Promise.all(cohortDownloadPromises);
     return failedCohortIds;
-  }
-
-  protected async filterFlagConfigsWithFullCohorts(
-    flagConfigs: Record<string, FlagConfig>,
-  ): Promise<Record<string, FlagConfig>> {
-    const newFlagConfigs = {};
-    const availableCohortIds = this.cohortStorage.getAllCohortIds();
-    for (const flagKey in flagConfigs) {
-      // Get cohorts for this flag.
-      const cohortIds = CohortUtils.extractCohortIdsFromFlag(
-        flagConfigs[flagKey],
-      );
-
-      // Check if all cohorts for this flag has downloaded.
-      // If any cohort failed, don't use the new flag.
-      const updateFlag =
-        cohortIds.size === 0 ||
-        CohortUtils.setSubtract(cohortIds, availableCohortIds).size === 0;
-
-      if (updateFlag) {
-        newFlagConfigs[flagKey] = flagConfigs[flagKey];
-      } else {
-        this.logger.warn(
-          `[Experiment] Flag ${flagKey} failed to update due to cohort update failure`,
-        );
-        const existingFlag = await this.cache.get(flagKey);
-        if (existingFlag) {
-          newFlagConfigs[flagKey] = existingFlag;
-        }
-      }
-    }
-
-    return newFlagConfigs;
   }
 
   protected async removeUnusedCohorts(
