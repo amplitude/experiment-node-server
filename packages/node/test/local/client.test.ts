@@ -3,23 +3,14 @@ import path from 'path';
 import { EvaluationFlag } from '@amplitude/experiment-core';
 import * as dotenv from 'dotenv';
 import { Experiment } from 'src/factory';
-import {
-  FlagConfigFetcher,
-  InMemoryFlagConfigCache,
-  LocalEvaluationClient,
-} from 'src/index';
+import { InMemoryFlagConfigCache, LocalEvaluationClient } from 'src/index';
 import { USER_GROUP_TYPE } from 'src/types/cohort';
 import { LocalEvaluationDefaults } from 'src/types/config';
 import { ExperimentUser } from 'src/types/user';
-import { MockHttpClient } from './util/mockHttpClient';
-import { COHORTS, FLAGS, NEW_FLAGS, getFlagWithCohort } from './util/mockData';
-import { CohortFetcher } from 'src/local/cohort/fetcher';
-import {
-  CohortDownloadError,
-  CohortMaxSizeExceededError,
-  SdkCohortApi,
-} from 'src/local/cohort/cohort-api';
 import { sleep } from 'src/util/time';
+
+import { COHORTS, FLAGS, NEW_FLAGS } from './util/mockData';
+import { MockHttpClient } from './util/mockHttpClient';
 
 dotenv.config({ path: path.join(__dirname, '../../', '.env') });
 

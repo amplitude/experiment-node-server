@@ -2,14 +2,16 @@
 // FLAGS are normal flags with cohortIds.
 // NEW_FLAGS adds a flag with cohortId `anewcohortid` on top of FLAGS.
 
+import { EvaluationFlag } from '@amplitude/experiment-core';
+
 export const getFlagStrWithCohort = (
   cohortId: string,
-) => `{"key":"flag_${cohortId}","segments":[{
+): string => `{"key":"flag_${cohortId}","segments":[{
       "conditions":[[{"op":"set contains any","selector":["context","user","cohort_ids"],"values":["${cohortId}"]}]],
       "metadata":{"segmentName": "Segment 1"},"variant": "off"
       }],"variants": {}}`;
 
-export const getFlagWithCohort = (cohortId: string) =>
+export const getFlagWithCohort = (cohortId: string): EvaluationFlag =>
   JSON.parse(getFlagStrWithCohort(cohortId));
 
 export const FLAGS = [
