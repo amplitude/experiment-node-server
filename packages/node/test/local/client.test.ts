@@ -420,6 +420,26 @@ describe('ExperimentClient integration tests', () => {
     client.stop();
   });
 
+  test('ExperimentClient cohort no config doesnt throw', async () => {
+    const client = new LocalEvaluationClient(
+      'apikey',
+      {},
+      null,
+      mockHttpClient,
+    );
+    await client.start();
+
+    const result = client.evaluateV2({ user_id: 'membera1', device_id: '1' });
+    // Currently cohort failed to download simply means there's no members in cohort as it's not going to be added to evaluation context.
+    // This behavior will change.
+    expect(result['flag1'].key).toBe('off');
+    expect(result['flag2'].key).toBe('off');
+    expect(result['flag3'].key).toBe('off');
+    expect(result['flag4'].key).toBe('off');
+
+    client.stop();
+  });
+
   test('ExperimentClient cohort maxCohortSize download fail', async () => {
     const client = new LocalEvaluationClient(
       'apikey',
@@ -512,7 +532,8 @@ describe('ExperimentClient integration tests', () => {
     await sleep(62000); // Poller polls after 60s.
     // Within this time,
     // Flag poller (flagConfigPollingIntervalMillis = 40000) will poll a new version, NEW_FLAGS which contains flag5.
-    // Cohort poller (pollingIntervalMillis = 60000) will poll all cohorts in the flags, which will all success.
+    // This flag poll will also try to download cohorts.
+    // Cohort poller (pollingIntervalMillis = 60000) will poll all cohorts in the flags, which will should success.
 
     result = client.evaluateV2({ user_id: 'membera1', device_id: '1' });
     // Currently cohort failed to download simply means there's no members in cohort as it's not going to be added to evaluation context.
