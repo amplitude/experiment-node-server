@@ -6,7 +6,7 @@ import {
 import {
   EU_SERVER_URLS,
   LocalEvaluationDefaults,
-  CohortConfigDefaults,
+  CohortSyncConfigDefaults,
 } from '../types/config';
 
 export const populateRemoteConfigDefaults = (
@@ -14,6 +14,7 @@ export const populateRemoteConfigDefaults = (
 ): RemoteEvaluationConfig => {
   const config = { ...RemoteEvaluationDefaults, ...customConfig };
   const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
+  config.serverZone = isEu ? 'eu' : 'us';
 
   if (!customConfig?.serverUrl) {
     config.serverUrl = isEu
@@ -28,6 +29,7 @@ export const populateLocalConfigDefaults = (
 ): LocalEvaluationConfig => {
   const config = { ...LocalEvaluationDefaults, ...customConfig };
   const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
+  config.serverZone = isEu ? 'eu' : 'us';
 
   if (!customConfig?.serverUrl) {
     config.serverUrl = isEu
@@ -40,12 +42,12 @@ export const populateLocalConfigDefaults = (
       : LocalEvaluationDefaults.streamServerUrl;
   }
   if (
-    customConfig?.cohortConfig &&
-    !customConfig?.cohortConfig.cohortServerUrl
+    customConfig?.cohortSyncConfig &&
+    !customConfig?.cohortSyncConfig.cohortServerUrl
   ) {
-    config.cohortConfig.cohortServerUrl = isEu
+    config.cohortSyncConfig.cohortServerUrl = isEu
       ? EU_SERVER_URLS.cohort
-      : CohortConfigDefaults.cohortServerUrl;
+      : CohortSyncConfigDefaults.cohortServerUrl;
   }
   return config;
 };

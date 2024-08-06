@@ -3,7 +3,7 @@ import {
   SdkCohortApi,
 } from 'src/local/cohort/cohort-api';
 import { COHORT_CONFIG_TIMEOUT, CohortFetcher } from 'src/local/cohort/fetcher';
-import { CohortConfigDefaults } from 'src/types/config';
+import { CohortSyncConfigDefaults } from 'src/types/config';
 import { sleep } from 'src/util/time';
 
 import { version as PACKAGE_VERSION } from '../../../gen/version';
@@ -58,7 +58,7 @@ test('cohort fetch success', async () => {
     lastModified: undefined,
     libraryName: 'experiment-node-server',
     libraryVersion: PACKAGE_VERSION,
-    maxCohortSize: CohortConfigDefaults.maxCohortSize,
+    maxCohortSize: CohortSyncConfigDefaults.maxCohortSize,
     timeoutMillis: COHORT_CONFIG_TIMEOUT,
   });
 });

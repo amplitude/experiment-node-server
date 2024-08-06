@@ -26,6 +26,8 @@ export interface CohortApi {
 
 export class CohortMaxSizeExceededError extends Error {}
 
+export class CohortClientRequestError extends Error {}
+
 export class CohortDownloadError extends Error {}
 
 export class SdkCohortApi implements CohortApi {
@@ -78,6 +80,15 @@ export class SdkCohortApi implements CohortApi {
     } else if (response.status == 413) {
       throw new CohortMaxSizeExceededError(
         `Cohort size > ${options.maxCohortSize}`,
+      );
+    } else if (
+      400 <= response.status &&
+      response.status < 500 &&
+      response.status != 429
+    ) {
+      // Any 400 other than 429.
+      throw new CohortClientRequestError(
+        `Cohort client error response status ${response.status}, body ${response.body}`,
       );
     } else {
       throw new CohortDownloadError(

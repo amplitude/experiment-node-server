@@ -46,6 +46,8 @@ const STREAM_RETRY_JITTER_MAX_MILLIS = 2000; // The jitter to add to delay after
 const STREAM_ATTEMPTS = 1; // Number of attempts before fallback to poller.
 const STREAM_TRY_DELAY_MILLIS = 1000; // The delay between attempts.
 
+const COHORT_POLLING_INTERVAL_MILLIS_MIN = 60000;
+
 /**
  * Experiment client for evaluating variants for a user locally.
  * @category Core Usage
@@ -89,21 +91,24 @@ export class LocalEvaluationClient {
 
     this.cohortStorage = new InMemoryCohortStorage();
     let cohortFetcher: CohortFetcher = undefined;
-    if (this.config.cohortConfig) {
+    if (this.config.cohortSyncConfig) {
       cohortFetcher = new CohortFetcher(
-        this.config.cohortConfig.apiKey,
-        this.config.cohortConfig.secretKey,
+        this.config.cohortSyncConfig.apiKey,
+        this.config.cohortSyncConfig.secretKey,
         httpClient,
-        this.config.cohortConfig?.cohortServerUrl,
-        this.config.cohortConfig?.maxCohortSize,
-        this.config.cohortConfig?.cohortRequestDelayMillis,
+        this.config.cohortSyncConfig?.cohortServerUrl,
+        this.config.cohortSyncConfig?.maxCohortSize,
+        undefined,
         this.config.debug,
       );
       this.cohortUpdater = new CohortPoller(
         cohortFetcher,
         this.cohortStorage,
         this.cache,
-        60000,
+        Math.max(
+          COHORT_POLLING_INTERVAL_MILLIS_MIN,
+          this.config.cohortSyncConfig?.cohortPollingIntervalMillis,
+        ),
         this.config.debug,
       );
     }

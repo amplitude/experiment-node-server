@@ -16,7 +16,7 @@ const apiKey = 'server-Qlp7XiSu6JtP2S3JzA95PnP27duZgQCF';
 
 const client = Experiment.initializeLocal(apiKey, {
   serverZone: 'eu',
-  cohortConfig: {
+  cohortSyncConfig: {
     apiKey: process.env['EU_API_KEY'],
     secretKey: process.env['EU_SECRET_KEY'],
   },

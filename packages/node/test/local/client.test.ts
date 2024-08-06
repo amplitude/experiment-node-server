@@ -267,7 +267,7 @@ const setupEvaluateCohortTestErrorClientCases = (
 describe('ExperimentClient end-to-end tests, normal cases', () => {
   describe('Normal cases', () => {
     const client = Experiment.initializeLocal(apiKey, {
-      cohortConfig: {
+      cohortSyncConfig: {
         apiKey: process.env['API_KEY'],
         secretKey: process.env['SECRET_KEY'],
       },
@@ -302,7 +302,7 @@ describe('ExperimentClient end-to-end tests, normal cases', () => {
 
   describe('Bad cohort config', () => {
     const client = Experiment.initializeLocal(apiKey, {
-      cohortConfig: {
+      cohortSyncConfig: {
         apiKey: 'bad_api_key',
         secretKey: 'bad_secret_key',
       },
@@ -368,7 +368,7 @@ describe('ExperimentClient integration tests', () => {
     const client = new LocalEvaluationClient(
       'apikey',
       {
-        cohortConfig: {
+        cohortSyncConfig: {
           apiKey: 'apiKey',
           secretKey: 'secretKey',
           maxCohortSize: 10,
@@ -444,7 +444,7 @@ describe('ExperimentClient integration tests', () => {
     const client = new LocalEvaluationClient(
       'apikey',
       {
-        cohortConfig: {
+        cohortSyncConfig: {
           apiKey: 'apiKey',
           secretKey: 'secretKey',
           maxCohortSize: 0,
@@ -472,7 +472,7 @@ describe('ExperimentClient integration tests', () => {
       'apikey',
       {
         flagConfigPollingIntervalMillis: 40000,
-        cohortConfig: {
+        cohortSyncConfig: {
           apiKey: 'apiKey',
           secretKey: 'secretKey',
           maxCohortSize: 10,

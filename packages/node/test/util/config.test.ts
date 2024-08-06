@@ -1,7 +1,7 @@
 import { LocalEvaluationConfig } from 'src/index';
 import {
   LocalEvaluationDefaults,
-  CohortConfigDefaults,
+  CohortSyncConfigDefaults,
   EU_SERVER_URLS,
   RemoteEvaluationConfig,
 } from 'src/types/config';
@@ -17,12 +17,12 @@ test.each([
       'us',
       LocalEvaluationDefaults.serverUrl,
       LocalEvaluationDefaults.streamServerUrl,
-      CohortConfigDefaults.cohortServerUrl,
+      CohortSyncConfigDefaults.cohortServerUrl,
     ],
   ],
   [
     { zone: 'EU' },
-    ['EU', EU_SERVER_URLS.flags, EU_SERVER_URLS.stream, EU_SERVER_URLS.cohort],
+    ['eu', EU_SERVER_URLS.flags, EU_SERVER_URLS.stream, EU_SERVER_URLS.cohort],
   ],
   [
     { url: 'urlurl', stream: 'streamurl', cohort: 'cohorturl' },
@@ -38,13 +38,13 @@ test.each([
   ],
 ])("'%s'", (testcase, expected) => {
   const config: LocalEvaluationConfig = {
-    cohortConfig: {
+    cohortSyncConfig: {
       apiKey: '',
       secretKey: '',
     },
   };
   if ('zone' in testcase) {
-    config.serverZone = testcase.zone;
+    config.serverZone = testcase.zone as never;
   }
   if ('url' in testcase) {
     config.serverUrl = testcase.url;
@@ -53,25 +53,25 @@ test.each([
     config.streamServerUrl = testcase.stream;
   }
   if ('cohort' in testcase) {
-    config.cohortConfig.cohortServerUrl = testcase.cohort;
+    config.cohortSyncConfig.cohortServerUrl = testcase.cohort;
   }
   const newConfig = populateLocalConfigDefaults(config);
   expect(newConfig.serverZone).toBe(expected[0]);
   expect(newConfig.serverUrl).toBe(expected[1]);
   expect(newConfig.streamServerUrl).toBe(expected[2]);
-  expect(newConfig.cohortConfig.cohortServerUrl).toBe(expected[3]);
+  expect(newConfig.cohortSyncConfig.cohortServerUrl).toBe(expected[3]);
 });
 
 test.each([
   [{}, 'us', LocalEvaluationDefaults.serverUrl],
-  [{ zone: 'EU' }, 'EU', EU_SERVER_URLS.remote],
+  [{ zone: 'EU' }, 'eu', EU_SERVER_URLS.remote],
   [{ url: 'urlurl' }, 'us', 'urlurl'],
   [{ zone: 'eu', url: 'urlurl' }, 'eu', 'urlurl'],
   [{ zone: 'eu', url: 'urlurl' }, 'eu', 'urlurl'],
 ])("'%s'", (testcase, expectedZone, expectedUrl) => {
   const config: RemoteEvaluationConfig = {};
   if ('zone' in testcase) {
-    config.serverZone = testcase.zone;
+    config.serverZone = testcase.zone as never;
   }
   if ('url' in testcase) {
     config.serverUrl = testcase.url;

@@ -1,13 +1,17 @@
 import { version as PACKAGE_VERSION } from '../../../gen/version';
 import { WrapperClient } from '../../transport/http';
 import { Cohort } from '../../types/cohort';
-import { CohortConfigDefaults } from '../../types/config';
+import { CohortSyncConfigDefaults } from '../../types/config';
 import { HttpClient } from '../../types/transport';
 import { ConsoleLogger, Logger } from '../../util/logger';
 import { Mutex, Executor } from '../../util/threading';
 import { sleep } from '../../util/time';
 
-import { CohortMaxSizeExceededError, SdkCohortApi } from './cohort-api';
+import {
+  CohortClientRequestError,
+  CohortMaxSizeExceededError,
+  SdkCohortApi,
+} from './cohort-api';
 
 export const COHORT_CONFIG_TIMEOUT = 20000;
 
@@ -31,8 +35,8 @@ export class CohortFetcher {
     apiKey: string,
     secretKey: string,
     httpClient: HttpClient,
-    serverUrl = CohortConfigDefaults.cohortServerUrl,
-    maxCohortSize = CohortConfigDefaults.maxCohortSize,
+    serverUrl = CohortSyncConfigDefaults.cohortServerUrl,
+    maxCohortSize = CohortSyncConfigDefaults.maxCohortSize,
     cohortRequestDelayMillis = 100,
     debug = false,
   ) {
@@ -78,7 +82,11 @@ export class CohortFetcher {
             this.logger.debug('Stop downloading', cohortId);
             return cohort;
           } catch (e) {
-            if (i === ATTEMPTS - 1 || e instanceof CohortMaxSizeExceededError) {
+            if (
+              i === ATTEMPTS - 1 ||
+              e instanceof CohortMaxSizeExceededError ||
+              e instanceof CohortClientRequestError
+            ) {
               const unlock = await this.mutex.lock();
               delete this.inProgressCohorts[key];
               unlock();

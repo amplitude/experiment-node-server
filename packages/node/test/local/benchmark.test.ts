@@ -16,14 +16,14 @@ if (!process.env['API_KEY'] && !process.env['SECRET_KEY']) {
   );
 }
 
-const cohortConfig = {
+const cohortSyncConfig = {
   apiKey: process.env['API_KEY'],
   secretKey: process.env['SECRET_KEY'],
 };
 
 const client = Experiment.initializeLocal(apiKey, {
   debug: false,
-  cohortConfig: cohortConfig,
+  cohortSyncConfig: cohortSyncConfig,
 });
 
 beforeAll(async () => {

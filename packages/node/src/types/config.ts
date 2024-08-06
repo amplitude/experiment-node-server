@@ -128,7 +128,7 @@ export type LocalEvaluationConfig = {
   /**
    * Select the Amplitude data center to get flags and variants from, `us` or `eu`.
    */
-  serverZone?: string;
+  serverZone?: 'us' | 'eu';
 
   /**
    * The server endpoint from which to request flags. For hitting the EU data center, use serverZone.
@@ -184,7 +184,7 @@ export type LocalEvaluationConfig = {
    */
   streamFlagConnTimeoutMillis?: number;
 
-  cohortConfig?: CohortConfig;
+  cohortSyncConfig?: CohortSyncConfig;
 };
 
 export type AssignmentConfig = {
@@ -200,7 +200,7 @@ export type AssignmentConfig = {
   cacheCapacity?: number;
 } & NodeOptions;
 
-export type CohortConfig = {
+export type CohortSyncConfig = {
   apiKey: string;
   secretKey: string;
 
@@ -216,7 +216,15 @@ export type CohortConfig = {
    */
   maxCohortSize?: number;
 
-  cohortRequestDelayMillis?: number;
+  /**
+   * The interval in milliseconds to poll the amplitude server for cohort
+   * updates. These cohorts stored in memory and used when calling evaluate() to
+   * perform local evaluation.
+   *
+   * Default: 60000 (60 seconds)
+   * Minimum: 60000
+   */
+  cohortPollingIntervalMillis?: number;
 };
 
 /**
@@ -247,11 +255,11 @@ export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
   cacheCapacity: 65536,
 };
 
-export const CohortConfigDefaults: Omit<CohortConfig, 'apiKey' | 'secretKey'> =
+export const CohortSyncConfigDefaults: Omit<CohortSyncConfig, 'apiKey' | 'secretKey'> =
   {
     cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
     maxCohortSize: 2147483647,
-    cohortRequestDelayMillis: 100,
+    cohortPollingIntervalMillis: 60000,
   };
 
 export const EU_SERVER_URLS = {
