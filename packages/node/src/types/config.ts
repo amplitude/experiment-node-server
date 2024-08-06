@@ -250,7 +250,7 @@ export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
 export const CohortConfigDefaults: Omit<CohortConfig, 'apiKey' | 'secretKey'> =
   {
     cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
-    maxCohortSize: 10_000_000,
+    maxCohortSize: 2147483647,
     cohortRequestDelayMillis: 100,
   };
 
