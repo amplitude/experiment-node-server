@@ -255,12 +255,14 @@ export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
   cacheCapacity: 65536,
 };
 
-export const CohortSyncConfigDefaults: Omit<CohortSyncConfig, 'apiKey' | 'secretKey'> =
-  {
-    cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
-    maxCohortSize: 2147483647,
-    cohortPollingIntervalMillis: 60000,
-  };
+export const CohortSyncConfigDefaults: Omit<
+  CohortSyncConfig,
+  'apiKey' | 'secretKey'
+> = {
+  cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
+  maxCohortSize: 2147483647,
+  cohortPollingIntervalMillis: 60000,
+};
 
 export const EU_SERVER_URLS = {
   name: 'eu',
