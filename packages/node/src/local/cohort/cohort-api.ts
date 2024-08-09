@@ -24,11 +24,9 @@ export interface CohortApi {
   getCohort(options?: GetCohortOptions): Promise<Cohort>;
 }
 
-export class CohortMaxSizeExceededError extends Error {}
-
-export class CohortClientRequestError extends Error {}
-
-export class CohortDownloadError extends Error {}
+export class CohortClientRequestError extends Error {} // 4xx errors except 429
+export class CohortMaxSizeExceededError extends CohortClientRequestError {} // 413 error
+export class CohortDownloadError extends Error {} // All other errors
 
 export class SdkCohortApi implements CohortApi {
   private readonly cohortApiKey;
@@ -86,7 +84,7 @@ export class SdkCohortApi implements CohortApi {
       response.status < 500 &&
       response.status != 429
     ) {
-      // Any 400 other than 429.
+      // Any 4xx other than 429.
       throw new CohortClientRequestError(
         `Cohort client error response status ${response.status}, body ${response.body}`,
       );

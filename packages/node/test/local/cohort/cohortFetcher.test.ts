@@ -1,4 +1,5 @@
 import {
+  CohortClientRequestError,
   CohortMaxSizeExceededError,
   SdkCohortApi,
 } from 'src/local/cohort/cohort-api';
@@ -38,7 +39,7 @@ const COHORTS = {
   },
 };
 
-beforeEach(() => {
+afterEach(() => {
   jest.clearAllMocks();
 });
 
@@ -138,6 +139,27 @@ test('cohort fetch maxSize exceeded, no retry', async () => {
   const cohortApiGetCohortSpy = jest.spyOn(SdkCohortApi.prototype, 'getCohort');
   cohortApiGetCohortSpy.mockImplementation(async () => {
     throw new CohortMaxSizeExceededError();
+  });
+
+  const cohortFetcher = new CohortFetcher('', '', null, 'someurl', 10, 100);
+  const cohortPromise = cohortFetcher.fetch('c1', 10);
+
+  await expect(cohortPromise).rejects.toThrowError();
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledTimes(1);
+  expect(cohortApiGetCohortSpy).toHaveBeenCalledWith({
+    cohortId: 'c1',
+    lastModified: 10,
+    libraryName: 'experiment-node-server',
+    libraryVersion: PACKAGE_VERSION,
+    maxCohortSize: 10,
+    timeoutMillis: COHORT_CONFIG_TIMEOUT,
+  });
+});
+
+test('cohort fetch client error, no retry', async () => {
+  const cohortApiGetCohortSpy = jest.spyOn(SdkCohortApi.prototype, 'getCohort');
+  cohortApiGetCohortSpy.mockImplementation(async () => {
+    throw new CohortClientRequestError();
   });
 
   const cohortFetcher = new CohortFetcher('', '', null, 'someurl', 10, 100);
