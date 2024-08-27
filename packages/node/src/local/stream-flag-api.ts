@@ -64,6 +64,8 @@ export class SdkStreamFlagApi implements StreamFlagApi {
   private isClosedAndNotTrying = true;
 
   // Callback for updating flag configs. Can be set or changed multiple times and effect immediately.
+  public onInitUpdate?: StreamFlagOnUpdateCallback;
+  // Callback for updating flag configs. Can be set or changed multiple times and effect immediately.
   public onUpdate?: StreamFlagOnUpdateCallback;
   // Callback for notifying user of fatal errors. Can be set or changed multiple times and effect immediately.
   public onError?: StreamFlagOnErrorCallback;
@@ -115,12 +117,16 @@ export class SdkStreamFlagApi implements StreamFlagApi {
           return reject(DEFAULT_STREAM_ERR_EVENTS.DATA_UNPARSABLE);
         }
         // Update the callbacks.
-        this.api.onUpdate = (data: string) => this.handleNewMsg(data);
+        this.api.onUpdate = (data: string) => this.handleNewMsg(data, false);
         this.api.onError = (err: StreamErrorEvent) => this.errorAndRetry(err);
         // Handoff data to application. Make sure it finishes processing initial new flag configs.
-        await this.handleNewMsg(data);
-        // Resolve promise which declares client ready.
-        resolve();
+        try {
+          await this.handleNewMsg(data, true);
+          // Resolve promise which declares client ready.
+          resolve();
+        } catch {
+          reject();
+        }
       };
       this.api.onUpdate = dealWithFlagUpdateInOneTry;
 
@@ -230,7 +236,7 @@ export class SdkStreamFlagApi implements StreamFlagApi {
   }
 
   // Handles new messages, parse them, and handoff to application. Retries if have parsing error.
-  private async handleNewMsg(data: string) {
+  private async handleNewMsg(data: string, isInit: boolean) {
     let flagConfigs;
     try {
       flagConfigs = SdkStreamFlagApi.parseFlagConfigs(data);
@@ -239,11 +245,17 @@ export class SdkStreamFlagApi implements StreamFlagApi {
       return;
     }
     // Put update outside try catch. onUpdate error doesn't mean stream error.
-    if (this.onUpdate) {
+    const updateFunc =
+      isInit && this.onInitUpdate ? this.onInitUpdate : this.onUpdate;
+    if (updateFunc) {
       try {
-        await this.onUpdate(flagConfigs);
-        // eslint-disable-next-line no-empty
-      } catch {} // Don't care about application errors after handoff.
+        await updateFunc(flagConfigs);
+      } catch (e) {
+        // Only care about application errors after handoff if initing. Ensure init is success.
+        if (isInit) {
+          throw e;
+        }
+      }
     }
   }
 

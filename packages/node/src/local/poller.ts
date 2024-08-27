@@ -1,11 +1,11 @@
+import { CohortStorage } from '../types/cohort';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
-import { doWithBackoff, BackoffPolicy } from '../util/backoff';
-import { ConsoleLogger } from '../util/logger';
-import { Logger } from '../util/logger';
+import { BackoffPolicy, doWithBackoffFailLoudly } from '../util/backoff';
 
+import { CohortFetcher } from './cohort/fetcher';
 import { FlagConfigFetcher } from './fetcher';
-import { FlagConfigUpdater } from './updater';
+import { FlagConfigUpdater, FlagConfigUpdaterBase } from './updater';
 
 const BACKOFF_POLICY: BackoffPolicy = {
   attempts: 5,
@@ -14,25 +14,27 @@ const BACKOFF_POLICY: BackoffPolicy = {
   scalar: 1,
 };
 
-export class FlagConfigPoller implements FlagConfigUpdater {
-  private readonly logger: Logger;
+export class FlagConfigPoller
+  extends FlagConfigUpdaterBase
+  implements FlagConfigUpdater
+{
   private readonly pollingIntervalMillis: number;
 
   private poller: NodeJS.Timeout;
 
   public readonly fetcher: FlagConfigFetcher;
-  public readonly cache: FlagConfigCache;
 
   constructor(
     fetcher: FlagConfigFetcher,
     cache: FlagConfigCache,
+    cohortStorage: CohortStorage,
+    cohortFetcher?: CohortFetcher,
     pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
     debug = false,
   ) {
+    super(cache, cohortStorage, cohortFetcher, debug);
     this.fetcher = fetcher;
-    this.cache = cache;
     this.pollingIntervalMillis = pollingIntervalMillis;
-    this.logger = new ConsoleLogger(debug);
   }
 
   /**
@@ -58,9 +60,20 @@ export class FlagConfigPoller implements FlagConfigUpdater {
       }, this.pollingIntervalMillis);
 
       // Fetch initial flag configs and await the result.
-      await doWithBackoff<void>(async () => {
-        await this.update(onChange);
-      }, BACKOFF_POLICY);
+      try {
+        const flagConfigs = await doWithBackoffFailLoudly(
+          async () => await this.fetcher.fetch(),
+          BACKOFF_POLICY,
+        );
+        await super._update(flagConfigs, onChange);
+      } catch (e) {
+        this.logger.error(
+          '[Experiment] flag config initial poll failed, stopping',
+          e,
+        );
+        this.stop();
+        throw e;
+      }
     }
   }
 
@@ -77,29 +90,11 @@ export class FlagConfigPoller implements FlagConfigUpdater {
     }
   }
 
-  /**
-   * Force a flag config fetch and cache the update with an optional callback
-   * which gets called if the flag configs change in any way.
-   *
-   * @param onChange optional callback which will get called if the flag configs
-   * in the cache have changed.
-   */
   public async update(
     onChange?: (cache: FlagConfigCache) => Promise<void>,
   ): Promise<void> {
     this.logger.debug('[Experiment] updating flag configs');
     const flagConfigs = await this.fetcher.fetch();
-    let changed = false;
-    if (onChange) {
-      const current = await this.cache.getAll();
-      if (!Object.is(current, flagConfigs)) {
-        changed = true;
-      }
-    }
-    await this.cache.clear();
-    await this.cache.putAll(flagConfigs);
-    if (changed) {
-      await onChange(this.cache);
-    }
+    await super._update(flagConfigs, onChange);
   }
 }

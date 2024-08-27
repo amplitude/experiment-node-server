@@ -6,14 +6,11 @@ import {
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
-import {
-  ExperimentConfig,
-  RemoteEvaluationDefaults,
-  RemoteEvaluationConfig,
-} from '../types/config';
+import { ExperimentConfig, RemoteEvaluationConfig } from '../types/config';
 import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
+import { populateRemoteConfigDefaults } from '../util/config';
 import { sleep } from '../util/time';
 import {
   evaluationVariantsToVariants,
@@ -35,9 +32,9 @@ export class RemoteEvaluationClient {
    * @param apiKey The environment API Key
    * @param config See {@link ExperimentConfig} for config options
    */
-  public constructor(apiKey: string, config: RemoteEvaluationConfig) {
+  public constructor(apiKey: string, config?: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
-    this.config = { ...RemoteEvaluationDefaults, ...config };
+    this.config = populateRemoteConfigDefaults(config);
     this.evaluationApi = new SdkEvaluationApi(
       apiKey,
       this.config.serverUrl,

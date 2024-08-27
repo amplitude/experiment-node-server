@@ -3,49 +3,42 @@ import {
   StreamErrorEvent,
   StreamEventSourceFactory,
 } from '../transport/stream';
+import { CohortStorage } from '../types/cohort';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
-import { ConsoleLogger } from '../util/logger';
-import { Logger } from '../util/logger';
 
-import { FlagConfigFetcher } from './fetcher';
+import { CohortFetcher } from './cohort/fetcher';
 import { FlagConfigPoller } from './poller';
 import { SdkStreamFlagApi } from './stream-flag-api';
-import { FlagConfigUpdater } from './updater';
+import { FlagConfigUpdater, FlagConfigUpdaterBase } from './updater';
 
-export class FlagConfigStreamer implements FlagConfigUpdater {
-  private readonly logger: Logger;
-
+export class FlagConfigStreamer
+  extends FlagConfigUpdaterBase
+  implements FlagConfigUpdater
+{
   private readonly poller: FlagConfigPoller;
   private readonly stream: SdkStreamFlagApi;
   private readonly streamFlagRetryDelayMillis: number;
 
   private streamRetryInterval?: NodeJS.Timeout;
 
-  public readonly cache: FlagConfigCache;
-
   constructor(
     apiKey: string,
-    fetcher: FlagConfigFetcher,
+    poller: FlagConfigPoller,
     cache: FlagConfigCache,
     streamEventSourceFactory: StreamEventSourceFactory,
-    pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
     streamFlagConnTimeoutMillis = LocalEvaluationDefaults.streamFlagConnTimeoutMillis,
     streamFlagTryAttempts: number,
     streamFlagTryDelayMillis: number,
     streamFlagRetryDelayMillis: number,
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
+    cohortStorage: CohortStorage,
+    cohortFetcher?: CohortFetcher,
     debug = false,
   ) {
-    this.logger = new ConsoleLogger(debug);
+    super(cache, cohortStorage, cohortFetcher, debug);
     this.logger.debug('[Experiment] streamer - init');
-    this.cache = cache;
-    this.poller = new FlagConfigPoller(
-      fetcher,
-      cache,
-      pollingIntervalMillis,
-      debug,
-    );
+    this.poller = poller;
     this.stream = new SdkStreamFlagApi(
       apiKey,
       serverUrl,
@@ -73,26 +66,20 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
     this.stream.onError = (e) => {
       const err = e as StreamErrorEvent;
       this.logger.debug(
-        `[Experiment] streamer - onError, fallback to poller, err status: ${err.status}, err message: ${err.message}`,
+        `[Experiment] streamer - onError, fallback to poller, err status: ${err?.status}, err message: ${err?.message}, err ${err}`,
       );
       this.poller.start(onChange);
       this.startRetryStreamInterval();
     };
 
+    this.stream.onInitUpdate = async (flagConfigs) => {
+      this.logger.debug('[Experiment] streamer - receives updates');
+      await super._update(flagConfigs, onChange);
+      this.logger.debug('[Experiment] streamer - start flags stream success');
+    };
     this.stream.onUpdate = async (flagConfigs) => {
       this.logger.debug('[Experiment] streamer - receives updates');
-      let changed = false;
-      if (onChange) {
-        const current = await this.cache.getAll();
-        if (!Object.is(current, flagConfigs)) {
-          changed = true;
-        }
-      }
-      await this.cache.clear();
-      await this.cache.putAll(flagConfigs);
-      if (changed) {
-        await onChange(this.cache);
-      }
+      await super._update(flagConfigs, onChange);
     };
 
     try {
@@ -107,11 +94,10 @@ export class FlagConfigStreamer implements FlagConfigUpdater {
         libraryVersion: PACKAGE_VERSION,
       });
       this.poller.stop();
-      this.logger.debug('[Experiment] streamer - start stream success');
     } catch (e) {
       const err = e as StreamErrorEvent;
       this.logger.debug(
-        `[Experiment] streamer - start stream failed, fallback to poller, err status: ${err.status}, err message: ${err.message}`,
+        `[Experiment] streamer - start stream failed, fallback to poller, err status: ${err?.status}, err message: ${err?.message}, err ${err}`,
       );
       await this.poller.start(onChange);
       this.startRetryStreamInterval();

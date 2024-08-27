@@ -8,10 +8,12 @@ export const convertUserToEvaluationContext = (
   }
   const userGroups = user.groups;
   const userGroupProperties = user.group_properties;
+  const userGroupCohortIds = user.group_cohort_ids;
   const context: Record<string, unknown> = {};
   user = { ...user };
   delete user['groups'];
   delete user['group_properties'];
+  delete user['group_cohort_ids'];
   if (Object.keys(user).length > 0) {
     context['user'] = user;
   }
@@ -30,6 +32,11 @@ export const convertUserToEvaluationContext = (
       const groupProperties = userGroupProperties?.[groupType]?.[groupName];
       if (groupProperties && Object.keys(groupProperties).length > 0) {
         groupNameMap['group_properties'] = groupProperties;
+      }
+      // Check for group cohort ids.
+      const groupCohortIds = userGroupCohortIds?.[groupType]?.[groupName];
+      if (groupCohortIds && Object.keys(groupCohortIds).length > 0) {
+        groupNameMap['cohort_ids'] = groupCohortIds;
       }
       groups[groupType] = groupNameMap;
     }
