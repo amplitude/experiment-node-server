@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/amplitude/experiment-node-server/compare/v1.9.0...v1.10.0) (2024-08-27)
+
+
+### Features
+
+* Add cohort sync ([#49](https://github.com/amplitude/experiment-node-server/issues/49)) ([74221bf](https://github.com/amplitude/experiment-node-server/commit/74221bf6644c70f0a0db0760fe139c2f717d53ba))
+
+
+
+
+
 # [1.9.0](https://github.com/amplitude/experiment-node-server/compare/v1.8.3...v1.9.0) (2024-03-15)
 
 
