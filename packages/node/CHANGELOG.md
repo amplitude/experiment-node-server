@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1](https://github.com/amplitude/experiment-node-server/compare/v1.10.0...v1.10.1) (2024-12-20)
+
+
+### Bug Fixes
+
+* when retries is set to zero, throw the error ([#51](https://github.com/amplitude/experiment-node-server/issues/51)) ([a10e726](https://github.com/amplitude/experiment-node-server/commit/a10e726ce89962b326537671c3bedf56c2e3f7ef))
+
+
+
+
+
 # [1.10.0](https://github.com/amplitude/experiment-node-server/compare/v1.9.0...v1.10.0) (2024-08-27)
 
 
