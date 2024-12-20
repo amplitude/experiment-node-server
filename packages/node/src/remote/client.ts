@@ -68,7 +68,7 @@ export class RemoteEvaluationClient {
       console.error('[Experiment] Fetch failed: ', e);
       if (this.shouldRetryFetch(e)) {
         try {
-          return await this.retryFetch(user, options);
+          return await this.retryFetch(user, options, e);
         } catch (e) {
           console.error(e);
         }
@@ -117,13 +117,10 @@ export class RemoteEvaluationClient {
 
   private async retryFetch(
     user: ExperimentUser,
-    options?: FetchOptions,
+    options: FetchOptions,
+    err: Error,
   ): Promise<Record<string, Variant>> {
-    if (this.config.fetchRetries == 0) {
-      return {};
-    }
     this.debug('[Experiment] Retrying fetch');
-    let err: Error = null;
     let delayMillis = this.config.fetchRetryBackoffMinMillis;
     for (let i = 0; i < this.config.fetchRetries; i++) {
       await sleep(delayMillis);
