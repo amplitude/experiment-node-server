@@ -43,3 +43,4 @@ jobs:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         EU_API_KEY: ${{ secrets.EU_API_KEY }}
         EU_SECRET_KEY: ${{ secrets.EU_SECRET_KEY }}
+        MANAGEMENT_API_KEY: ${{ secrets.MANAGEMENT_API_KEY }}

@@ -7,6 +7,7 @@ import EventSource from 'eventsource';
 import { SdkStreamFlagApi } from 'src/local/stream-flag-api';
 import { FetchHttpClient, WrapperClient } from 'src/transport/http';
 import { StreamErrorEvent } from 'src/transport/stream';
+import { LocalEvaluationDefaults } from 'src/types/config';
 import { sleep } from 'src/util/time';
 
 dotenv.config({
@@ -17,16 +18,21 @@ dotenv.config({
   ),
 });
 
-if (!process.env['SERVER_URL']) {
+if (!process.env['MANAGEMENT_API_KEY']) {
   throw new Error(
     'No env vars found. If running on local, have you created .env file correct environment variables? Checkout README.md',
   );
 }
 
-const SERVER_URL = process.env['SERVER_URL'];
-const STREAM_SERVER_URL = process.env['STREAM_SERVER_URL'];
-const MANAGEMENT_API_SERVER_URL = process.env['MANAGEMENT_API_SERVER_URL'];
-const DEPLOYMENT_KEY = process.env['DEPLOYMENT_KEY'];
+const SERVER_URL =
+  process.env['SERVER_URL'] || LocalEvaluationDefaults.serverUrl;
+const STREAM_SERVER_URL =
+  process.env['STREAM_SERVER_URL'] || LocalEvaluationDefaults.streamServerUrl;
+const MANAGEMENT_API_SERVER_URL =
+  process.env['MANAGEMENT_API_SERVER_URL'] ||
+  'https://experiment.amplitude.com';
+const DEPLOYMENT_KEY =
+  process.env['DEPLOYMENT_KEY'] || 'server-qz35UwzJ5akieoAdIgzM4m9MIiOLXLoz';
 const MANAGEMENT_API_KEY = process.env['MANAGEMENT_API_KEY'];
 const FLAG_KEY = 'sdk-ci-stream-flag-test';
 
