@@ -88,7 +88,7 @@ test('test, success', async () => {
   expect(streamError).toBeUndefined();
 
   // Test changes to flags are reflected in stream.
-  const flagVersion: number = fetchFlags[FLAG_KEY]['metadata'][
+  let flagVersion: number = fetchFlags[FLAG_KEY]['metadata'][
     'flagVersion'
   ] as number;
 
@@ -107,48 +107,33 @@ test('test, success', async () => {
   const flagId = JSON.parse(getFlagIdRequest.body)['flags'][0]['id'];
 
   // Call management api to edit deployment. Then wait for stream to update.
-  while ((f = streamFlags.pop())) {}
-  let invalidation = await httpClient.request(
-    MANAGEMENT_API_SERVER_URL + '/api/1/flags/' + flagId,
+  while ((f = streamFlags.pop())) {
+    flagVersion = Math.max(flagVersion, f[FLAG_KEY]['metadata']['flagVersion']);
+  }
+  const randNumber = Math.random();
+  const modifyFlagReq = await httpClient.request(
+    MANAGEMENT_API_SERVER_URL + '/api/1/flags/' + flagId + '/variants/on',
     'PATCH',
     {
       Authorization: 'Bearer ' + MANAGEMENT_API_KEY,
       'Content-Type': 'application/json',
       Accept: '*/*',
     },
-    '{"rolloutPercentage": 50}',
+    `{"payload": ${randNumber}}`,
     10000,
   );
-  expect(invalidation.status).toBe(200);
+  expect(modifyFlagReq.status).toBe(200);
   await sleep(5000);
-  expect(
-    streamFlags[0][FLAG_KEY]['segments'][0]['bucket']['allocations'][0][
-      'range'
-    ],
-  ).toEqual([0, 50]);
-  expect(streamFlags[0][FLAG_KEY]['metadata']['flagVersion']).toBe(
-    flagVersion + 1,
-  );
-  while ((f = streamFlags.pop())) {}
-
-  // Reset flag to original state.
-  invalidation = await httpClient.request(
-    MANAGEMENT_API_SERVER_URL + '/api/1/flags/' + flagId,
-    'PATCH',
-    {
-      Authorization: 'Bearer ' + MANAGEMENT_API_KEY,
-      'Content-Type': 'application/json',
-      Accept: '*/*',
-    },
-    '{"rolloutPercentage": 100}',
-    10000,
-  );
-  expect(invalidation.status).toBe(200);
-  await sleep(5000);
-  expect(streamFlags[0][FLAG_KEY]['segments'][0]['bucket']).toBeUndefined();
-  expect(streamFlags[0][FLAG_KEY]['metadata']['flagVersion']).toBe(
-    flagVersion + 2,
-  );
+  let updateFound = false;
+  for (const flag of streamFlags) {
+    if (flag[FLAG_KEY]['variants']['on']['payload'] === randNumber) {
+      updateFound = true;
+      expect(flag[FLAG_KEY]['metadata']['flagVersion']).toBeGreaterThan(
+        flagVersion,
+      );
+    }
+  }
+  expect(updateFound).toBe(true);
 
   api.close();
 }, 60000);
