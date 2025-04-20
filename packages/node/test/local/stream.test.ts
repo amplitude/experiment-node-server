@@ -43,7 +43,10 @@ const LIBRARY = {
 
 // Test stream is successfully connected and data is valid.
 // The main purpose is to test and ensure the SDK stream interface works with stream server.
-test('SDK stream is compatible with stream server', async () => {
+// This test may be flacky if multiple edits to the flag happens simultaneously,
+// i.e. multiple invocation of this test is run at the same time.
+// If two edits are made in a very very very short period (few seconds), the first edit may not be streamed.
+test('SDK stream is compatible with stream server (flacky possible, see comments)', async () => {
   const api = new SdkStreamFlagApi(
     DEPLOYMENT_KEY,
     STREAM_SERVER_URL,
