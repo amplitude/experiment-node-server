@@ -42,7 +42,8 @@ const LIBRARY = {
 };
 
 // Test stream is successfully connected and data is valid.
-test('test, success', async () => {
+// The main purpose is to test and ensure the SDK stream interface works with stream server.
+test('SDK stream is compatible with stream server', async () => {
   const api = new SdkStreamFlagApi(
     DEPLOYMENT_KEY,
     STREAM_SERVER_URL,
@@ -78,10 +79,16 @@ test('test, success', async () => {
   );
   const fetchFlags = await fetchApi.getFlags(LIBRARY);
 
-  let f = undefined;
-  while ((f = streamFlags.pop())) {
-    expect(f).toStrictEqual(fetchFlags);
-  }
+  // At least one flag streamed should be the same as the one fetched.
+  // There can be other updates after stream establishment and before fetch.
+  await sleep(5000); // Assume there's an update right before fetch but after stream, wait for stream to receive that data.
+  expect(
+    streamFlags.filter(
+      (f) =>
+        f[FLAG_KEY]['metadata']['flagVersion'] ===
+        fetchFlags[FLAG_KEY]['metadata']['flagVersion'],
+    )[0],
+  ).toStrictEqual(fetchFlags);
 
   // Test that stream is kept alive.
   await sleep(20000);
@@ -94,7 +101,7 @@ test('test, success', async () => {
 
   // Get flag id using management-api.
   const getFlagIdRequest = await httpClient.request(
-    MANAGEMENT_API_SERVER_URL + '/api/1/flags?key=' + FLAG_KEY,
+    `${MANAGEMENT_API_SERVER_URL}/api/1/flags?key=${FLAG_KEY}`,
     'GET',
     {
       Authorization: 'Bearer ' + MANAGEMENT_API_KEY,
@@ -106,13 +113,16 @@ test('test, success', async () => {
   expect(getFlagIdRequest.status).toBe(200);
   const flagId = JSON.parse(getFlagIdRequest.body)['flags'][0]['id'];
 
-  // Call management api to edit deployment. Then wait for stream to update.
+  // The the most updated flag version we have, while emptying the array.
+  let f;
   while ((f = streamFlags.pop())) {
     flagVersion = Math.max(flagVersion, f[FLAG_KEY]['metadata']['flagVersion']);
   }
+
+  // Call management api to edit deployment. Then wait for stream to update.
   const randNumber = Math.random();
   const modifyFlagReq = await httpClient.request(
-    MANAGEMENT_API_SERVER_URL + '/api/1/flags/' + flagId + '/variants/on',
+    `${MANAGEMENT_API_SERVER_URL}/api/1/flags/${flagId}/variants/on`,
     'PATCH',
     {
       Authorization: 'Bearer ' + MANAGEMENT_API_KEY,
@@ -123,17 +133,15 @@ test('test, success', async () => {
     10000,
   );
   expect(modifyFlagReq.status).toBe(200);
-  await sleep(5000);
-  let updateFound = false;
-  for (const flag of streamFlags) {
-    if (flag[FLAG_KEY]['variants']['on']['payload'] === randNumber) {
-      updateFound = true;
-      expect(flag[FLAG_KEY]['metadata']['flagVersion']).toBeGreaterThan(
-        flagVersion,
-      );
-    }
-  }
-  expect(updateFound).toBe(true);
+  await sleep(5000); // 5s is generous enough for update to stream.
+
+  // Check that at least one of the updates happened during this time have the random number we generated.
+  // This means that the stream is working and we are getting updates.
+  expect(
+    streamFlags.filter(
+      (f) => f[FLAG_KEY]['variants']['on']['payload'] === randNumber,
+    )[0][FLAG_KEY]['metadata']['flagVersion'],
+  ).toBeGreaterThan(flagVersion);
 
   api.close();
 }, 60000);
