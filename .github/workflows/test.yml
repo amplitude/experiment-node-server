@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Cache Node Modules
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -43,3 +43,4 @@ jobs:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         EU_API_KEY: ${{ secrets.EU_API_KEY }}
         EU_SECRET_KEY: ${{ secrets.EU_SECRET_KEY }}
+        MANAGEMENT_API_KEY: ${{ secrets.MANAGEMENT_API_KEY }}
