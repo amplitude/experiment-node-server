@@ -46,6 +46,7 @@ const LIBRARY = {
 // This test may be flaky if multiple edits to the flag happens simultaneously,
 // i.e. multiple invocation of this test is run at the same time.
 // If two edits are made in a very very very short period (few seconds), the first edit may not be streamed.
+jest.retryTimes(2);
 test('SDK stream is compatible with stream server (flaky possible, see comments)', async () => {
   const api = new SdkStreamFlagApi(
     DEPLOYMENT_KEY,
