@@ -21,7 +21,7 @@ export interface CohortApi {
    *    throws an error if download failed.
    * @param options
    */
-  getCohort(options?: GetCohortOptions): Promise<Cohort>;
+  getCohort(options?: GetCohortOptions): Promise<Cohort | undefined>;
 }
 
 export class CohortClientRequestError extends Error {} // 4xx errors except 429
