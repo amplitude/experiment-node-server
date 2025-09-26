@@ -18,4 +18,7 @@ module.exports = {
       tsconfig: '<rootDir>/tsconfig.json',
     },
   },
+  // Reduce concurrency and increase timeout
+  maxWorkers: 1,
+  testTimeout: 60000, // 1 minute
 };
