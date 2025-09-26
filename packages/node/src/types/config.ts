@@ -14,6 +14,11 @@ export type RemoteEvaluationConfig = {
   debug?: boolean;
 
   /**
+   * Instance names support difference singleton isntance configurations for the same api key.
+   */
+  instanceName?: string;
+
+  /**
    * Select the Amplitude data center to get flags and variants from, `us` or `eu`.
    */
   serverZone?: string;
@@ -87,6 +92,7 @@ export type ExperimentConfig = RemoteEvaluationConfig;
  */
 export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
   debug: false,
+  instanceName: undefined,
   serverZone: 'us',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
@@ -103,6 +109,7 @@ export const RemoteEvaluationDefaults: RemoteEvaluationConfig = {
  */
 export const Defaults: ExperimentConfig = {
   debug: false,
+  instanceName: undefined,
   serverZone: 'us',
   serverUrl: 'https://api.lab.amplitude.com',
   fetchTimeoutMillis: 10000,
@@ -124,6 +131,11 @@ export type LocalEvaluationConfig = {
    * Set to true to log some extra information to the console.
    */
   debug?: boolean;
+
+  /**
+   * Instance names support difference singleton isntance configurations for the same api key.
+   */
+  instanceName?: string;
 
   /**
    * Select the Amplitude data center to get flags and variants from, `us` or `eu`.
