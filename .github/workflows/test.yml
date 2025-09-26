@@ -37,7 +37,7 @@ jobs:
       run: npx lerna exec yarn
 
     - name: Test
-      run: yarn test --testPathIgnorePatterns "benchmark.test.ts"
+      run: yarn test --testPathIgnorePatterns "client.test.ts"
       env:
         API_KEY: ${{ secrets.API_KEY }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
