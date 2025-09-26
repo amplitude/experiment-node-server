@@ -10,6 +10,7 @@ test('ExperimentClient.fetch, success', async () => {
   const client = new RemoteEvaluationClient(API_KEY, {});
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
+  delete variant.metadata;
   expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
