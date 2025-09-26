@@ -30,6 +30,7 @@ test('ExperimentClient.fetch, no retries, timeout failure, retry success', async
   });
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
+  delete variant.metadata;
   expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
@@ -42,6 +43,7 @@ test('ExperimentClient.fetch, retry once, timeout first then succeed with 0 back
   });
   const variants = await client.fetch(testUser);
   const variant = variants['sdk-ci-test'];
+  delete variant.metadata;
   expect(variant).toEqual({ key: 'on', value: 'on', payload: 'payload' });
 });
 
