@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/amplitude/experiment-node-server/compare/v1.10.1...v1.11.0) (2025-09-26)
+
+
+### Bug Fixes
+
+* CohortApi.getCohort() signature ([#53](https://github.com/amplitude/experiment-node-server/issues/53)) ([618c84e](https://github.com/amplitude/experiment-node-server/commit/618c84e443fcc30c707a6b9dfcba4657dc313b49))
+
+
+### Features
+
+* add isntanceName config ([#54](https://github.com/amplitude/experiment-node-server/issues/54)) ([8a905f7](https://github.com/amplitude/experiment-node-server/commit/8a905f776887d2b2d191e32b2bb60e84b0fbe7b4))
+
+
+
+
+
 ## [1.10.1](https://github.com/amplitude/experiment-node-server/compare/v1.10.0...v1.10.1) (2024-12-20)
 
 
