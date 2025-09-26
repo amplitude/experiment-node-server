@@ -37,7 +37,7 @@ jobs:
       run: npx lerna exec yarn
 
     - name: Test
-      run: yarn test --silent --testPathIgnorePatterns "stream.test.ts" "cohort*.test.ts"
+      run: yarn test --silent
       env:
         API_KEY: ${{ secrets.API_KEY }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
