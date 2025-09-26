@@ -19,14 +19,22 @@ describe('Factory instance name tests', () => {
     });
 
     test('should return different instances for same API key with different instance names', () => {
-      const client1 = Experiment.initializeRemote(API_KEY, { instanceName: 'instance1' });
-      const client2 = Experiment.initializeRemote(API_KEY, { instanceName: 'instance2' });
+      const client1 = Experiment.initializeRemote(API_KEY, {
+        instanceName: 'instance1',
+      });
+      const client2 = Experiment.initializeRemote(API_KEY, {
+        instanceName: 'instance2',
+      });
       expect(client1).not.toBe(client2);
     });
 
     test('should return same instance for same API key with same instance name', () => {
-      const client1 = Experiment.initializeRemote(API_KEY, { instanceName: 'instance1' });
-      const client2 = Experiment.initializeRemote(API_KEY, { instanceName: 'instance1' });
+      const client1 = Experiment.initializeRemote(API_KEY, {
+        instanceName: 'instance1',
+      });
+      const client2 = Experiment.initializeRemote(API_KEY, {
+        instanceName: 'instance1',
+      });
       expect(client1).toBe(client2);
     });
   });
@@ -39,14 +47,22 @@ describe('Factory instance name tests', () => {
     });
 
     test('should return different instances for same API key with different instance names', () => {
-      const client1 = Experiment.initializeLocal(API_KEY, { instanceName: 'instance1' });
-      const client2 = Experiment.initializeLocal(API_KEY, { instanceName: 'instance2' });
+      const client1 = Experiment.initializeLocal(API_KEY, {
+        instanceName: 'instance1',
+      });
+      const client2 = Experiment.initializeLocal(API_KEY, {
+        instanceName: 'instance2',
+      });
       expect(client1).not.toBe(client2);
     });
 
     test('should return same instance for same API key with same instance name', () => {
-      const client1 = Experiment.initializeLocal(API_KEY, { instanceName: 'instance1' });
-      const client2 = Experiment.initializeLocal(API_KEY, { instanceName: 'instance1' });
+      const client1 = Experiment.initializeLocal(API_KEY, {
+        instanceName: 'instance1',
+      });
+      const client2 = Experiment.initializeLocal(API_KEY, {
+        instanceName: 'instance1',
+      });
       expect(client1).toBe(client2);
     });
   });

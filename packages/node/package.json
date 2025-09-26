@@ -11,6 +11,7 @@
     "generate:version": "genversion --es6 gen/version.ts",
     "prepare": "yarn generate:version",
     "lint": "eslint . --ignore-path ../../.eslintignore && prettier -c . --ignore-path ../../.prettierignore",
+    "lint:fix": "eslint . --ignore-path ../../.eslintignore --fix && prettier --write . --ignore-path ../../.prettierignore",
     "test": "jest",
     "docs": "typedoc",
     "version": "yarn docs && git add ../../docs",
