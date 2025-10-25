@@ -2,8 +2,9 @@ import { version as PACKAGE_VERSION } from '../../../gen/version';
 import { WrapperClient } from '../../transport/http';
 import { Cohort } from '../../types/cohort';
 import { CohortSyncConfigDefaults } from '../../types/config';
+import { LogLevel } from '../../types/loglevel';
 import { HttpClient } from '../../types/transport';
-import { ConsoleLogger, Logger } from '../../util/logger';
+import { AmplitudeLogger, ConsoleLogger } from '../../util/logger';
 import { Mutex, Executor } from '../../util/threading';
 import { sleep } from '../../util/time';
 
@@ -18,7 +19,7 @@ export const COHORT_CONFIG_TIMEOUT = 20000;
 const ATTEMPTS = 3;
 
 export class CohortFetcher {
-  private readonly logger: Logger;
+  private readonly logger: AmplitudeLogger;
 
   readonly cohortApi: SdkCohortApi;
   readonly maxCohortSize: number;
@@ -38,7 +39,8 @@ export class CohortFetcher {
     serverUrl = CohortSyncConfigDefaults.cohortServerUrl,
     maxCohortSize = CohortSyncConfigDefaults.maxCohortSize,
     cohortRequestDelayMillis = 100,
-    debug = false,
+    logLevel = LogLevel.Error,
+    loggerProvider = new ConsoleLogger(),
   ) {
     this.cohortApi = new SdkCohortApi(
       Buffer.from(apiKey + ':' + secretKey).toString('base64'),
@@ -47,7 +49,7 @@ export class CohortFetcher {
     );
     this.maxCohortSize = maxCohortSize;
     this.cohortRequestDelayMillis = cohortRequestDelayMillis;
-    this.logger = new ConsoleLogger(debug);
+    this.logger = new AmplitudeLogger(logLevel, loggerProvider);
   }
 
   static getKey(cohortId: string, lastModified?: number): string {

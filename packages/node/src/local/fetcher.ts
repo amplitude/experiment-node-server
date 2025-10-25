@@ -4,14 +4,14 @@ import { version as PACKAGE_VERSION } from '../../gen/version';
 import { WrapperClient } from '../transport/http';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfig } from '../types/flag';
+import { LogLevel } from '../types/loglevel';
 import { HttpClient } from '../types/transport';
-import { ConsoleLogger } from '../util/logger';
-import { Logger } from '../util/logger';
+import { AmplitudeLogger, ConsoleLogger } from '../util/logger';
 
 const FLAG_CONFIG_TIMEOUT = 5000;
 
 export class FlagConfigFetcher {
-  private readonly logger: Logger;
+  private readonly logger: AmplitudeLogger;
 
   private readonly apiKey: string;
   private readonly serverUrl: string;
@@ -23,7 +23,8 @@ export class FlagConfigFetcher {
     apiKey: string,
     httpClient: HttpClient,
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
-    debug = false,
+    logLevel = LogLevel.Error,
+    loggerProvider = new ConsoleLogger(),
   ) {
     this.apiKey = apiKey;
     this.serverUrl = serverUrl;
@@ -32,7 +33,7 @@ export class FlagConfigFetcher {
       serverUrl,
       new WrapperClient(httpClient),
     );
-    this.logger = new ConsoleLogger(debug);
+    this.logger = new AmplitudeLogger(logLevel, loggerProvider);
   }
 
   /**

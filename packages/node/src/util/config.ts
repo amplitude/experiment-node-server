@@ -8,11 +8,13 @@ import {
   LocalEvaluationDefaults,
   CohortSyncConfigDefaults,
 } from '../types/config';
+import { LogLevel } from '../types/loglevel';
 
 export const populateRemoteConfigDefaults = (
   customConfig?: RemoteEvaluationConfig,
 ): RemoteEvaluationConfig => {
   const config = { ...RemoteEvaluationDefaults, ...customConfig };
+  config.logLevel = config.debug ? LogLevel.Debug : config.logLevel;
   const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
   config.serverZone = isEu ? 'eu' : 'us';
 
@@ -28,6 +30,7 @@ export const populateLocalConfigDefaults = (
   customConfig?: LocalEvaluationConfig,
 ): LocalEvaluationConfig => {
   const config = { ...LocalEvaluationDefaults, ...customConfig };
+  config.logLevel = config.debug ? LogLevel.Debug : config.logLevel;
   const isEu = config.serverZone.toLowerCase() === EU_SERVER_URLS.name;
   config.serverZone = isEu ? 'eu' : 'us';
 

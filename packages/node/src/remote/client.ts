@@ -3,6 +3,7 @@ import {
   FetchError,
   SdkEvaluationApi,
 } from '@amplitude/experiment-core';
+import { AmplitudeLogger } from 'src/util/logger';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
@@ -22,6 +23,7 @@ import {
  * @category Core Usage
  */
 export class RemoteEvaluationClient {
+  private readonly logger: AmplitudeLogger;
   private readonly apiKey: string;
   private readonly config: RemoteEvaluationConfig;
   private readonly evaluationApi: EvaluationApi;
@@ -35,6 +37,10 @@ export class RemoteEvaluationClient {
   public constructor(apiKey: string, config?: RemoteEvaluationConfig) {
     this.apiKey = apiKey;
     this.config = populateRemoteConfigDefaults(config);
+    this.logger = new AmplitudeLogger(
+      this.config.logLevel,
+      this.config.loggerProvider,
+    );
     this.evaluationApi = new SdkEvaluationApi(
       apiKey,
       this.config.serverUrl,
@@ -61,7 +67,7 @@ export class RemoteEvaluationClient {
     if (!this.apiKey) {
       throw Error('Experiment API key is empty');
     }
-    this.debug('[Experiment] Fetching variants for user: ', user);
+    this.logger.debug('[Experiment] Fetching variants for user: ', user);
     try {
       return await this.doFetch(user, this.config.fetchTimeoutMillis, options);
     } catch (e) {
@@ -111,7 +117,7 @@ export class RemoteEvaluationClient {
       flagKeys: options?.flagKeys,
       timeoutMillis: timeoutMillis,
     });
-    this.debug('[Experiment] Fetched variants: ', results);
+    this.logger.debug('[Experiment] Fetched variants: ', results);
     return evaluationVariantsToVariants(results);
   }
 
@@ -120,7 +126,7 @@ export class RemoteEvaluationClient {
     options: FetchOptions,
     err: Error,
   ): Promise<Record<string, Variant>> {
-    this.debug('[Experiment] Retrying fetch');
+    this.logger.debug('[Experiment] Retrying fetch');
     let delayMillis = this.config.fetchRetryBackoffMinMillis;
     for (let i = 0; i < this.config.fetchRetries; i++) {
       await sleep(delayMillis);
@@ -147,13 +153,6 @@ export class RemoteEvaluationClient {
       library: `experiment-node-server/${PACKAGE_VERSION}`,
       ...user,
     };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private debug(message?: any, ...optionalParams: any[]): void {
-    if (this.config.debug) {
-      console.debug(message, ...optionalParams);
-    }
   }
 
   private shouldRetryFetch(e: Error): boolean {

@@ -6,6 +6,8 @@ import {
 import { CohortStorage } from '../types/cohort';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
+import { LogLevel } from '../types/loglevel';
+import { ConsoleLogger } from '../util/logger';
 
 import { CohortFetcher } from './cohort/fetcher';
 import { FlagConfigPoller } from './poller';
@@ -34,9 +36,10 @@ export class FlagConfigStreamer
     serverUrl: string = LocalEvaluationDefaults.serverUrl,
     cohortStorage: CohortStorage,
     cohortFetcher?: CohortFetcher,
-    debug = false,
+    logLevel = LogLevel.Error,
+    loggerProvider = new ConsoleLogger(),
   ) {
-    super(cache, cohortStorage, cohortFetcher, debug);
+    super(cache, cohortStorage, cohortFetcher, logLevel, loggerProvider);
     this.logger.debug('[Experiment] streamer - init');
     this.poller = poller;
     this.stream = new SdkStreamFlagApi(
