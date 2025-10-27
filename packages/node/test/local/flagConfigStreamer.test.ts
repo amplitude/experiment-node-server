@@ -29,7 +29,6 @@ const getTestObjs = ({
     '[{"key": "fetcher-a", "variants": {}, "segments": []}]',
     '[{"key": "fetcher-b", "variants": {}, "segments": []}]',
   ],
-  debug = false,
 }) => {
   const fetchObj = {
     fetchCalls: 0,
@@ -64,7 +63,6 @@ const getTestObjs = ({
       fetchObj.cohortStorage,
       fetchObj.cohortFetcher,
       pollingIntervalMillis,
-      debug,
     ),
     cache,
     mockClient.clientFactory,
@@ -75,7 +73,6 @@ const getTestObjs = ({
     serverUrl,
     fetchObj.cohortStorage,
     fetchObj.cohortFetcher,
-    debug,
   );
   return {
     fetchObj,
@@ -683,7 +680,6 @@ test('FlagConfigUpdater.connect, flag success, cohort fail, retry fail, initiali
     streamFlagTryAttempts: 2,
     streamFlagTryDelayMillis: 1000,
     streamFlagRetryDelayMillis: 100000,
-    debug: true,
   });
   // Return cohort with their own cohortId.
   updater.start();
