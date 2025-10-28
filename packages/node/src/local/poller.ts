@@ -1,7 +1,9 @@
 import { CohortStorage } from '../types/cohort';
 import { LocalEvaluationDefaults } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
+import { LogLevel } from '../types/loglevel';
 import { BackoffPolicy, doWithBackoffFailLoudly } from '../util/backoff';
+import { ConsoleLogger } from '../util/logger';
 
 import { CohortFetcher } from './cohort/fetcher';
 import { FlagConfigFetcher } from './fetcher';
@@ -30,9 +32,10 @@ export class FlagConfigPoller
     cohortStorage: CohortStorage,
     cohortFetcher?: CohortFetcher,
     pollingIntervalMillis = LocalEvaluationDefaults.flagConfigPollingIntervalMillis,
-    debug = false,
+    logLevel = LogLevel.Error,
+    loggerProvider = new ConsoleLogger(),
   ) {
-    super(cache, cohortStorage, cohortFetcher, debug);
+    super(cache, cohortStorage, cohortFetcher, logLevel, loggerProvider);
     this.fetcher = fetcher;
     this.pollingIntervalMillis = pollingIntervalMillis;
   }
