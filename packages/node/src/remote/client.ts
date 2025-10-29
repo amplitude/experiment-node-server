@@ -3,7 +3,6 @@ import {
   FetchError,
   SdkEvaluationApi,
 } from '@amplitude/experiment-core';
-import { AmplitudeLogger } from 'src/util/logger';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
@@ -12,6 +11,7 @@ import { FetchOptions } from '../types/fetch';
 import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
 import { populateRemoteConfigDefaults } from '../util/config';
+import { AmplitudeLogger } from '../util/logger';
 import { sleep } from '../util/time';
 import {
   evaluationVariantsToVariants,
