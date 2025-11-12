@@ -15,6 +15,8 @@ import { USER_GROUP_TYPE } from '../types/cohort';
 import {
   AssignmentConfig,
   AssignmentConfigDefaults,
+  ExposureConfig,
+  ExposureConfigDefaults,
   LocalEvaluationConfig,
 } from '../types/config';
 import { FlagConfigCache } from '../types/flag';
@@ -40,6 +42,9 @@ import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 import { FlagConfigStreamer } from './streamer';
 import { FlagConfigUpdater } from './updater';
+import { Exposure, ExposureService } from 'src/exposure/exposure';
+import { AmplitudeExposureService } from 'src/exposure/exposure-service';
+import { InMemoryExposureFilter } from 'src/exposure/exposure-filter';
 
 const STREAM_RETRY_DELAY_MILLIS = 15000; // The base delay to retry stream after fallback to poller.
 const STREAM_RETRY_JITTER_MAX_MILLIS = 2000; // The jitter to add to delay after fallbacked to poller.
@@ -47,6 +52,13 @@ const STREAM_ATTEMPTS = 1; // Number of attempts before fallback to poller.
 const STREAM_TRY_DELAY_MILLIS = 1000; // The delay between attempts.
 
 const COHORT_POLLING_INTERVAL_MILLIS_MIN = 60000;
+
+export type EvaluateOptions = {
+  /**
+   * Whether to track exposure event for the evaluation.
+   */
+  tracksExposure?: boolean;
+};
 
 /**
  * Experiment client for evaluating variants for a user locally.
@@ -56,7 +68,11 @@ export class LocalEvaluationClient {
   private readonly logger: Logger;
   protected readonly config: LocalEvaluationConfig;
   private readonly updater: FlagConfigUpdater;
+  /**
+   * @deprecated use {@link exposureService} instead to track exposure events.
+   */
   private readonly assignmentService: AssignmentService;
+  private readonly exposureService: ExposureService;
   private readonly evaluation: EvaluationEngine;
   private readonly cohortUpdater?: CohortUpdater;
 
@@ -148,6 +164,14 @@ export class LocalEvaluationClient {
         this.config.assignmentConfig,
       );
     }
+    const exposureConfig = {
+      ...ExposureConfigDefaults,
+      ...this.config.exposureConfig,
+    };
+    if (!exposureConfig.apiKey) { // Use experiment deployment key if no api key is provided.
+      exposureConfig.apiKey = apiKey;
+    }
+    this.exposureService = this.createExposureService(exposureConfig);
     this.evaluation = new EvaluationEngine();
   }
 
@@ -161,6 +185,15 @@ export class LocalEvaluationClient {
       instance,
       new InMemoryAssignmentFilter(cacheCapacity),
     );
+  }
+
+  private createExposureService(
+    exposureConfig: ExposureConfig,
+  ): ExposureService {
+    const instance = amplitude.createInstance();
+    const { apiKey, cacheCapacity, ...ampConfig } = exposureConfig;
+    instance.init(apiKey, ampConfig);
+    return new AmplitudeExposureService(instance, new InMemoryExposureFilter(cacheCapacity));
   }
 
   /**
@@ -182,6 +215,7 @@ export class LocalEvaluationClient {
   public evaluateV2(
     user: ExperimentUser,
     flagKeys?: string[],
+    options?: EvaluateOptions,
   ): Record<string, Variant> {
     const flags = this.cache.getAllCached() as Record<string, EvaluationFlag>;
     this.enrichUserWithCohorts(user, flags);
@@ -190,6 +224,7 @@ export class LocalEvaluationClient {
     const sortedFlags = topologicalSort(flags, flagKeys);
     const results = this.evaluation.evaluate(context, sortedFlags);
     void this.assignmentService?.track(new Assignment(user, results));
+    void this.exposureService?.track(new Exposure(user, results));
     this.logger.debug('[Experiment] evaluate - variants: ', results);
     return evaluationVariantsToVariants(results);
   }
@@ -291,8 +326,9 @@ export class LocalEvaluationClient {
   public async evaluate(
     user: ExperimentUser,
     flagKeys?: string[],
+    options?: EvaluateOptions,
   ): Promise<Variants> {
-    const results = this.evaluateV2(user, flagKeys);
+    const results = this.evaluateV2(user, flagKeys, options);
     return filterDefaultVariants(results);
   }
 
