@@ -18,7 +18,7 @@ export interface AssignmentFilter {
 
 /**
  * @deprecated Assignment tracking is deprecated. Use Exposure tracking.
- * Making this class a synonym for Exposure. They have the same fields. 
+ * Making this class a synonym for Exposure. They have the same fields.
  * This class can be removed in the future with little effort.
  */
 export class Assignment {

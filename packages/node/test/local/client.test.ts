@@ -655,7 +655,11 @@ describe('ExperimentClient unit tests', () => {
 
     // Perform evaluation with tracksExposure=true
     const options = { tracksExposure: true };
-    const variants = client.evaluateV2(testUser, ['sdk-local-evaluation-ci-test'], options);
+    const variants = client.evaluateV2(
+      testUser,
+      ['sdk-local-evaluation-ci-test'],
+      options,
+    );
 
     // Verify that track was called
     expect(trackedEvents.length).toBeGreaterThan(0);

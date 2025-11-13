@@ -5,6 +5,9 @@ import {
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
+import { Exposure, ExposureService } from 'src/exposure/exposure';
+import { InMemoryExposureFilter } from 'src/exposure/exposure-filter';
+import { AmplitudeExposureService } from 'src/exposure/exposure-service';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';
@@ -42,9 +45,6 @@ import { FlagConfigFetcher } from './fetcher';
 import { FlagConfigPoller } from './poller';
 import { FlagConfigStreamer } from './streamer';
 import { FlagConfigUpdater } from './updater';
-import { Exposure, ExposureService } from 'src/exposure/exposure';
-import { AmplitudeExposureService } from 'src/exposure/exposure-service';
-import { InMemoryExposureFilter } from 'src/exposure/exposure-filter';
 
 const STREAM_RETRY_DELAY_MILLIS = 15000; // The base delay to retry stream after fallback to poller.
 const STREAM_RETRY_JITTER_MAX_MILLIS = 2000; // The jitter to add to delay after fallbacked to poller.
@@ -168,7 +168,8 @@ export class LocalEvaluationClient {
       ...ExposureConfigDefaults,
       ...this.config.exposureConfig,
     };
-    if (!exposureConfig.apiKey) { // Use experiment deployment key if no api key is provided.
+    if (!exposureConfig.apiKey) {
+      // Use experiment deployment key if no api key is provided.
       exposureConfig.apiKey = apiKey;
     }
     this.exposureService = this.createExposureService(exposureConfig);
@@ -193,7 +194,10 @@ export class LocalEvaluationClient {
     const instance = amplitude.createInstance();
     const { apiKey, cacheCapacity, ...ampConfig } = exposureConfig;
     instance.init(apiKey, ampConfig);
-    return new AmplitudeExposureService(instance, new InMemoryExposureFilter(cacheCapacity));
+    return new AmplitudeExposureService(
+      instance,
+      new InMemoryExposureFilter(cacheCapacity),
+    );
   }
 
   /**

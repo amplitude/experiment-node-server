@@ -19,7 +19,10 @@ export class Exposure {
   public results: Record<string, EvaluationVariant>;
   public timestamp: number = Date.now();
 
-  public constructor(user: ExperimentUser, results: Record<string, EvaluationVariant>) {
+  public constructor(
+    user: ExperimentUser,
+    results: Record<string, EvaluationVariant>,
+  ) {
     this.user = user;
     this.results = results;
   }
@@ -34,4 +37,4 @@ export class Exposure {
     }
     return canonical;
   }
-};
+}

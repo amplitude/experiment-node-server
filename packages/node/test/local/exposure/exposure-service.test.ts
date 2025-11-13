@@ -99,44 +99,56 @@ test('exposure to event as expected', async () => {
     // Event Properties
     const flagKey = eventProperties['[Experiment] Flag Key'];
     expect(results[flagKey]).toBeDefined();
-    expect(eventProperties['[Experiment] Variant']).toEqual(results[flagKey].key);
+    expect(eventProperties['[Experiment] Variant']).toEqual(
+      results[flagKey].key,
+    );
     expect(eventProperties['metadata']).toEqual(results[flagKey].metadata);
 
     // User Properties
-    if (results[flagKey].metadata?.flagType === FLAG_TYPE_MUTUAL_EXCLUSION_GROUP) {
+    if (
+      results[flagKey].metadata?.flagType === FLAG_TYPE_MUTUAL_EXCLUSION_GROUP
+    ) {
       expect(userProperties['$set']).toEqual({});
       expect(userProperties['$unset']).toEqual({});
     } else {
       if (results[flagKey].metadata?.default) {
         expect(userProperties['$set']).toEqual({});
-        expect(userProperties['$unset']).toEqual({ [`[Experiment] ${flagKey}`]: '-' });
+        expect(userProperties['$unset']).toEqual({
+          [`[Experiment] ${flagKey}`]: '-',
+        });
       } else {
-        expect(userProperties['$set']).toEqual({ [`[Experiment] ${flagKey}`]: results[flagKey].key });
+        expect(userProperties['$set']).toEqual({
+          [`[Experiment] ${flagKey}`]: results[flagKey].key,
+        });
         expect(userProperties['$unset']).toEqual({});
       }
     }
 
     const canonicalization =
       'user device basic control default off different_value on empty_metadata on holdout holdout mutex slot-1 partial_metadata on ';
-    const expected = `user device ${hashCode(flagKey + ' ' + canonicalization)} ${Math.floor(
-      exposure.timestamp / DAY_MILLIS,
-    )}`;
+    const expected = `user device ${hashCode(
+      flagKey + ' ' + canonicalization,
+    )} ${Math.floor(exposure.timestamp / DAY_MILLIS)}`;
     expect(event.insert_id).toEqual(expected);
   }
-  
 });
 
 test('tracking called', async () => {
   const logEventMock = jest.spyOn(instance, 'logEvent');
-  await service.track(new Exposure({}, {
-    basic: {
-      key: 'control',
-      value: 'control',
-    },
-    different_value: {
-      key: 'on',
-      value: 'control',
-    },
-  }));
+  await service.track(
+    new Exposure(
+      {},
+      {
+        basic: {
+          key: 'control',
+          value: 'control',
+        },
+        different_value: {
+          key: 'on',
+          value: 'control',
+        },
+      },
+    ),
+  );
   expect(logEventMock).toHaveBeenCalledTimes(2);
 });
