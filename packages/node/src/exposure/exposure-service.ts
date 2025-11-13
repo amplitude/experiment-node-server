@@ -1,6 +1,6 @@
 import { BaseEvent, CoreClient } from '@amplitude/analytics-types';
-import { EvaluationVariant } from '@amplitude/experiment-core';
-import { ExperimentUser } from 'src/types/user';
+
+
 import { hashCode } from 'src/util/hash';
 
 import { Exposure, ExposureFilter, ExposureService } from './exposure';

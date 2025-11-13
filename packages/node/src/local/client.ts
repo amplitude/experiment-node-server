@@ -201,7 +201,7 @@ export class LocalEvaluationClient {
   }
 
   /**
-   * Locally evaluate varints for a user.
+   * Locally evaluate variants for a user.
    *
    * This function will only evaluate flags for the keys specified in the
    * {@link flagKeys} argument. If {@link flagKeys} is missing, all flags in the

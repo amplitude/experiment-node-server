@@ -12,7 +12,7 @@ export interface ExposureFilter {
 
 /**
  * Exposure is a class that represents a user's exposure to a set of flags.
- * It implements the FilterItem interface so it can be used with the dedupe filter.
+
  */
 export class Exposure {
   public user: ExperimentUser;
