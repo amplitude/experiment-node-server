@@ -638,4 +638,60 @@ describe('ExperimentClient unit tests', () => {
       },
     });
   });
+
+  test('evaluateV2 with tracksExposure tracks non-default variants', async () => {
+    const client = new LocalEvaluationClient(apiKey);
+    await client.start();
+
+    // Mock the amplitude client's logEvent method to capture events
+    const trackedEvents: any[] = [];
+    const exposureService = (client as any).exposureService;
+    const amplitude = (exposureService as any).amplitude;
+    const originalLogEvent = amplitude.logEvent.bind(amplitude);
+    amplitude.logEvent = jest.fn((event: any) => {
+      trackedEvents.push(event);
+      return originalLogEvent(event);
+    });
+
+    // Perform evaluation with tracksExposure=true
+    const options = { tracksExposure: true };
+    const variants = client.evaluateV2(testUser, ['sdk-local-evaluation-ci-test'], options);
+
+    // Verify that track was called
+    expect(trackedEvents.length).toBeGreaterThan(0);
+
+    // Count non-default variants
+    const nonDefaultVariants: Record<string, any> = {};
+    for (const [flagKey, variant] of Object.entries(variants)) {
+      const isDefault = (variant as any).metadata?.default;
+      if (!isDefault) {
+        nonDefaultVariants[flagKey] = variant;
+      }
+    }
+
+    // Verify that we have one event per non-default variant
+    expect(trackedEvents.length).toBe(Object.keys(nonDefaultVariants).length);
+
+    // Verify each event has the correct structure
+    const trackedFlagKeys = new Set<string>();
+    for (const event of trackedEvents) {
+      expect(event.event_type).toBe('[Experiment] Exposure');
+      expect(event.user_id).toBe(testUser.user_id);
+      const flagKey = event.event_properties?.['[Experiment] Flag Key'];
+      expect(flagKey).toBeDefined();
+      trackedFlagKeys.add(flagKey);
+      // Verify the variant is not default
+      const variant = variants[flagKey];
+      expect(variant).toBeDefined();
+      expect((variant as any).metadata?.default).toBeFalsy();
+    }
+
+    // Verify all non-default variants were tracked
+    expect(trackedFlagKeys.size).toBe(Object.keys(nonDefaultVariants).length);
+    for (const flagKey of Object.keys(nonDefaultVariants)) {
+      expect(trackedFlagKeys.has(flagKey)).toBe(true);
+    }
+
+    client.stop();
+  });
 });
