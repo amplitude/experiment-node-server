@@ -224,7 +224,9 @@ export class LocalEvaluationClient {
     const sortedFlags = topologicalSort(flags, flagKeys);
     const results = this.evaluation.evaluate(context, sortedFlags);
     void this.assignmentService?.track(new Assignment(user, results));
-    void this.exposureService?.track(new Exposure(user, results));
+    if (options?.tracksExposure) {
+      void this.exposureService?.track(new Exposure(user, results));
+    }
     this.logger.debug('[Experiment] evaluate - variants: ', results);
     return evaluationVariantsToVariants(results);
   }
