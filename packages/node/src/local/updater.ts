@@ -1,7 +1,8 @@
 import { FlagConfig, FlagConfigCache } from '..';
 import { CohortStorage } from '../types/cohort';
+import { LogLevel } from '../types/loglevel';
 import { CohortUtils } from '../util/cohort';
-import { ConsoleLogger, Logger } from '../util/logger';
+import { AmplitudeLogger, ConsoleLogger } from '../util/logger';
 
 import { CohortFetcher } from './cohort/fetcher';
 
@@ -31,7 +32,7 @@ export interface FlagConfigUpdater {
 }
 
 export class FlagConfigUpdaterBase {
-  protected readonly logger: Logger;
+  protected readonly logger: AmplitudeLogger;
 
   public readonly cache: FlagConfigCache;
 
@@ -42,12 +43,13 @@ export class FlagConfigUpdaterBase {
     cache: FlagConfigCache,
     cohortStorage: CohortStorage,
     cohortFetcher?: CohortFetcher,
-    debug = false,
+    logLevel = LogLevel.Error,
+    loggerProvider = new ConsoleLogger(),
   ) {
     this.cache = cache;
     this.cohortFetcher = cohortFetcher;
     this.cohortStorage = cohortStorage;
-    this.logger = new ConsoleLogger(debug);
+    this.logger = new AmplitudeLogger(logLevel, loggerProvider);
   }
 
   protected async _update(

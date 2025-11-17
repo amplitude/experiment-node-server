@@ -45,7 +45,7 @@ export class AmplitudeCookie {
           user_id: userSession.userId,
         };
       } catch (e) {
-        const logger = new ConsoleLogger(true);
+        const logger = new ConsoleLogger();
         logger.error(`Error parsing the Amplitude cookie: ${e.message}`);
         return {};
       }

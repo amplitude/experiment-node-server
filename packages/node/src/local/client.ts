@@ -23,8 +23,7 @@ import { ExperimentUser } from '../types/user';
 import { Variant, Variants } from '../types/variant';
 import { CohortUtils } from '../util/cohort';
 import { populateLocalConfigDefaults } from '../util/config';
-import { ConsoleLogger } from '../util/logger';
-import { Logger } from '../util/logger';
+import { AmplitudeLogger } from '../util/logger';
 import { convertUserToEvaluationContext } from '../util/user';
 import {
   evaluationVariantsToVariants,
@@ -53,7 +52,7 @@ const COHORT_POLLING_INTERVAL_MILLIS_MIN = 60000;
  * @category Core Usage
  */
 export class LocalEvaluationClient {
-  private readonly logger: Logger;
+  private readonly logger: AmplitudeLogger;
   protected readonly config: LocalEvaluationConfig;
   private readonly updater: FlagConfigUpdater;
   private readonly assignmentService: AssignmentService;
@@ -81,13 +80,17 @@ export class LocalEvaluationClient {
       apiKey,
       httpClient,
       this.config.serverUrl,
-      this.config.debug,
+      this.config.logLevel,
+      this.config.loggerProvider,
     );
     this.cache = new InMemoryFlagConfigCache(
       flagConfigCache,
       this.config.bootstrap,
     );
-    this.logger = new ConsoleLogger(this.config.debug);
+    this.logger = new AmplitudeLogger(
+      this.config.logLevel,
+      this.config.loggerProvider,
+    );
 
     this.cohortStorage = new InMemoryCohortStorage();
     let cohortFetcher: CohortFetcher = undefined;
@@ -99,7 +102,8 @@ export class LocalEvaluationClient {
         this.config.cohortSyncConfig?.cohortServerUrl,
         this.config.cohortSyncConfig?.maxCohortSize,
         undefined,
-        this.config.debug,
+        this.config.logLevel,
+        this.config.loggerProvider,
       );
       this.cohortUpdater = new CohortPoller(
         cohortFetcher,
@@ -109,7 +113,8 @@ export class LocalEvaluationClient {
           COHORT_POLLING_INTERVAL_MILLIS_MIN,
           this.config.cohortSyncConfig?.cohortPollingIntervalMillis,
         ),
-        this.config.debug,
+        this.config.logLevel,
+        this.config.loggerProvider,
       );
     }
 
@@ -119,7 +124,8 @@ export class LocalEvaluationClient {
       this.cohortStorage,
       cohortFetcher,
       this.config.flagConfigPollingIntervalMillis,
-      this.config.debug,
+      this.config.logLevel,
+      this.config.loggerProvider,
     );
     this.updater = this.config.streamUpdates
       ? new FlagConfigStreamer(
@@ -135,7 +141,8 @@ export class LocalEvaluationClient {
           this.config.streamServerUrl,
           this.cohortStorage,
           cohortFetcher,
-          this.config.debug,
+          this.config.logLevel,
+          this.config.loggerProvider,
         )
       : flagsPoller;
 

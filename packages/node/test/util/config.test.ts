@@ -4,7 +4,9 @@ import {
   CohortSyncConfigDefaults,
   EU_SERVER_URLS,
   RemoteEvaluationConfig,
+  RemoteEvaluationDefaults,
 } from 'src/types/config';
+import { LogLevel } from 'src/types/loglevel';
 import {
   populateLocalConfigDefaults,
   populateRemoteConfigDefaults,
@@ -79,4 +81,38 @@ test.each([
   const newConfig = populateRemoteConfigDefaults(config);
   expect(newConfig.serverZone).toBe(expectedZone);
   expect(newConfig.serverUrl).toBe(expectedUrl);
+});
+
+test.each([
+  [{}, LocalEvaluationDefaults.logLevel],
+  [{ logLevel: LogLevel.Warn }, LogLevel.Warn],
+  [{ debug: true }, LogLevel.Debug],
+  [{ debug: true, logLevel: LogLevel.Warn }, LogLevel.Debug],
+])("'s", (testcase, expectedLogLevel) => {
+  const config: LocalEvaluationConfig = {};
+  if ('debug' in testcase) {
+    config.debug = testcase.debug as boolean;
+  }
+  if ('logLevel' in testcase) {
+    config.logLevel = testcase.logLevel as LogLevel;
+  }
+  const newConfig = populateLocalConfigDefaults(config);
+  expect(newConfig.logLevel).toBe(expectedLogLevel);
+});
+
+test.each([
+  [{}, RemoteEvaluationDefaults.logLevel],
+  [{ logLevel: LogLevel.Warn }, LogLevel.Warn],
+  [{ debug: true }, LogLevel.Debug],
+  [{ debug: true, logLevel: LogLevel.Warn }, LogLevel.Debug],
+])("'s", (testcase, expectedLogLevel) => {
+  const config: RemoteEvaluationConfig = {};
+  if ('debug' in testcase) {
+    config.debug = testcase.debug as boolean;
+  }
+  if ('logLevel' in testcase) {
+    config.logLevel = testcase.logLevel as LogLevel;
+  }
+  const newConfig = populateRemoteConfigDefaults(config);
+  expect(newConfig.logLevel).toBe(expectedLogLevel);
 });

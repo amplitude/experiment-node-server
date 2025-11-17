@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1](https://github.com/amplitude/experiment-node-server/compare/v1.12.0...v1.12.1) (2025-10-29)
+
+
+### Bug Fixes
+
+* export logging libs ([#58](https://github.com/amplitude/experiment-node-server/issues/58)) ([85a4fe6](https://github.com/amplitude/experiment-node-server/commit/85a4fe6157ae0616ed3cdc215c4df18ea8358534))
+
+
+
+
+
+# [1.12.0](https://github.com/amplitude/experiment-node-server/compare/v1.11.0...v1.12.0) (2025-10-28)
+
+
+### Features
+
+* allow for better user defined logging behavior with logLevel and loggerProvider config fields ([#56](https://github.com/amplitude/experiment-node-server/issues/56)) ([bc62d52](https://github.com/amplitude/experiment-node-server/commit/bc62d520917bb2c34d80c82af53dd21482320078))
+
+
+
+
+
 # [1.11.0](https://github.com/amplitude/experiment-node-server/compare/v1.10.1...v1.11.0) (2025-09-26)
 
 

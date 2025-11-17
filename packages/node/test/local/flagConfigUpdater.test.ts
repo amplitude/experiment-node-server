@@ -4,6 +4,7 @@ import { SdkCohortApi } from 'src/local/cohort/cohort-api';
 import { CohortFetcher } from 'src/local/cohort/fetcher';
 import { InMemoryCohortStorage } from 'src/local/cohort/storage';
 import { FlagConfigUpdaterBase } from 'src/local/updater';
+import { LogLevel } from 'src/types/loglevel';
 import { CohortUtils } from 'src/util/cohort';
 
 import { FLAGS, NEW_FLAGS } from './util/mockData';
@@ -58,7 +59,7 @@ beforeEach(() => {
     cache,
     cohortStorage,
     cohortFetcher,
-    false,
+    LogLevel.Error,
   );
 });
 

@@ -1,14 +1,14 @@
 import { CohortStorage } from '../../types/cohort';
 import { FlagConfigCache } from '../../types/flag';
+import { LogLevel } from '../../types/loglevel';
 import { CohortUtils } from '../../util/cohort';
-import { ConsoleLogger } from '../../util/logger';
-import { Logger } from '../../util/logger';
+import { AmplitudeLogger, ConsoleLogger } from '../../util/logger';
 
 import { CohortFetcher } from './fetcher';
 import { CohortUpdater } from './updater';
 
 export class CohortPoller implements CohortUpdater {
-  private readonly logger: Logger;
+  private readonly logger: AmplitudeLogger;
 
   public readonly fetcher: CohortFetcher;
   public readonly storage: CohortStorage;
@@ -22,13 +22,14 @@ export class CohortPoller implements CohortUpdater {
     storage: CohortStorage,
     flagCache: FlagConfigCache,
     pollingIntervalMillis = 60000,
-    debug = false,
+    logLevel = LogLevel.Error,
+    loggerProvider = new ConsoleLogger(),
   ) {
     this.fetcher = fetcher;
     this.storage = storage;
     this.flagCache = flagCache;
     this.pollingIntervalMillis = pollingIntervalMillis;
-    this.logger = new ConsoleLogger(debug);
+    this.logger = new AmplitudeLogger(logLevel, loggerProvider);
   }
 
   /**
