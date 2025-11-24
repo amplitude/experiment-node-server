@@ -3,6 +3,7 @@ import {
   FetchError,
   SdkEvaluationApi,
 } from '@amplitude/experiment-core';
+import { GetVariantsOptions } from '@amplitude/experiment-core/dist/types/src/api/evaluation-api';
 
 import { version as PACKAGE_VERSION } from '../../gen/version';
 import { FetchHttpClient, WrapperClient } from '../transport/http';
@@ -113,10 +114,23 @@ export class RemoteEvaluationClient {
     options?: FetchOptions,
   ): Promise<Record<string, Variant>> {
     const userContext = this.addContext(user || {});
-    const results = await this.evaluationApi.getVariants(userContext, {
+    const getVariantsOptions: GetVariantsOptions = {
       flagKeys: options?.flagKeys,
       timeoutMillis: timeoutMillis,
-    });
+    };
+    if (options?.tracksAssignment) {
+      getVariantsOptions.trackingOption = options?.tracksAssignment
+        ? 'track'
+        : 'no-track';
+    }
+    if (options?.tracksExposure) {
+      (getVariantsOptions as any).exposureTrackingOption =
+        options?.tracksExposure ? 'track' : 'no-track';
+    }
+    const results = await this.evaluationApi.getVariants(
+      userContext,
+      getVariantsOptions,
+    );
     this.logger.debug('[Experiment] Fetched variants: ', results);
     return evaluationVariantsToVariants(results);
   }
