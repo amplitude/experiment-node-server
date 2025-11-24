@@ -68,6 +68,23 @@ describe('ExperimentClient.fetch', () => {
     expect(variant.metadata.default).toEqual(true);
   });
 
+  test('ExperimentClient.fetch, v2 no tracksAssignment and no tracksExposure', async () => {
+    const client = new RemoteEvaluationClient(API_KEY, {});
+    const getVariantsSpy = jest.spyOn(
+      (client as any).evaluationApi,
+      'getVariants',
+    );
+    const variants = await client.fetchV2(testUser);
+    expect(variants['sdk-ci-test'].key).toEqual('on');
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining(testUser),
+      expect.not.objectContaining({
+        trackingOption: expect.any(String),
+        exposureTrackingOption: expect.any(String),
+      }),
+    );
+  });
+
   test('ExperimentClient.fetch, v2 tracksAssignment and tracksExposure', async () => {
     const client = new RemoteEvaluationClient(API_KEY, {});
     const getVariantsSpy = jest.spyOn(
@@ -78,6 +95,7 @@ describe('ExperimentClient.fetch', () => {
       tracksAssignment: true,
       tracksExposure: true,
     });
+    expect(variants['sdk-ci-test'].key).toEqual('on');
     expect(getVariantsSpy).toHaveBeenCalledWith(
       expect.objectContaining(testUser),
       expect.objectContaining({
