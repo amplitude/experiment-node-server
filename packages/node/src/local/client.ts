@@ -164,15 +164,13 @@ export class LocalEvaluationClient {
         this.config.assignmentConfig,
       );
     }
-    const exposureConfig = {
-      ...ExposureConfigDefaults,
-      ...this.config.exposureConfig,
-    };
-    if (!exposureConfig.apiKey) {
-      // Use experiment deployment key if no api key is provided.
-      exposureConfig.apiKey = apiKey;
+    if (this.config.exposureConfig) {
+      const exposureConfig = {
+        ...ExposureConfigDefaults,
+        ...this.config.exposureConfig,
+      };
+      this.exposureService = this.createExposureService(exposureConfig);
     }
-    this.exposureService = this.createExposureService(exposureConfig);
     this.evaluation = new EvaluationEngine();
   }
 

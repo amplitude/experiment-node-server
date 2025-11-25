@@ -223,7 +223,7 @@ export type ExposureConfig = {
   /**
    * The analytics API key and NOT the experiment deployment key
    */
-  apiKey?: string;
+  apiKey: string;
   /**
    * The maximum number of exposures stored in the exposure cache
    */
@@ -264,7 +264,7 @@ export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
   cacheCapacity: 65536,
 };
 
-export const ExposureConfigDefaults: ExposureConfig = {
+export const ExposureConfigDefaults: Omit<ExposureConfig, 'apiKey'> = {
   cacheCapacity: 65536,
 };
 
@@ -299,7 +299,6 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   streamUpdates: false,
   streamServerUrl: 'https://stream.lab.amplitude.com',
   streamFlagConnTimeoutMillis: 1500,
-  exposureConfig: ExposureConfigDefaults,
 };
 
 export const EU_SERVER_URLS = {
