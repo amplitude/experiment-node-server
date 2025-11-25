@@ -203,10 +203,17 @@ export type LocalEvaluationConfig = {
   httpAgent?: https.Agent;
 
   /**
+   * @deprecated use {@link exposureConfig} instead to track exposure events.
    * Configuration for automatically tracking assignment events after an
    * evaluation.
    */
   assignmentConfig?: AssignmentConfig;
+
+  /**
+   * Configuration for automatically tracking exposure events after an
+   * evaluation.
+   */
+  exposureConfig?: ExposureConfig;
 
   /**
    * To use streaming API or polling. With streaming, flag config updates are
@@ -245,6 +252,17 @@ export type AssignmentConfig = {
   cacheCapacity?: number;
 } & NodeOptions;
 
+export type ExposureConfig = {
+  /**
+   * The analytics API key and NOT the experiment deployment key
+   */
+  apiKey: string;
+  /**
+   * The maximum number of exposures stored in the exposure cache
+   */
+  cacheCapacity?: number;
+} & NodeOptions;
+
 export type CohortSyncConfig = {
   apiKey: string;
   secretKey: string;
@@ -273,6 +291,26 @@ export type CohortSyncConfig = {
 };
 
 /**
+ * @deprecated use {@link ExposureConfigDefaults} with exposure service instead.
+ */
+export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
+  cacheCapacity: 65536,
+};
+
+export const ExposureConfigDefaults: Omit<ExposureConfig, 'apiKey'> = {
+  cacheCapacity: 65536,
+};
+
+export const CohortSyncConfigDefaults: Omit<
+  CohortSyncConfig,
+  'apiKey' | 'secretKey'
+> = {
+  cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
+  maxCohortSize: 2147483647,
+  cohortPollingIntervalMillis: 60000,
+};
+
+/**
  Defaults for {@link LocalEvaluationConfig} options.
 
  | **Option**       | **Default**                       |
@@ -296,19 +334,6 @@ export const LocalEvaluationDefaults: LocalEvaluationConfig = {
   streamUpdates: false,
   streamServerUrl: 'https://stream.lab.amplitude.com',
   streamFlagConnTimeoutMillis: 1500,
-};
-
-export const AssignmentConfigDefaults: Omit<AssignmentConfig, 'apiKey'> = {
-  cacheCapacity: 65536,
-};
-
-export const CohortSyncConfigDefaults: Omit<
-  CohortSyncConfig,
-  'apiKey' | 'secretKey'
-> = {
-  cohortServerUrl: 'https://cohort-v2.lab.amplitude.com',
-  maxCohortSize: 2147483647,
-  cohortPollingIntervalMillis: 60000,
 };
 
 export const EU_SERVER_URLS = {

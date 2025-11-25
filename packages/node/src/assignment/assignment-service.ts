@@ -8,6 +8,9 @@ import { Assignment, AssignmentFilter, AssignmentService } from './assignment';
 export const DAY_MILLIS = 24 * 60 * 60 * 1000;
 export const FLAG_TYPE_MUTUAL_EXCLUSION_GROUP = 'mutual-exclusion-group';
 
+/**
+ * @deprecated Assignment tracking is deprecated. Use Exposure tracking.
+ */
 export class AmplitudeAssignmentService implements AssignmentService {
   private readonly amplitude: CoreClient;
   private readonly assignmentFilter: AssignmentFilter;
@@ -24,6 +27,9 @@ export class AmplitudeAssignmentService implements AssignmentService {
   }
 }
 
+/**
+ * @deprecated Assignment tracking is deprecated. Use Exposure tracking.
+ */
 export const toEvent = (assignment: Assignment): BaseEvent => {
   const event: BaseEvent = {
     event_type: '[Experiment] Assignment',
