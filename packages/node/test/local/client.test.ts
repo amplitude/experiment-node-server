@@ -641,7 +641,9 @@ describe('ExperimentClient unit tests', () => {
 
   test('evaluateV2 with tracksExposure tracks non-default variants', async () => {
     // Some api key is required for exposure service, amplitude instance will be replaced with a mock in the test.
-    const client = new LocalEvaluationClient(apiKey, { exposureConfig: { apiKey: "someApiKey" } });
+    const client = new LocalEvaluationClient(apiKey, {
+      exposureConfig: { apiKey: 'someApiKey' },
+    });
     await client.start();
 
     // Mock the amplitude client's logEvent method to capture events
