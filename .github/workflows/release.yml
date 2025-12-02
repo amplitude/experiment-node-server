@@ -27,6 +27,7 @@ jobs:
     needs: [ authorize ]
     permissions:
       id-token: write
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,6 +75,7 @@ jobs:
         if: ${{ github.event.inputs.dryRun == 'true'}}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
         run: |
           yarn lerna version -m "chore(release): publish %s" \
             --conventional-commits \
