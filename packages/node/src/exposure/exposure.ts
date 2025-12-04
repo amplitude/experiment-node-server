@@ -1,27 +1,20 @@
 import { EvaluationVariant } from '@amplitude/experiment-core';
+import { ExperimentUser } from 'src/types/user';
 
-import { ExperimentUser } from '../types/user';
+export interface ExposureService {
+  track(exposure: Exposure): Promise<void>;
+}
 
-/**
- * @deprecated Assignment tracking is deprecated. Use Exposure tracking.
- */
-export interface AssignmentService {
-  track(assignment: Assignment): Promise<void>;
+export interface ExposureFilter {
+  shouldTrack(exposure: Exposure): boolean;
+  ttlMillis: number;
 }
 
 /**
- * @deprecated Assignment tracking is deprecated. Use Exposure tracking.
- */
-export interface AssignmentFilter {
-  shouldTrack(assignment: Assignment): boolean;
-}
+ * Exposure is a class that represents a user's exposure to a set of flags.
 
-/**
- * @deprecated Assignment tracking is deprecated. Use Exposure tracking.
- * Making this class a synonym for Exposure. They have the same fields.
- * This class can be removed in the future with little effort.
  */
-export class Assignment {
+export class Exposure {
   public user: ExperimentUser;
   public results: Record<string, EvaluationVariant>;
   public timestamp: number = Date.now();
