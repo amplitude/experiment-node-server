@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/amplitude/experiment-node-server/compare/v1.12.1...v1.13.0) (2026-01-07)
+
+
+### Features
+
+* add exposure service ([#60](https://github.com/amplitude/experiment-node-server/issues/60)) ([126533f](https://github.com/amplitude/experiment-node-server/commit/126533f7e7fae1f3435a7b4e83935a3fd0516706))
+* add tracks assignment and exposure ([#55](https://github.com/amplitude/experiment-node-server/issues/55)) ([e255b1c](https://github.com/amplitude/experiment-node-server/commit/e255b1cc130ae9496fdef647273a11f9d1d28ebe))
+
+
+
+
+
 ## [1.12.1](https://github.com/amplitude/experiment-node-server/compare/v1.12.0...v1.12.1) (2025-10-29)
 
 
