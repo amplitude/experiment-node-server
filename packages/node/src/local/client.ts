@@ -5,9 +5,9 @@ import {
   topologicalSort,
 } from '@amplitude/experiment-core';
 import EventSource from 'eventsource';
-import { Exposure, ExposureService } from 'src/exposure/exposure';
-import { InMemoryExposureFilter } from 'src/exposure/exposure-filter';
-import { AmplitudeExposureService } from 'src/exposure/exposure-service';
+import { Exposure, ExposureService } from '../exposure/exposure';
+import { InMemoryExposureFilter } from '../exposure/exposure-filter';
+import { AmplitudeExposureService } from '../exposure/exposure-service';
 
 import { Assignment, AssignmentService } from '../assignment/assignment';
 import { InMemoryAssignmentFilter } from '../assignment/assignment-filter';

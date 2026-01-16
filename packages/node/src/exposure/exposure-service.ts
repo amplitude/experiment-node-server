@@ -1,5 +1,5 @@
 import { BaseEvent, CoreClient } from '@amplitude/analytics-types';
-import { hashCode } from 'src/util/hash';
+import { hashCode } from '../util/hash';
 
 import { Exposure, ExposureFilter, ExposureService } from './exposure';
 
