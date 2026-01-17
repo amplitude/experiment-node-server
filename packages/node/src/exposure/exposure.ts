@@ -1,4 +1,5 @@
 import { EvaluationVariant } from '@amplitude/experiment-core';
+
 import { ExperimentUser } from '../types/user';
 
 export interface ExposureService {
