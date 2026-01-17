@@ -1,5 +1,6 @@
 import { EvaluationVariant } from '@amplitude/experiment-core';
-import { ExperimentUser } from 'src/types/user';
+
+import { ExperimentUser } from '../types/user';
 
 export interface ExposureService {
   track(exposure: Exposure): Promise<void>;
