@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.1](https://github.com/amplitude/experiment-node-server/compare/v1.13.0...v1.13.1) (2026-01-17)
+
+
+### Bug Fixes
+
+* node resolution paths starting with `src/` don't work ([#63](https://github.com/amplitude/experiment-node-server/issues/63)) ([ed762a0](https://github.com/amplitude/experiment-node-server/commit/ed762a0eb25e39f808316fd222983c25e8650b25))
+
+
+
+
+
 # [1.13.0](https://github.com/amplitude/experiment-node-server/compare/v1.12.1...v1.13.0) (2026-01-07)
 
 
