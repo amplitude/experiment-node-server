@@ -28,4 +28,17 @@ module.exports = {
     // eslint-plugin-prettier
     'prettier/prettier': 'error',
   },
+  overrides: [
+    {
+      files: ['packages/node/src/**/*.{js,ts,jsx,tsx}'],
+      rules: {
+        'no-restricted-imports': [
+          'error', 
+          {
+            patterns: ['src/*']
+          }
+        ],
+      },
+    },
+  ],
 };
