@@ -72,12 +72,12 @@ export class RemoteEvaluationClient {
     try {
       return await this.doFetch(user, this.config.fetchTimeoutMillis, options);
     } catch (e) {
-      console.error('[Experiment] Fetch failed: ', e);
+      this.logger.error('[Experiment] Fetch failed: ', e);
       if (this.shouldRetryFetch(e)) {
         try {
           return await this.retryFetch(user, options, e);
         } catch (e) {
-          console.error(e);
+          this.logger.error(e);
         }
       }
       throw e;
@@ -103,7 +103,7 @@ export class RemoteEvaluationClient {
       const results = await this.fetchV2(user, options);
       return filterDefaultVariants(results);
     } catch (e) {
-      console.error('[Experiment] Failed to fetch variants: ', e);
+      this.logger.error('[Experiment] Failed to fetch variants: ', e);
       return {};
     }
   }
@@ -151,7 +151,7 @@ export class RemoteEvaluationClient {
           options,
         );
       } catch (e) {
-        console.error('[Experiment] Retry falied: ', e);
+        this.logger.error('[Experiment] Retry falied: ', e);
         err = e;
       }
       delayMillis = Math.min(
