@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.3](https://github.com/amplitude/experiment-node-server/compare/v1.13.2...v1.13.3) (2026-01-26)
+
+
+### Bug Fixes
+
+* replace remaining console log output with this.logger ([#67](https://github.com/amplitude/experiment-node-server/issues/67)) ([b640451](https://github.com/amplitude/experiment-node-server/commit/b640451e28b25b0cc1165836de7cefa056a1a3bb))
+
+
+
+
+
 ## [1.13.2](https://github.com/amplitude/experiment-node-server/compare/v1.13.1...v1.13.2) (2026-01-22)
 
 
