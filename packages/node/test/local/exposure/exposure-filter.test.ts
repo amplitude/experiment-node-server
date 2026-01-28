@@ -130,3 +130,29 @@ test('filter - ttl-based eviction', async () => {
   await sleep(950);
   expect(filter.shouldTrack(exposure2)).toEqual(false);
 });
+
+test('filter - non-string user_id should not throw', async () => {
+  // Simulate runtime scenario where user_id is a number (e.g., from untyped JS or JSON)
+  const user = { user_id: 12345 } as unknown as ExperimentUser;
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+  };
+  const filter = new InMemoryExposureFilter(100);
+  const exposure = new Exposure(user, results);
+  // Should not throw TypeError: trim is not a function
+  expect(() => filter.shouldTrack(exposure)).not.toThrow();
+  expect(filter.shouldTrack(exposure)).toEqual(false); // Already tracked
+});
+
+test('filter - non-string device_id should not throw', async () => {
+  // Simulate runtime scenario where device_id is a number
+  const user = { device_id: 67890 } as unknown as ExperimentUser;
+  const results = {
+    'flag-key-1': { key: 'on', value: 'on' },
+  };
+  const filter = new InMemoryExposureFilter(100);
+  const exposure = new Exposure(user, results);
+  // Should not throw TypeError: trim is not a function
+  expect(() => filter.shouldTrack(exposure)).not.toThrow();
+  expect(filter.shouldTrack(exposure)).toEqual(false); // Already tracked
+});

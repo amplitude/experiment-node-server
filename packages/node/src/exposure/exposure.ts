@@ -29,11 +29,20 @@ export class Exposure {
   }
 
   public canonicalize(): string {
-    let canonical = `${this.user.user_id?.trim()} ${this.user.device_id?.trim()} `;
+    const userId =
+      this.user.user_id != null
+        ? String(this.user.user_id).trim()
+        : this.user.user_id;
+    const deviceId =
+      this.user.device_id != null
+        ? String(this.user.device_id).trim()
+        : this.user.device_id;
+    let canonical = `${userId} ${deviceId} `;
     for (const key of Object.keys(this.results).sort()) {
       const variant = this.results[key];
       if (variant?.key) {
-        canonical += key.trim() + ' ' + variant?.key?.trim() + ' ';
+        const variantKey = String(variant.key).trim();
+        canonical += key.trim() + ' ' + variantKey + ' ';
       }
     }
     return canonical;
