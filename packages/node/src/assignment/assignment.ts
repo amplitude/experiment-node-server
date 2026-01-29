@@ -36,11 +36,14 @@ export class Assignment {
   }
 
   public canonicalize(): string {
-    let canonical = `${safeStringTrim(this.user.user_id)} ${safeStringTrim(this.user.device_id)} `;
+    let canonical = `${safeStringTrim(this.user.user_id)} ${safeStringTrim(
+      this.user.device_id,
+    )} `;
     for (const key of Object.keys(this.results).sort()) {
       const variant = this.results[key];
       if (variant?.key) {
-        canonical += safeStringTrim(key) + ' ' + safeStringTrim(variant.key) + ' ';
+        canonical +=
+          safeStringTrim(key) + ' ' + safeStringTrim(variant.key) + ' ';
       }
     }
     return canonical;
