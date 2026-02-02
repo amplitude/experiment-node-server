@@ -1,6 +1,7 @@
 import { EvaluationVariant } from '@amplitude/experiment-core';
 
 import { ExperimentUser } from '../types/user';
+import { safeStringTrim } from '../util/string';
 
 export interface ExposureService {
   track(exposure: Exposure): Promise<void>;
@@ -29,11 +30,14 @@ export class Exposure {
   }
 
   public canonicalize(): string {
-    let canonical = `${this.user.user_id?.trim()} ${this.user.device_id?.trim()} `;
+    let canonical = `${safeStringTrim(this.user.user_id)} ${safeStringTrim(
+      this.user.device_id,
+    )} `;
     for (const key of Object.keys(this.results).sort()) {
       const variant = this.results[key];
       if (variant?.key) {
-        canonical += key.trim() + ' ' + variant?.key?.trim() + ' ';
+        canonical +=
+          safeStringTrim(key) + ' ' + safeStringTrim(variant.key) + ' ';
       }
     }
     return canonical;
