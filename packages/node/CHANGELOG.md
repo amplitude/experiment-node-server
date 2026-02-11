@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.4](https://github.com/amplitude/experiment-node-server/compare/v1.13.3...v1.13.4) (2026-02-11)
+
+
+### Bug Fixes
+
+* Enforce 60s cohort polling interval minimum ([#75](https://github.com/amplitude/experiment-node-server/issues/75)) ([6b94fc3](https://github.com/amplitude/experiment-node-server/commit/6b94fc3bb8a54355a941e0dbe4e87b53572db995))
+* typeError in canonicalize() when user_id/device_id are non-strings ([#71](https://github.com/amplitude/experiment-node-server/issues/71)) ([01b9e7f](https://github.com/amplitude/experiment-node-server/commit/01b9e7f86e228fd38609c4f77968b212e9f0a4ba))
+
+
+
+
+
 ## [1.13.3](https://github.com/amplitude/experiment-node-server/compare/v1.13.2...v1.13.3) (2026-01-26)
 
 
