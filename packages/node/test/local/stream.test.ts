@@ -82,6 +82,7 @@ test('SDK stream is compatible with stream server (flaky possible, see comments)
     new WrapperClient(httpClient),
   );
   // Do multiple fetches to clear out CDN serve stale caches.
+  await sleep(3000);
   let fetchFlags = await fetchApi.getFlags(LIBRARY);
   await sleep(200);
   fetchFlags = await fetchApi.getFlags(LIBRARY);
