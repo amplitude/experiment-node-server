@@ -81,7 +81,12 @@ test('SDK stream is compatible with stream server (flaky possible, see comments)
     SERVER_URL,
     new WrapperClient(httpClient),
   );
-  const fetchFlags = await fetchApi.getFlags(LIBRARY);
+  // Do multiple fetches to clear out CDN serve stale caches.
+  let fetchFlags = await fetchApi.getFlags(LIBRARY);
+  await sleep(200);
+  fetchFlags = await fetchApi.getFlags(LIBRARY);
+  await sleep(200);
+  fetchFlags = await fetchApi.getFlags(LIBRARY);
 
   // At least one flag streamed should be the same as the one fetched.
   // There can be other updates after stream establishment and before fetch.
