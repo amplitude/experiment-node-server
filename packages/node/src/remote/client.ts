@@ -118,12 +118,18 @@ export class RemoteEvaluationClient {
       flagKeys: options?.flagKeys,
       timeoutMillis: timeoutMillis,
     };
-    if (options?.tracksAssignment !== undefined && options?.tracksAssignment !== null) {
+    if (
+      options?.tracksAssignment !== undefined &&
+      options?.tracksAssignment !== null
+    ) {
       getVariantsOptions.trackingOption = options.tracksAssignment
         ? 'track'
         : 'no-track';
     }
-    if (options?.tracksExposure !== undefined && options?.tracksExposure !== null) {
+    if (
+      options?.tracksExposure !== undefined &&
+      options?.tracksExposure !== null
+    ) {
       (getVariantsOptions as any).exposureTrackingOption =
         options.tracksExposure ? 'track' : 'no-track';
     }
