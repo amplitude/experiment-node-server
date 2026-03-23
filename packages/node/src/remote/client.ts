@@ -118,14 +118,14 @@ export class RemoteEvaluationClient {
       flagKeys: options?.flagKeys,
       timeoutMillis: timeoutMillis,
     };
-    if (options?.tracksAssignment) {
-      getVariantsOptions.trackingOption = options?.tracksAssignment
+    if (options?.tracksAssignment !== undefined && options?.tracksAssignment !== null) {
+      getVariantsOptions.trackingOption = options.tracksAssignment
         ? 'track'
         : 'no-track';
     }
-    if (options?.tracksExposure) {
+    if (options?.tracksExposure !== undefined && options?.tracksExposure !== null) {
       (getVariantsOptions as any).exposureTrackingOption =
-        options?.tracksExposure ? 'track' : 'no-track';
+        options.tracksExposure ? 'track' : 'no-track';
     }
     const results = await this.evaluationApi.getVariants(
       userContext,
