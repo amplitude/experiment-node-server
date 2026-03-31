@@ -127,7 +127,8 @@ export class LocalEvaluationClient {
         this.cache,
         Math.max(
           COHORT_POLLING_INTERVAL_MILLIS_MIN,
-          this.config.cohortSyncConfig?.cohortPollingIntervalMillis,
+          this.config.cohortSyncConfig.cohortPollingIntervalMillis ??
+            COHORT_POLLING_INTERVAL_MILLIS_MIN,
         ),
         this.config.logLevel,
         this.config.loggerProvider,

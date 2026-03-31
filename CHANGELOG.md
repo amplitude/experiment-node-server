@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.4](https://github.com/amplitude/experiment-node-server/compare/v1.13.3...v1.13.4) (2026-02-11)
+
+
+### Bug Fixes
+
+* Enforce 60s cohort polling interval minimum ([#75](https://github.com/amplitude/experiment-node-server/issues/75)) ([6b94fc3](https://github.com/amplitude/experiment-node-server/commit/6b94fc3bb8a54355a941e0dbe4e87b53572db995))
+* typeError in canonicalize() when user_id/device_id are non-strings ([#71](https://github.com/amplitude/experiment-node-server/issues/71)) ([01b9e7f](https://github.com/amplitude/experiment-node-server/commit/01b9e7f86e228fd38609c4f77968b212e9f0a4ba))
+
+
+
+
+
+## [1.13.3](https://github.com/amplitude/experiment-node-server/compare/v1.13.2...v1.13.3) (2026-01-26)
+
+
+### Bug Fixes
+
+* replace remaining console log output with this.logger ([#67](https://github.com/amplitude/experiment-node-server/issues/67)) ([b640451](https://github.com/amplitude/experiment-node-server/commit/b640451e28b25b0cc1165836de7cefa056a1a3bb))
+
+
+
+
+
+## [1.13.2](https://github.com/amplitude/experiment-node-server/compare/v1.13.1...v1.13.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* update URL usage away from depracated usage ([#66](https://github.com/amplitude/experiment-node-server/issues/66)) ([9f391ad](https://github.com/amplitude/experiment-node-server/commit/9f391ad4c9625b31d4be1e22afd6a02b42463a9f))
+
+
+
+
+
+## [1.13.1](https://github.com/amplitude/experiment-node-server/compare/v1.13.0...v1.13.1) (2026-01-17)
+
+
+### Bug Fixes
+
+* node resolution paths starting with `src/` don't work ([#63](https://github.com/amplitude/experiment-node-server/issues/63)) ([ed762a0](https://github.com/amplitude/experiment-node-server/commit/ed762a0eb25e39f808316fd222983c25e8650b25))
+
+
+
+
+
 # [1.13.0](https://github.com/amplitude/experiment-node-server/compare/v1.12.1...v1.13.0) (2026-01-07)
 
 

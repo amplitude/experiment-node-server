@@ -1,6 +1,6 @@
 # experiment-node-server
-Node Server SDK for Experiment
+Node Server SDK for Amplitude Experiment.
 
 ## Getting Started
 
-See the [Documentation](https://amplitude-lab.readme.io/docs/javascript-server-sdk) for getting started.
+See the [Documentation](https://amplitude.com/docs/sdks/experiment-sdks/experiment-node-js) for getting started.

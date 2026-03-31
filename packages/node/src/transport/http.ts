@@ -1,6 +1,5 @@
 import http from 'http';
 import https from 'https';
-import url from 'url';
 
 import {
   HttpClient as CoreHttpClient,
@@ -40,21 +39,19 @@ export class FetchHttpClient implements HttpClient {
         return;
       }
 
-      const urlParams = url.parse(requestUrl);
+      const parsedUrl = new URL(requestUrl);
       const options = {
-        ...urlParams,
         method: method,
         headers: headers,
-        body: body,
         timeout: timeoutMillis,
       };
 
-      if (urlParams.protocol === 'https:') {
+      if (parsedUrl.protocol === 'https:') {
         options['agent'] = this.httpAgent;
       }
 
-      const protocol = urlParams.protocol === 'http:' ? http : https;
-      const req = protocol.request(options);
+      const protocol = parsedUrl.protocol === 'http:' ? http : https;
+      const req = protocol.request(parsedUrl, options);
 
       req.on('response', (res) => {
         res.setEncoding('utf-8');
