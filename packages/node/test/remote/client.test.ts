@@ -104,6 +104,26 @@ describe('ExperimentClient.fetch', () => {
       }),
     );
   });
+
+  test('ExperimentClient.fetch, v2 tracksAssignment false and tracksExposure false', async () => {
+    const client = new RemoteEvaluationClient(API_KEY, {});
+    const getVariantsSpy = jest.spyOn(
+      (client as any).evaluationApi,
+      'getVariants',
+    );
+    const variants = await client.fetchV2(testUser, {
+      tracksAssignment: false,
+      tracksExposure: false,
+    });
+    expect(variants['sdk-ci-test'].key).toEqual('on');
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining(testUser),
+      expect.objectContaining({
+        trackingOption: 'no-track',
+        exposureTrackingOption: 'no-track',
+      }),
+    );
+  });
 });
 
 describe('ExperimentClient.fetch, retry with different response codes', () => {
