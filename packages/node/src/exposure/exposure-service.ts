@@ -77,7 +77,7 @@ export const toExposureEvents = (
       device_id: exposure.user.device_id,
       event_properties: eventProperties,
       user_properties: {
-        $set: set,
+        $set: { ...exposure.user.user_properties, ...set },
         $unset: unset,
       },
       insert_id: `${exposure.user.user_id} ${

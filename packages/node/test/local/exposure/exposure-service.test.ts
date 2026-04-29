@@ -133,6 +133,38 @@ test('exposure to event as expected', async () => {
   }
 });
 
+test('user_properties from ExperimentUser are forwarded to exposure event', async () => {
+  const user: ExperimentUser = {
+    user_id: 'user',
+    device_id: 'device',
+    user_properties: { anonymous: true, plan: 'premium' },
+  };
+  const results = {
+    my_flag: {
+      key: 'treatment',
+      value: 'treatment',
+      metadata: {
+        segmentName: 'All Other Users',
+        flagType: 'experiment',
+        flagVersion: 1,
+        default: false,
+      },
+    },
+  };
+  const exposure = new Exposure(user, results);
+  const events = toExposureEvents(exposure, DAY_MILLIS);
+
+  expect(events.length).toEqual(1);
+  const event = events[0];
+
+  // Verify custom user_properties are included in $set
+  expect(event.user_properties['$set']).toEqual({
+    anonymous: true,
+    plan: 'premium',
+    '[Experiment] my_flag': 'treatment',
+  });
+});
+
 test('tracking called', async () => {
   const logEventMock = jest.spyOn(instance, 'logEvent');
   await service.track(
