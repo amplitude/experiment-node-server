@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.5](https://github.com/amplitude/experiment-node-server/compare/v1.13.4...v1.13.5) (2026-04-29)
+
+
+### Bug Fixes
+
+* bump experiment-core version for local eval bugfix ([#82](https://github.com/amplitude/experiment-node-server/issues/82)) ([ad80a7c](https://github.com/amplitude/experiment-node-server/commit/ad80a7c1e57da032df929360ccdf47f2dc18bdbb))
+* tracksAssignment: false and tracksExposure: false in FetchOptions silently ignored ([#79](https://github.com/amplitude/experiment-node-server/issues/79)) ([99e8a26](https://github.com/amplitude/experiment-node-server/commit/99e8a26967a068944cbc9116214f82f142408964))
+
+
+
+
+
 ## [1.13.4](https://github.com/amplitude/experiment-node-server/compare/v1.13.3...v1.13.4) (2026-02-11)
 
 
