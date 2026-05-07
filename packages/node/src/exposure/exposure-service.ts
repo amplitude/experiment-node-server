@@ -66,6 +66,10 @@ export const toExposureEvents = (
     } else if (variant.value) {
       eventProperties['[Experiment] Variant'] = variant.value;
     }
+    const experimentKey = variant.metadata?.experimentKey as string | undefined;
+    if (experimentKey) {
+      eventProperties['[Experiment] Experiment Key'] = experimentKey;
+    }
     if (variant.metadata) {
       eventProperties['metadata'] = variant.metadata;
     }
