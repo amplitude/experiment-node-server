@@ -84,10 +84,21 @@ test('exposure to event as expected', async () => {
       value: 'on',
     },
     empty_variant: {},
+    with_experiment_key: {
+      key: 'treatment',
+      value: 'treatment',
+      metadata: {
+        segmentName: 'All Other Users',
+        flagType: 'experiment',
+        flagVersion: 10,
+        default: false,
+        experimentKey: 'exp-1',
+      },
+    },
   };
   const exposure = new Exposure(user, results);
   const events = toExposureEvents(exposure, DAY_MILLIS);
-  expect(events.length).toEqual(7); // Excludes default exposure.
+  expect(events.length).toEqual(8); // Excludes default exposure.
   for (const event of events) {
     expect(event.user_id).toEqual(user.user_id);
     expect(event.device_id).toEqual(user.device_id);
@@ -103,6 +114,12 @@ test('exposure to event as expected', async () => {
       results[flagKey].key,
     );
     expect(eventProperties['metadata']).toEqual(results[flagKey].metadata);
+
+    if (flagKey === 'with_experiment_key') {
+      expect(eventProperties['[Experiment] Experiment Key']).toEqual('exp-1');
+    } else {
+      expect(eventProperties['[Experiment] Experiment Key']).toBeUndefined();
+    }
 
     // User Properties
     if (
@@ -125,7 +142,7 @@ test('exposure to event as expected', async () => {
     }
 
     const canonicalization =
-      'user device basic control default off different_value on empty_metadata on holdout holdout mutex slot-1 partial_metadata on ';
+      'user device basic control default off different_value on empty_metadata on holdout holdout mutex slot-1 partial_metadata on with_experiment_key treatment ';
     const expected = `user device ${hashCode(
       flagKey + ' ' + canonicalization,
     )} ${Math.floor(exposure.timestamp / DAY_MILLIS)}`;
