@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.6](https://github.com/amplitude/experiment-node-server/compare/v1.13.5...v1.13.6) (2026-05-08)
+
+
+### Bug Fixes
+
+* include experiment key on local-eval exposure events ([#83](https://github.com/amplitude/experiment-node-server/issues/83)) ([0aee5e9](https://github.com/amplitude/experiment-node-server/commit/0aee5e99c5d9eb50c1048e995c42064b110118e3))
+
+
+
+
+
 ## [1.13.5](https://github.com/amplitude/experiment-node-server/compare/v1.13.4...v1.13.5) (2026-04-29)
 
 
